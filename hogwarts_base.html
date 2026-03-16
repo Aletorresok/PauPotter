@@ -1,0 +1,2553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hogwarts — Fiesta de Cumpleaños</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+
+<!-- Firebase CDN -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCi8x5__x9Q0BLaAzjQdRurx4ze2l1pYvQ",
+  authDomain: "paupotter.firebaseapp.com",
+  projectId: "paupotter",
+  storageBucket: "paupotter.firebasestorage.app",
+  messagingSenderId: "429840268976",
+  appId: "1:429840268976:web:6d21ff356cdb2613e60575",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+window._db = db;
+window._fsHelpers = { doc, setDoc, getDoc, onSnapshot, collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, getDocs, updateDoc };
+window._fbReady = true;
+document.dispatchEvent(new Event('fbready'));
+</script>
+
+<style>
+/* ══ VARIABLES ══ */
+:root {
+  --gold:    #c9a84c;
+  --gold2:   #f0d080;
+  --dark:    #0a0a0f;
+  --parch:   #1a1408;
+  --stone:   #2a2520;
+
+  --grif:    #740001;
+  --grif2:   #d3a625;
+  --slyth:   #1a472a;
+  --slyth2:  #aaaaaa;
+  --huff:    #ecb939;
+  --huff2:   #372e29;
+  --raven:   #0e1a40;
+  --raven2:  #946b2d;
+
+  --card: rgba(255,255,255,0.04);
+  --border: rgba(201,168,76,0.25);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'EB Garamond', Georgia, serif;
+  background: var(--dark);
+  color: #e8dfc0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Fondo con estrellas */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(116,0,1,.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(14,26,64,.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 30%, rgba(26,71,42,.12) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Textura pergamino sutil */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='none'/%3E%3Ccircle cx='1' cy='1' r='.4' fill='rgba(201,168,76,0.03)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ══ ESTRELLAS ANIMADAS ══ */
+.stars { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+.star { position:absolute; border-radius:50%; background:rgba(201,168,76,0.6); animation:twinkle 3s infinite alternate; }
+@keyframes twinkle { from{opacity:.1;transform:scale(1)} to{opacity:.8;transform:scale(1.5)} }
+
+/* ══ LAYOUT BASE ══ */
+.page { position:relative; z-index:1; }
+
+/* ══ HEADER ══ */
+header {
+  text-align: center;
+  padding: 2rem 1rem 1rem;
+  position: relative;
+}
+.hogwarts-title {
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: clamp(1.4rem, 5vw, 3rem);
+  color: var(--gold);
+  text-shadow: 0 0 40px rgba(201,168,76,.5), 0 2px 4px rgba(0,0,0,.8);
+  letter-spacing: .05em;
+  animation: glow 4s ease-in-out infinite;
+}
+@keyframes glow {
+  0%,100% { text-shadow: 0 0 30px rgba(201,168,76,.4), 0 2px 4px rgba(0,0,0,.8); }
+  50%      { text-shadow: 0 0 60px rgba(201,168,76,.8), 0 0 20px rgba(201,168,76,.3), 0 2px 4px rgba(0,0,0,.8); }
+}
+.hogwarts-sub {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(.7rem, 2vw, .95rem);
+  color: var(--gold2);
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  margin-top: .4rem;
+  opacity: .75;
+}
+
+/* Separador ornamental */
+.ornament {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  justify-content: center;
+  margin: .75rem 0;
+  color: var(--gold);
+  opacity: .5;
+  font-size: .9rem;
+  letter-spacing: .2em;
+}
+.ornament::before, .ornament::after {
+  content: '';
+  flex: 1;
+  max-width: 80px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+}
+
+/* ══ COPA DE LAS CASAS — siempre visible ══ */
+#cup-bar {
+  position: relative;
+  z-index: 10;
+  background: rgba(10,10,15,.85);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  padding: .6rem 1rem;
+}
+#cup-bar.sticky {
+  position: sticky;
+  top: 0;
+}
+.cup-label {
+  font-family: 'Cinzel', serif;
+  font-size: .6rem;
+  letter-spacing: .25em;
+  color: var(--gold);
+  opacity: .6;
+  text-align: center;
+  text-transform: uppercase;
+  margin-bottom: .4rem;
+}
+.houses-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .4rem;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.house-score {
+  border-radius: 10px;
+  padding: .4rem .3rem;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,.1);
+  transition: transform .3s;
+  position: relative;
+  overflow: hidden;
+}
+.house-score::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: .15;
+  background: var(--hc);
+}
+.house-score.leading { transform: scale(1.05); }
+.house-score.leading::after {
+  content: '✦';
+  position: absolute;
+  top: 2px; right: 4px;
+  font-size: .55rem;
+  color: var(--gold2);
+  animation: pulse-star 1s infinite;
+}
+@keyframes pulse-star { 0%,100%{opacity:1} 50%{opacity:.3} }
+.house-crest { font-size: 1.1rem; display: block; line-height: 1; }
+.house-name-sm {
+  font-family: 'Cinzel', serif;
+  font-size: .52rem;
+  letter-spacing: .08em;
+  opacity: .8;
+  display: block;
+  margin-top: .15rem;
+}
+.house-pts {
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: block;
+  line-height: 1.2;
+}
+
+/* Colores por casa */
+.hs-gryffindor { --hc: var(--grif); color: #ffb3b3; }
+.hs-gryffindor .house-pts { color: var(--grif2); }
+.hs-slytherin  { --hc: var(--slyth); color: #b8d4b8; }
+.hs-slytherin  .house-pts { color: var(--slyth2); }
+.hs-hufflepuff { --hc: var(--huff2); color: #ffe8a0; }
+.hs-hufflepuff .house-pts { color: var(--huff); }
+.hs-ravenclaw  { --hc: var(--raven); color: #b8c8e8; }
+.hs-ravenclaw  .house-pts { color: var(--raven2); }
+
+/* ══ LOBBY ══ */
+#lobby {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  position: relative;
+  z-index: 10;
+}
+.lobby-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+.lobby-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.3rem;
+  color: var(--gold);
+  margin-bottom: .4rem;
+}
+.lobby-sub { font-size: .9rem; opacity: .65; margin-bottom: 1.5rem; line-height: 1.5; }
+
+/* ══ INPUTS Y BOTONES ══ */
+.ifield {
+  width: 100%;
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .7rem 1rem;
+  color: #e8dfc0;
+  font-family: 'EB Garamond', serif;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color .2s;
+}
+.ifield:focus { border-color: var(--gold); }
+.ifield::placeholder { color: rgba(232,223,192,.35); }
+
+.btn {
+  width: 100%;
+  padding: .85rem;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: .9rem;
+  letter-spacing: .08em;
+  cursor: pointer;
+  margin-top: .75rem;
+  transition: transform .15s, box-shadow .2s;
+  display: block;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: scale(.97); }
+
+.btn-gold {
+  background: linear-gradient(135deg, #8b6914, var(--gold), #8b6914);
+  color: #1a1408;
+  box-shadow: 0 4px 20px rgba(201,168,76,.35);
+}
+.btn-gold:hover { box-shadow: 0 6px 28px rgba(201,168,76,.55); }
+
+.btn-ghost {
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+  color: var(--gold2);
+}
+
+.btn-sm {
+  width: auto;
+  padding: .4rem .9rem;
+  font-size: .78rem;
+  margin-top: 0;
+  display: inline-block;
+}
+
+/* ══ MENÚ PRINCIPAL ══ */
+#main-menu {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: .75rem;
+  padding: 1rem 1rem 3rem;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+}
+.menu-info {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  font-family: 'Cinzel', serif;
+  font-size: .75rem;
+  letter-spacing: .1em;
+  color: var(--gold2);
+  opacity: .75;
+  margin-bottom: .25rem;
+}
+.menu-house-badge {
+  padding: .2rem .7rem;
+  border-radius: 20px;
+  font-size: .72rem;
+  font-weight: 600;
+  font-family: 'Cinzel', serif;
+  letter-spacing: .08em;
+}
+
+.game-card {
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  border-radius: 16px;
+  padding: 1rem 1.4rem;
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform .15s;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+  letter-spacing: .05em;
+}
+.game-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,.06);
+  opacity: 0;
+  transition: opacity .2s;
+}
+.game-card:hover::after { opacity: 1; }
+.game-card:hover { transform: translateY(-2px) scale(1.01); }
+.game-card:active { transform: scale(.97); }
+.gc-icon { font-size: 1.6rem; flex-shrink: 0; }
+.gc-text { display: flex; flex-direction: column; }
+.gc-text span { font-size: .72rem; opacity: .8; font-family: 'EB Garamond', serif; font-weight: 400; letter-spacing: .03em; margin-top: .15rem; }
+
+.gc1 { background: linear-gradient(135deg,#4a0000,#740001); color: #ffccc0; box-shadow: 0 6px 24px rgba(116,0,1,.5); }
+.gc2 { background: linear-gradient(135deg,#0d2d1a,#1a472a); color: #c8e8c8; box-shadow: 0 6px 24px rgba(26,71,42,.5); }
+.gc3 { background: linear-gradient(135deg,#332200,#5a3a00); color: #ffe0a0; box-shadow: 0 6px 24px rgba(201,168,76,.35); }
+.gc4 { background: linear-gradient(135deg,#08102a,#1a2d5a); color: #b8c8e8; box-shadow: 0 6px 24px rgba(14,26,64,.6); }
+.gc5 { background: linear-gradient(135deg,#2a1500,#4a2800); color: #ffd4a0; box-shadow: 0 6px 24px rgba(74,40,0,.5); }
+.gc-dark { background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--gold2); }
+
+/* ══ SCREENS ══ */
+.screen { display:none; position:relative; z-index:10; max-width:620px; margin:0 auto; padding:1rem 1rem 3rem; }
+.screen.active { display:block; }
+
+.back-btn {
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+  color: var(--gold2);
+  padding: .45rem 1.1rem;
+  border-radius: 20px;
+  font-family: 'Cinzel', serif;
+  font-size: .78rem;
+  letter-spacing: .08em;
+  cursor: pointer;
+  margin-bottom: 1.2rem;
+  transition: background .2s;
+}
+.back-btn:hover { background: rgba(255,255,255,.1); }
+
+.stitle {
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  color: var(--gold);
+  text-align: center;
+  margin-bottom: 1.2rem;
+  text-shadow: 0 0 20px rgba(201,168,76,.4);
+}
+
+/* Tarjetas dentro de screens */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.2rem;
+  margin-bottom: .75rem;
+}
+.card-grif { border-color: rgba(116,0,1,.5); }
+.card-slyth { border-color: rgba(26,71,42,.5); }
+.card-huff { border-color: rgba(236,185,57,.35); }
+.card-raven { border-color: rgba(14,26,64,.8); }
+.card-gold { border-color: var(--border); }
+
+.ilabel {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-size: .72rem;
+  letter-spacing: .1em;
+  color: var(--gold2);
+  opacity: .8;
+  margin-bottom: .4rem;
+}
+.info { font-size: .85rem; opacity: .6; line-height: 1.5; }
+.sep { border: none; border-top: 1px solid var(--border); margin: .75rem 0; }
+
+/* ══ BADGES ══ */
+.badge {
+  display: inline-block;
+  padding: .3rem .9rem;
+  border-radius: 20px;
+  font-family: 'Cinzel', serif;
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+}
+.badge-ok { background: rgba(26,71,42,.4); color: #a0d4a0; border: 1px solid rgba(26,71,42,.6); }
+.badge-bad { background: rgba(116,0,1,.4); color: #ffa0a0; border: 1px solid rgba(116,0,1,.6); }
+
+/* ══ CHIPS ══ */
+.chips { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.6rem; }
+.chip {
+  padding: .3rem .8rem;
+  border-radius: 20px;
+  font-family: 'Cinzel', serif;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+  cursor: pointer;
+}
+.chip-grif { background: rgba(116,0,1,.35); color: #ffc0b0; border: 1px solid rgba(116,0,1,.5); }
+.chip-slyth { background: rgba(26,71,42,.35); color: #b0d4b0; border: 1px solid rgba(26,71,42,.5); }
+.chip-huff { background: rgba(236,185,57,.2); color: #ffe090; border: 1px solid rgba(236,185,57,.4); }
+.chip-raven { background: rgba(14,26,64,.5); color: #a0b8d8; border: 1px solid rgba(14,26,64,.8); }
+
+/* ══ SPINNER ══ */
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(201,168,76,.3);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  margin-right: .5rem;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ══ CONFETTI ══ */
+.cp {
+  position: fixed;
+  width: 8px; height: 12px;
+  top: -20px;
+  border-radius: 2px;
+  animation: fall linear forwards;
+  z-index: 9999;
+  pointer-events: none;
+}
+@keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+
+/* ══ PUNTOS MANUALES — panel fijo del presentador ══ */
+#points-panel {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 900;
+  background: rgba(10,10,15,.95);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  padding: .75rem 1rem;
+  display: none;
+}
+#points-panel.open { display: block; }
+.pts-toggle {
+  position: fixed;
+  bottom: 1rem; right: 1rem;
+  z-index: 901;
+  background: linear-gradient(135deg, #8b6914, var(--gold));
+  border: none;
+  border-radius: 50%;
+  width: 48px; height: 48px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(201,168,76,.5);
+}
+.pts-toggle.visible { display: flex; }
+.pts-houses-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .5rem;
+  margin-bottom: .5rem;
+}
+.pts-house-btn {
+  border: none;
+  border-radius: 10px;
+  padding: .5rem .3rem;
+  font-family: 'Cinzel', serif;
+  font-size: .68rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  opacity: .85;
+  transition: opacity .2s, transform .15s;
+}
+.pts-house-btn:hover { opacity: 1; transform: scale(1.05); }
+.pts-house-btn.selected { opacity: 1; outline: 2px solid var(--gold); }
+.phb-grif { background: rgba(116,0,1,.6); color: #ffc0b0; }
+.phb-slyth { background: rgba(26,71,42,.6); color: #b0d4b0; }
+.phb-huff { background: rgba(236,185,57,.3); color: #ffe090; }
+.phb-raven { background: rgba(14,26,64,.8); color: #a0b8d8; }
+.pts-row { display: flex; gap: .5rem; align-items: center; margin-top: .5rem; }
+.pts-quick { display: flex; gap: .4rem; flex-wrap: wrap; }
+.pts-q-btn {
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.06);
+  color: var(--gold2);
+  border-radius: 8px;
+  padding: .3rem .65rem;
+  font-family: 'Cinzel', serif;
+  font-size: .75rem;
+  cursor: pointer;
+  transition: background .15s;
+}
+.pts-q-btn:hover { background: rgba(201,168,76,.15); }
+
+/* ══ SOMBRERO SELECCIONADOR ══ */
+#sorting-screen {
+  text-align: center;
+}
+.sorting-hat-emoji {
+  font-size: clamp(5rem, 15vw, 8rem);
+  display: block;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(201,168,76,.4));
+}
+@keyframes float {
+  0%,100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-12px) rotate(3deg); }
+}
+.sorting-hat-thinking {
+  animation: think .4s ease-in-out infinite alternate !important;
+}
+@keyframes think {
+  from { transform: rotate(-8deg) scale(1.05); }
+  to   { transform: rotate(8deg) scale(.95); }
+}
+.house-reveal {
+  animation: reveal .6s cubic-bezier(.36,2,.6,1);
+}
+@keyframes reveal {
+  from { transform: scale(.3); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* ══ MODO TV (BIGSCREEN) ══ */
+#bigscreen-app {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  background: var(--dark);
+  flex-direction: column;
+  overflow: hidden;
+}
+#bigscreen-app.open { display: flex; }
+
+.bs-header {
+  text-align: center;
+  padding: 1.2rem 1rem .6rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.bs-title {
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: clamp(1.2rem, 3vw, 2.2rem);
+  color: var(--gold);
+  text-shadow: 0 0 30px rgba(201,168,76,.5);
+}
+
+/* Copa en TV — grande */
+.bs-cup {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  padding: 1.2rem 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+  flex-shrink: 0;
+}
+.bs-house-card {
+  border-radius: 16px;
+  padding: 1.2rem .75rem;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,.1);
+  position: relative;
+  overflow: hidden;
+  transition: transform .4s;
+}
+.bs-house-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: .2;
+  background: var(--hc2);
+}
+.bs-house-card.leading {
+  transform: scale(1.06);
+  border-color: var(--gold);
+  box-shadow: 0 0 30px rgba(201,168,76,.3);
+}
+.bs-house-crest { font-size: clamp(2rem, 5vw, 3.5rem); display: block; }
+.bs-house-name {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(.7rem, 1.5vw, 1rem);
+  letter-spacing: .1em;
+  display: block;
+  margin-top: .3rem;
+  opacity: .85;
+}
+.bs-house-pts {
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  display: block;
+  line-height: 1.2;
+  margin-top: .2rem;
+}
+.bsh-grif { --hc2: var(--grif); color: #ffccc0; }
+.bsh-grif .bs-house-pts { color: var(--grif2); }
+.bsh-slyth { --hc2: var(--slyth); color: #c8e8c8; }
+.bsh-slyth .bs-house-pts { color: #c0c0c0; }
+.bsh-huff { --hc2: var(--huff2); color: #ffe8a0; }
+.bsh-huff .bs-house-pts { color: var(--huff); }
+.bsh-raven { --hc2: var(--raven); color: #b8c8e8; }
+.bsh-raven .bs-house-pts { color: var(--raven2); }
+
+.bs-body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+}
+.bs-screen { display:none; width:100%; text-align:center; }
+.bs-screen.active { display:block; }
+.bs-waiting {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(1rem, 3vw, 1.6rem);
+  color: var(--gold2);
+  opacity: .6;
+  padding: 2rem 0;
+  letter-spacing: .1em;
+}
+
+/* ══ RECONNECT BANNER ══ */
+#reconnect-banner {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 9999;
+  background: linear-gradient(135deg, #4a0000, #740001);
+  padding: .6rem 1rem;
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: .85rem;
+  color: #ffccc0;
+  display: none;
+  cursor: pointer;
+  letter-spacing: .05em;
+}
+
+/* ══ ANTORCHAS ══ */
+.torch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+}
+.torch-icon {
+  font-size: clamp(2.5rem,7vw,5rem);
+  filter: grayscale(1) brightness(.3);
+  transition: filter 1.2s ease, transform .3s;
+  transform-origin: bottom center;
+}
+.torch-icon.lit {
+  filter: grayscale(0) brightness(1.2) drop-shadow(0 0 20px var(--tc));
+  animation: torch-flicker 1.5s ease-in-out infinite alternate;
+}
+.torch-name {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(.6rem,1.5vw,.9rem);
+  letter-spacing: .1em;
+  opacity: 0;
+  transition: opacity .8s;
+  color: var(--tc);
+}
+.torch-name.lit { opacity: .9; }
+@keyframes torch-flicker {
+  0%   { transform: scale(1) rotate(-1deg); }
+  33%  { transform: scale(1.05) rotate(1deg); }
+  66%  { transform: scale(.97) rotate(-1.5deg); }
+  100% { transform: scale(1.03) rotate(.5deg); }
+}
+
+/* ══ ANUNCIO DE PUNTOS ══ */
+.pts-announce-enter {
+  animation: pts-pop .5s cubic-bezier(.36,2,.6,1);
+}
+@keyframes pts-pop {
+  from { transform: scale(.3); opacity: 0; }
+  to   { transform: scale(1);  opacity: 1; }
+}
+
+/* ══ CIERRE — PODIO ══ */
+.podium-wrap {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(.5rem,2vw,1.5rem);
+  margin: 1rem auto;
+  max-width: 700px;
+}
+.podium-house {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+}
+.podium-block {
+  border-radius: 8px 8px 0 0;
+  width: clamp(80px,16vw,140px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: clamp(1rem,3vw,2rem);
+  color: rgba(255,255,255,.7);
+}
+.podium-crest { font-size: clamp(2rem,5vw,3.5rem); }
+.podium-name {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(.65rem,1.5vw,.95rem);
+  letter-spacing: .08em;
+  text-align: center;
+}
+.podium-pts {
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: clamp(.9rem,2.5vw,1.6rem);
+  color: var(--gold);
+}
+.fireworks-particle {
+  position: fixed;
+  pointer-events: none;
+  border-radius: 50%;
+  animation: fw-fly linear forwards;
+  z-index: 9998;
+}
+@keyframes fw-fly {
+  0%   { transform: translate(0,0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx),var(--dy)) scale(0); opacity: 0; }
+}
+
+/* ══ MARCADOR — destello al cambiar ══ */
+.house-score.flash {
+  animation: score-flash .6s ease;
+}
+@keyframes score-flash {
+  0%,100% { transform: scale(1); }
+  30%     { transform: scale(1.2); filter: brightness(1.8); }
+  60%     { transform: scale(1.05); }
+}
+.bs-house-card.flash {
+  animation: bs-flash .7s ease;
+}
+@keyframes bs-flash {
+  0%,100% { transform: scale(1.06); }
+  40%     { transform: scale(1.15); filter: brightness(1.5); box-shadow: 0 0 60px var(--gold); }
+}
+
+/* ══ LIDERAZGO — anuncio en TV ══ */
+#bs-leader-announce {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  background: rgba(10,10,15,.92);
+  border-bottom: 2px solid var(--gold);
+  padding: .6rem 1rem;
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: clamp(.8rem,2vw,1.1rem);
+  color: var(--gold2);
+  letter-spacing: .1em;
+  display: none;
+  z-index: 10;
+}
+
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,.03); }
+::-webkit-scrollbar-thumb { background: rgba(201,168,76,.3); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- Stars -->
+<div class="stars" id="stars"></div>
+
+<!-- Reconectar -->
+<div id="reconnect-banner" onclick="reconnectSession()">🔄 Reconectarse a la sesión anterior — tocá aquí</div>
+
+<!-- ══ BIGSCREEN / TV ══ -->
+<div id="bigscreen-app">
+  <div class="bs-header">
+    <div class="bs-title">✨ Hogwarts — Copa de las Casas ✨</div>
+    <button onclick="bsGoWaiting()" style="background:rgba(255,255,255,.08);border:1px solid var(--border);border-radius:10px;padding:.2rem .7rem;font-size:.68rem;font-family:'Cinzel',serif;color:var(--gold2);cursor:pointer;margin-top:.3rem;letter-spacing:.08em">↩ Volver a espera</button>
+  </div>
+  <!-- Copa siempre visible en TV -->
+  <div class="bs-cup" id="bs-cup"></div>
+  <!-- Contenido del juego activo -->
+  <div class="bs-body">
+    <div class="bs-screen active" id="bs-waiting">
+      <div style="font-size:clamp(3rem,8vw,6rem);margin-bottom:1rem">🎩</div>
+      <div class="bs-waiting">Esperando el próximo juego...</div>
+    </div>
+    <div class="bs-screen" id="bs-sorting">
+      <div id="bs-hat-emoji" class="sorting-hat-emoji">🎩</div>
+      <div id="bs-sorting-name" style="font-family:'Cinzel',serif;font-size:clamp(1.2rem,3vw,2rem);color:var(--gold2);margin-top:1rem"></div>
+      <div id="bs-sorting-result" style="margin-top:1rem"></div>
+      <div id="bs-sorting-members" style="margin-top:1.5rem;display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;max-width:700px;margin-inline:auto"></div>
+    </div>
+
+    <!-- CEREMONIA DE APERTURA -->
+    <div class="bs-screen" id="bs-ceremony">
+      <div id="bs-torches" style="display:flex;justify-content:center;gap:clamp(1.5rem,5vw,4rem);margin-bottom:2rem"></div>
+      <div id="bs-dumbledore-phrase" style="font-family:'EB Garamond',serif;font-style:italic;font-size:clamp(1rem,2.5vw,1.6rem);color:var(--gold2);max-width:700px;margin:0 auto;line-height:1.6;opacity:0;transition:opacity 1.5s"></div>
+    </div>
+
+    <!-- ANUNCIO DE PUNTOS -->
+    <div class="bs-screen" id="bs-points-announce">
+      <div id="bs-pa-crest" style="font-size:clamp(5rem,14vw,10rem);line-height:1"></div>
+      <div id="bs-pa-house" style="font-family:'Cinzel Decorative',cursive;font-size:clamp(1.5rem,4vw,3rem);margin:.4rem 0"></div>
+      <div id="bs-pa-amount" style="font-family:'Cinzel Decorative',cursive;font-size:clamp(2.5rem,7vw,5.5rem);color:var(--gold);line-height:1"></div>
+      <div id="bs-pa-note" style="font-family:'EB Garamond',serif;font-size:clamp(.9rem,2vw,1.3rem);color:var(--gold2);opacity:.8;margin-top:.75rem;font-style:italic"></div>
+    </div>
+
+    <!-- CIERRE -->
+    <div class="bs-screen" id="bs-closing">
+      <div id="bs-closing-content" style="width:100%"></div>
+    </div>
+
+    <!-- Más pantallas de juego se agregan acá -->
+  </div>
+</div>
+
+<!-- ══ APP PRINCIPAL ══ -->
+<div class="page" id="main-page">
+  <header>
+    <div class="hogwarts-title">Hogwarts</div>
+    <div class="hogwarts-sub">Copa de las Casas</div>
+    <div class="ornament">✦ ✦ ✦</div>
+  </header>
+
+  <!-- Copa siempre visible -->
+  <div id="cup-bar" class="sticky">
+    <div class="cup-label">Copa de las Casas</div>
+    <div class="houses-row" id="houses-row"></div>
+  </div>
+
+  <!-- LOBBY -->
+  <div id="lobby">
+    <div class="lobby-card">
+      <div class="lobby-title">🎩 Bienvenido/a</div>
+      <div class="lobby-sub">Escribí tu nombre para unirte a la fiesta</div>
+      <input class="ifield" id="lobby-name" placeholder="Tu nombre" maxlength="20"
+        onkeydown="if(event.key==='Enter')joinRoom()">
+      <button class="btn btn-gold" onclick="joinRoom()" id="join-btn">✨ Entrar a Hogwarts</button>
+      <div id="lobby-status" style="margin-top:.75rem;font-size:.85rem;text-align:center;min-height:1.2rem"></div>
+      <div style="margin-top:1.25rem;border-top:1px solid var(--border);padding-top:1rem">
+        <div class="info" style="margin-bottom:.5rem">¿Sos el organizador?</div>
+        <button class="btn btn-ghost" onclick="createRoom()" id="create-btn" style="margin-top:0">
+          🪄 Crear sala nueva
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MENÚ PRINCIPAL -->
+  <div id="main-menu">
+    <div class="menu-info">
+      <span id="menu-name-label"></span>
+      <span id="menu-house-badge" class="menu-house-badge"></span>
+      <span style="opacity:.4">·</span>
+      <span id="menu-player-count" style="opacity:.6"><span id="menu-player-count-num">0</span> magos</span>
+    </div>
+
+    <button class="game-card gc3" onclick="showScreen('sorting')">
+      <span class="gc-icon">🎩</span>
+      <div class="gc-text">Sombrero Seleccionador
+        <span>Descubrí a qué casa pertenecés</span>
+      </div>
+    </button>
+    <button class="game-card gc1" onclick="showScreen('cancion')">
+      <span class="gc-icon">🎵</span>
+      <div class="gc-text">El Coro Encantado
+        <span>Adivinar la canción</span>
+      </div>
+    </button>
+    <button class="game-card gc2" onclick="showScreen('impostor')">
+      <span class="gc-icon">🕵️</span>
+      <div class="gc-text">El Mortífago Infiltrado
+        <span>Hay un impostor entre nosotros</span>
+      </div>
+    </button>
+    <button class="game-card gc3" onclick="showScreen('trivia')">
+      <span class="gc-icon">🧙</span>
+      <div class="gc-text">¿Quién es la cumpleañera?
+        <span>Respuesta abierta y votación</span>
+      </div>
+    </button>
+    <button class="game-card gc4" onclick="showScreen('memoria')">
+      <span class="gc-icon">📜</span>
+      <div class="gc-text">Pergaminos de Memoria
+        <span>Memorizá las categorías</span>
+      </div>
+    </button>
+    <button class="game-card gc5" onclick="showScreen('rosco')">
+      <span class="gc-icon">🌀</span>
+      <div class="gc-text">El Rosco de Dumbledore
+        <span>Pasapalabra al estilo Hogwarts</span>
+      </div>
+    </button>
+    <button class="game-card gc2" onclick="showScreen('house-quiz')">
+      <span class="gc-icon">⚡</span>
+      <div class="gc-text">Duelo de Casas
+        <span>Preguntas por equipo, vota tu casa</span>
+      </div>
+    </button>
+    <button class="game-card gc-dark" onclick="showScreen('guestbook')">
+      <span class="gc-icon">🗺️</span>
+      <div class="gc-text">El Mapa del Merodeador
+        <span>Dejá tu mensaje</span>
+      </div>
+    </button>
+
+    <div id="org-menu-extra" style="display:none;width:100%">
+      <button class="game-card gc-dark" onclick="showScreen('ceremony-setup')" style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.3)">
+        <span class="gc-icon">🔥</span>
+        <div class="gc-text">Ceremonia de Apertura
+          <span>Encender las antorchas de Hogwarts</span>
+        </div>
+      </button>
+      <button class="game-card gc-dark" onclick="showScreen('closing')" style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.3);margin-top:.4rem">
+        <span class="gc-icon">🏆</span>
+        <div class="gc-text">Ceremonia de Cierre
+          <span>Revelar la casa ganadora</span>
+        </div>
+      </button>
+    </div>
+    <button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:.5rem;font-size:.8rem;padding:.55rem;font-family:'Cinzel',serif;letter-spacing:.08em">🚪 Salir de Hogwarts</button>
+  </div>
+
+  <!-- ══ SOMBRERO SELECCIONADOR ══ -->
+  <div id="screen-sorting" class="screen">
+    <button class="back-btn" onclick="goHome()">← Volver</button>
+    <div class="stitle">🎩 Sombrero Seleccionador</div>
+
+    <!-- Vista organizador -->
+    <div id="sort-org-panel" class="hidden">
+      <div class="card card-gold">
+        <div style="font-family:'Cinzel',serif;font-size:.78rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.75rem">👑 PANEL DEL ORGANIZADOR</div>
+        <!-- URLs de audio por casa -->
+        <div style="margin-bottom:.75rem">
+          <div style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold2);letter-spacing:.08em;margin-bottom:.5rem;opacity:.8">🔊 Audio del sombrero (URL por casa)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem" id="sort-audio-inputs">
+            <div>
+              <div style="font-size:.68rem;color:#ffb3b3;font-family:'Cinzel',serif;margin-bottom:.2rem">🦁 Gryffindor</div>
+              <input class="ifield" id="audio-gryffindor" placeholder="URL del audio..." style="font-size:.78rem;padding:.4rem .6rem" onblur="saveSortingAudio()">
+            </div>
+            <div>
+              <div style="font-size:.68rem;color:#b8d4b8;font-family:'Cinzel',serif;margin-bottom:.2rem">🐍 Slytherin</div>
+              <input class="ifield" id="audio-slytherin" placeholder="URL del audio..." style="font-size:.78rem;padding:.4rem .6rem" onblur="saveSortingAudio()">
+            </div>
+            <div>
+              <div style="font-size:.68rem;color:#ffe8a0;font-family:'Cinzel',serif;margin-bottom:.2rem">🦡 Hufflepuff</div>
+              <input class="ifield" id="audio-hufflepuff" placeholder="URL del audio..." style="font-size:.78rem;padding:.4rem .6rem" onblur="saveSortingAudio()">
+            </div>
+            <div>
+              <div style="font-size:.68rem;color:#b8c8e8;font-family:'Cinzel',serif;margin-bottom:.2rem">🦅 Ravenclaw</div>
+              <input class="ifield" id="audio-ravenclaw" placeholder="URL del audio..." style="font-size:.78rem;padding:.4rem .6rem" onblur="saveSortingAudio()">
+            </div>
+          </div>
+          <div style="font-size:.72rem;opacity:.5;margin-top:.3rem;font-style:italic">Las URLs se guardan en Firebase — funcionan desde cualquier dispositivo</div>
+        </div>
+        <div class="ilabel">Jugadores sin casa</div>
+        <div id="sort-unassigned-chips" class="chips"></div>
+        <div style="margin-top:.75rem" class="info" id="sort-status-msg">Seleccioná un jugador y apretá el sombrero</div>
+      </div>
+      <div class="card card-gold" style="text-align:center">
+        <div id="sort-hat" class="sorting-hat-emoji" style="font-size:clamp(4rem,12vw,7rem)">🎩</div>
+        <div id="sort-current-name" style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold2);margin:.5rem 0;min-height:1.6rem"></div>
+        <button class="btn btn-gold" onclick="doSort()" id="sort-btn" style="max-width:280px;margin:0 auto;display:none">
+          🎩 ¡Seleccionar!
+        </button>
+        <div id="sort-result-card" class="hidden" style="margin-top:1rem"></div>
+      </div>
+      <!-- Casas y miembros actuales -->
+      <div id="sort-houses-display"></div>
+    </div>
+
+    <!-- Vista jugador: espera -->
+    <div id="sort-player-panel" class="hidden">
+      <div class="card card-gold" style="text-align:center;padding:2rem">
+        <div style="font-size:3rem;margin-bottom:.75rem">🎩</div>
+        <div id="sort-player-house" style="font-family:'Cinzel',serif;font-size:1rem;color:var(--gold2)">
+          Esperando que el organizador te llame...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CEREMONIA DE APERTURA — SETUP ══ -->
+  <div id="screen-ceremony-setup" class="screen">
+    <button class="back-btn" onclick="goHome()">← Volver</button>
+    <div class="stitle">🔥 Ceremonia de Apertura</div>
+    <div class="card card-gold">
+      <div class="ilabel">Frase de Dumbledore</div>
+      <textarea class="ifield" id="ceremony-phrase" rows="3"
+        placeholder="Ej: Antes de comenzar, unas palabras: ¡Feliz cumpleaños, Hermione! Que este año esté lleno de magia."
+        style="resize:vertical;font-size:.92rem;line-height:1.5"
+        oninput="saveCeremonyPhrase()"></textarea>
+      <div style="font-size:.72rem;opacity:.5;margin-top:.3rem;font-style:italic">Se guarda automáticamente en Firebase</div>
+    </div>
+    <button class="btn btn-gold" onclick="triggerCeremony()" style="max-width:320px;margin:0 auto;display:block">
+      🔥 ¡Iniciar ceremonia!
+    </button>
+  </div>
+
+  <!-- ══ CEREMONIA DE CIERRE ══ -->
+  <div id="screen-closing" class="screen">
+    <button class="back-btn" onclick="goHome()">← Volver</button>
+    <div class="stitle">🏆 Ceremonia de Cierre</div>
+    <div class="card card-gold" style="text-align:center;padding:2rem">
+      <div style="font-size:.9rem;opacity:.7;margin-bottom:1rem">Al iniciar se mostrará el podio final en la TV y en todos los dispositivos</div>
+      <button class="btn btn-gold" onclick="triggerClosing()" style="max-width:280px;margin:0 auto;display:block">
+        🏆 ¡Revelar ganadora!
+      </button>
+    </div>
+  </div>
+
+  <!-- Screens de juegos (se completan después) -->
+  <div id="screen-cancion" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">🎵 El Coro Encantado</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
+  <div id="screen-impostor" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">🕵️ El Mortífago Infiltrado</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
+  <div id="screen-trivia" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">🧙 ¿Quién es la cumpleañera?</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
+  <div id="screen-memoria" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">📜 Pergaminos de Memoria</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
+  <div id="screen-rosco" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">🌀 El Rosco de Dumbledore</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
+  <div id="screen-guestbook" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">🗺️ El Mapa del Merodeador</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
+
+  <!-- ══ DUELO DE CASAS ══ -->
+  <div id="screen-house-quiz" class="screen">
+    <button class="back-btn" onclick="goHome()">← Volver</button>
+    <div class="stitle">⚡ Duelo de Casas</div>
+
+    <!-- ORGANIZADOR -->
+    <div id="hq-org" class="hidden">
+      <div class="tabs" style="display:flex;gap:.4rem;margin-bottom:1rem">
+        <button class="tab active" id="hqtab-setup" onclick="hqTab('setup')" style="flex:1;padding:.55rem;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;font-size:.75rem;background:linear-gradient(135deg,var(--grif),#c9a84c);color:white">⚙️ Cargar</button>
+        <button class="tab" id="hqtab-play" onclick="hqTab('play')" style="flex:1;padding:.55rem;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;font-size:.75rem;background:rgba(255,255,255,.07);color:var(--gold2)">⚡ Jugar</button>
+      </div>
+
+      <!-- TAB CARGAR -->
+      <div id="hqtab-setup-content">
+        <div class="card card-gold">
+          <div class="ilabel">Pregunta</div>
+          <input class="ifield" id="hq-qtext" placeholder="Ej: ¿Quién fundó Gryffindor?" style="margin-bottom:.5rem">
+          <div class="ilabel">Opciones (marcá la correcta con ●)</div>
+          <div id="hq-opts-inputs">
+            <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem"><input type="radio" name="hq-correct" value="0" checked style="accent-color:var(--gold)"><input class="ifield" placeholder="Opción 1" style="flex:1"></div>
+            <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem"><input type="radio" name="hq-correct" value="1" style="accent-color:var(--gold)"><input class="ifield" placeholder="Opción 2" style="flex:1"></div>
+            <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem"><input type="radio" name="hq-correct" value="2" style="accent-color:var(--gold)"><input class="ifield" placeholder="Opción 3" style="flex:1"></div>
+            <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem"><input type="radio" name="hq-correct" value="3" style="accent-color:var(--gold)"><input class="ifield" placeholder="Opción 4 (opcional)" style="flex:1"></div>
+          </div>
+          <div style="display:flex;gap:.5rem;margin-top:.5rem;align-items:center">
+            <div style="flex:1">
+              <div class="ilabel">Puntos</div>
+              <input class="ifield" id="hq-pts" type="number" value="10" min="1" max="999" style="padding:.5rem .75rem">
+            </div>
+            <button class="btn btn-gold" onclick="hqAddQuestion()" style="flex:2;margin-top:1.2rem">➕ Agregar pregunta</button>
+          </div>
+        </div>
+        <div id="hq-qlist" style="margin-top:.75rem"></div>
+        <button class="btn btn-gold" onclick="hqTab('play')" id="hq-play-btn" style="display:none;margin-top:.75rem">⚡ ¡Jugar!</button>
+      </div>
+
+      <!-- TAB JUGAR -->
+      <div id="hqtab-play-content" class="hidden">
+        <div id="hq-game-empty" style="text-align:center;padding:2rem;opacity:.7"><div style="font-size:2rem">⚠️</div><div style="margin-top:.5rem;font-family:'Cinzel',serif">Primero cargá preguntas</div></div>
+        <div id="hq-game-org" class="hidden">
+          <!-- Turno actual -->
+          <div class="card" id="hq-turn-card" style="text-align:center;margin-bottom:.75rem">
+            <div style="font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.12em;opacity:.6;margin-bottom:.3rem">TURNO</div>
+            <div id="hq-turn-crest" style="font-size:2.5rem;line-height:1"></div>
+            <div id="hq-turn-name" style="font-family:'Cinzel Decorative',cursive;font-size:1.1rem;margin:.2rem 0"></div>
+            <div id="hq-turn-pts-badge" style="font-family:'Cinzel',serif;font-size:.78rem;color:var(--gold);opacity:.8"></div>
+          </div>
+          <!-- Pregunta -->
+          <div class="card card-gold" style="margin-bottom:.75rem">
+            <div id="hq-org-counter" style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold2);opacity:.7;margin-bottom:.3rem;text-align:center"></div>
+            <div id="hq-org-qtext" style="font-family:'EB Garamond',serif;font-size:1.1rem;line-height:1.5;margin-bottom:.75rem"></div>
+            <div id="hq-org-opts" style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem"></div>
+          </div>
+          <!-- Votos en vivo -->
+          <div class="card card-gold" style="margin-bottom:.75rem">
+            <div style="font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.1em;color:var(--gold2);opacity:.7;margin-bottom:.5rem">VOTOS EN TIEMPO REAL</div>
+            <div id="hq-vote-tally"></div>
+          </div>
+          <!-- Botones -->
+          <div style="display:flex;gap:.5rem">
+            <button class="btn" onclick="hqOrgReveal()" id="hq-reveal-btn" style="flex:1;background:linear-gradient(135deg,var(--slyth),#2d7a4a);color:#c8e8c8;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer">👁️ Revelar</button>
+            <button class="btn" onclick="hqOrgNext()" id="hq-next-btn" style="flex:1;display:none;background:linear-gradient(135deg,var(--grif),#c9a84c);color:white;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer">Siguiente ➡️</button>
+          </div>
+          <div id="hq-reveal-result" style="margin-top:.75rem;text-align:center;min-height:2rem"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JUGADOR -->
+    <div id="hq-player" class="hidden">
+      <!-- Esperando -->
+      <div id="hq-player-waiting" style="text-align:center;padding:2.5rem;opacity:.75">
+        <div style="font-size:3rem">⚡</div>
+        <div style="font-family:'Cinzel',serif;font-weight:700;margin-top:.75rem">Esperando la pregunta...</div>
+      </div>
+      <!-- Observando (no es su turno) -->
+      <div id="hq-player-watching" class="hidden">
+        <div class="card" id="hq-watch-card" style="text-align:center;margin-bottom:.75rem">
+          <div id="hq-watch-house-crest" style="font-size:2.5rem"></div>
+          <div id="hq-watch-house-name" style="font-family:'Cinzel',serif;font-size:.9rem;margin:.3rem 0;opacity:.8"></div>
+          <div style="font-size:.82rem;opacity:.6;font-style:italic">está respondiendo</div>
+        </div>
+        <div class="card card-gold">
+          <div id="hq-watch-qtext" style="font-family:'EB Garamond',serif;font-size:1rem;line-height:1.5;margin-bottom:.75rem"></div>
+          <div id="hq-watch-opts" style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem"></div>
+          <div id="hq-watch-result" class="hidden" style="margin-top:.75rem;text-align:center;font-family:'Cinzel',serif"></div>
+        </div>
+      </div>
+      <!-- Votando (es su turno) -->
+      <div id="hq-player-voting" class="hidden">
+        <div class="card" id="hq-vote-header-card" style="text-align:center;margin-bottom:.75rem">
+          <div id="hq-vote-house-crest" style="font-size:2.5rem"></div>
+          <div style="font-family:'Cinzel',serif;font-size:.82rem;color:var(--gold);margin-top:.3rem;letter-spacing:.08em">¡ES EL TURNO DE TU CASA!</div>
+        </div>
+        <div class="card card-gold">
+          <div id="hq-player-counter" style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold2);opacity:.7;margin-bottom:.3rem;text-align:center"></div>
+          <div id="hq-player-qtext" style="font-family:'EB Garamond',serif;font-size:1.05rem;line-height:1.5;margin-bottom:.75rem"></div>
+          <div id="hq-player-opts" style="display:flex;flex-direction:column;gap:.4rem"></div>
+          <div id="hq-player-voted-msg" class="hidden" style="text-align:center;color:var(--gold);font-family:'Cinzel',serif;margin-top:.5rem;font-size:.85rem">✓ Voto enviado</div>
+        </div>
+      </div>
+      <!-- Resultado para jugadores -->
+      <div id="hq-player-result" class="hidden" style="text-align:center;padding:1.5rem">
+        <div id="hq-player-result-icon" style="font-size:3rem"></div>
+        <div id="hq-player-result-text" style="font-family:'Cinzel',serif;font-size:1rem;margin-top:.5rem"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main-page -->
+
+<!-- Panel de puntos manuales (solo org) -->
+<div id="points-panel">
+  <div style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.12em;color:var(--gold);opacity:.7;margin-bottom:.5rem;text-align:center">OTORGAR PUNTOS</div>
+  <div class="pts-houses-grid">
+    <button class="pts-house-btn phb-grif" onclick="ptsSelectHouse('gryffindor',this)" id="phb-gryffindor">🦁 Gryffindor</button>
+    <button class="pts-house-btn phb-slyth" onclick="ptsSelectHouse('slytherin',this)" id="phb-slytherin">🐍 Slytherin</button>
+    <button class="pts-house-btn phb-huff" onclick="ptsSelectHouse('hufflepuff',this)" id="phb-hufflepuff">🦡 Hufflepuff</button>
+    <button class="pts-house-btn phb-raven" onclick="ptsSelectHouse('ravenclaw',this)" id="phb-ravenclaw">🦅 Ravenclaw</button>
+  </div>
+  <div class="pts-row">
+    <div class="pts-quick">
+      <button class="pts-q-btn" onclick="ptsGive(10)">+10</button>
+      <button class="pts-q-btn" onclick="ptsGive(20)">+20</button>
+      <button class="pts-q-btn" onclick="ptsGive(50)">+50</button>
+      <button class="pts-q-btn" onclick="ptsGive(-10)">−10</button>
+    </div>
+    <input class="ifield" id="pts-custom" type="number" placeholder="Personalizado"
+      style="flex:1;padding:.4rem .7rem;font-size:.85rem" min="-999" max="999">
+    <button class="btn btn-gold btn-sm" onclick="ptsGiveCustom()" style="flex-shrink:0">✓</button>
+  </div>
+  <input class="ifield" id="pts-note" placeholder="Nota (opcional, ej: por el desafío del pasillo)"
+    style="margin-top:.5rem;font-size:.82rem;padding:.4rem .75rem">
+</div>
+<button class="pts-toggle" id="pts-toggle-btn" onclick="togglePtsPanel()">⚡</button>
+
+<script>
+// ══ CONSTANTES ══
+const ROOM_CODE = 'HOGWARTS2025';
+const HOUSES = {
+  gryffindor: { name: 'Gryffindor', crest: '🦁', color: '#740001', accent: '#d3a625' },
+  slytherin:  { name: 'Slytherin',  crest: '🐍', color: '#1a472a', accent: '#aaaaaa' },
+  hufflepuff: { name: 'Hufflepuff', crest: '🦡', color: '#372e29', accent: '#ecb939' },
+  ravenclaw:  { name: 'Ravenclaw',  crest: '🦅', color: '#0e1a40', accent: '#946b2d' }
+};
+const HOUSE_KEYS = ['gryffindor','slytherin','hufflepuff','ravenclaw'];
+
+// ══ ESTADO ══
+let db, fsH;
+let currentUser = null, isOrganizer = false, currentRoom = null;
+let currentHouse = null;
+let unsubscribers = [], screenUnsubs = [];
+let ptsSelectedHouse = null;
+let IS_BIGSCREEN = false, bsRoom = null, bsUnsub = null;
+
+document.addEventListener('fbready', () => {
+  db = window._db;
+  fsH = window._fsHelpers;
+  checkReconnectBanner();
+});
+function fbReady() { return !!window._fbReady; }
+
+// ══ ESTRELLAS ══
+(function() {
+  const c = document.getElementById('stars');
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2 + 1;
+    s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*3}s`;
+    c.appendChild(s);
+  }
+})();
+
+// ══ FIREBASE SALA ══
+async function createRoom() {
+  if (!fbReady()) { alert('Firebase cargando, esperá...'); return; }
+  const name = document.getElementById('lobby-name').value.trim() || 'Organizador';
+  const btn = document.getElementById('create-btn');
+  btn.innerHTML = '<span class="spinner"></span>Creando...'; btn.disabled = true;
+  try {
+    const {doc, setDoc, serverTimestamp} = fsH;
+    await setDoc(doc(db, 'rooms', ROOM_CODE), {
+      createdAt: serverTimestamp(),
+      organizer: name,
+      houses: {
+        gryffindor: { points: 0, members: [] },
+        slytherin:  { points: 0, members: [] },
+        hufflepuff: { points: 0, members: [] },
+        ravenclaw:  { points: 0, members: [] }
+      },
+      sorting: { phase: 'waiting', currentPlayer: null, revealedHouse: null },
+      sortingAudio: {},
+      activeGame: null,
+      // gameData: todos los datos de juegos se guardan acá para persistencia cross-device
+    });
+    currentRoom = ROOM_CODE; currentUser = name; isOrganizer = true;
+    enterApp();
+  } catch(e) {
+    alert('Error: ' + e.message);
+    btn.innerHTML = '🪄 Crear sala nueva'; btn.disabled = false;
+  }
+}
+
+async function joinRoom() {
+  if (!fbReady()) { alert('Firebase cargando, esperá...'); return; }
+  const name = document.getElementById('lobby-name').value.trim();
+  if (!name) { setLobbyStatus('⚠️ Escribí tu nombre'); return; }
+
+  // Modo TV
+  if (name.toUpperCase().endsWith('-TV')) {
+    bsRoom = ROOM_CODE; IS_BIGSCREEN = true;
+    initBigscreen(); return;
+  }
+
+  const btn = document.getElementById('join-btn');
+  btn.innerHTML = '<span class="spinner"></span>Entrando...'; btn.disabled = true;
+  setLobbyStatus('');
+  try {
+    const {doc, getDoc, setDoc} = fsH;
+    const snap = await getDoc(doc(db, 'rooms', ROOM_CODE));
+    if (!snap.exists()) { setLobbyStatus('❌ No hay sala activa. Pedile al organizador que la cree.'); btn.innerHTML='✨ Entrar a Hogwarts'; btn.disabled=false; return; }
+    currentRoom = ROOM_CODE; currentUser = name; isOrganizer = false;
+    // Registrar jugador
+    await setDoc(doc(db,'rooms',currentRoom,'players',name), { name, joinedAt: new Date().toISOString() });
+    // Detectar si ya tiene casa asignada
+    const data = snap.data();
+    const houses = data.houses || {};
+    for (const [hk, hv] of Object.entries(houses)) {
+      if ((hv.members||[]).includes(name)) { currentHouse = hk; break; }
+    }
+    enterApp();
+  } catch(e) {
+    setLobbyStatus('❌ Error: ' + e.message);
+    btn.innerHTML='✨ Entrar a Hogwarts'; btn.disabled=false;
+  }
+}
+
+function setLobbyStatus(msg) { document.getElementById('lobby-status').textContent = msg; }
+
+function enterApp() {
+  document.getElementById('lobby').style.display = 'none';
+  document.getElementById('main-menu').style.display = 'flex';
+  updateMenuInfo();
+  listenHouses();
+  listenPlayerCount();
+  try { localStorage.setItem('hg_session', JSON.stringify({room:currentRoom,user:currentUser,org:isOrganizer,ts:Date.now()})); } catch(e){}
+  if (isOrganizer) {
+    document.getElementById('pts-toggle-btn').classList.add('visible');
+    showOrgExtras();
+  }
+  window._inRoom = true;
+}
+
+function updateMenuInfo() {
+  document.getElementById('menu-name-label').textContent = (isOrganizer?'👑 ':'⚡ ') + currentUser;
+  const badge = document.getElementById('menu-house-badge');
+  if (currentHouse && HOUSES[currentHouse]) {
+    const h = HOUSES[currentHouse];
+    badge.textContent = h.crest + ' ' + h.name;
+    badge.style.cssText = `background:${h.color}44;color:${h.accent};border:1px solid ${h.color}88`;
+  } else {
+    badge.textContent = '🎩 Sin casa';
+    badge.style.cssText = 'background:rgba(255,255,255,.06);color:var(--gold2);border:1px solid var(--border)';
+  }
+}
+
+function leaveRoom() {
+  cancelScreenListeners();
+  unsubscribers.forEach(u=>{try{u();}catch(e){}});
+  unsubscribers = [];
+  window._inRoom = false;
+  currentRoom = null; currentUser = null; isOrganizer = false; currentHouse = null;
+  try { localStorage.removeItem('hg_session'); } catch(e){}
+  document.getElementById('main-menu').style.display = 'none';
+  document.getElementById('lobby').style.display = 'block';
+  document.getElementById('join-btn').innerHTML = '✨ Entrar a Hogwarts';
+  document.getElementById('join-btn').disabled = false;
+  document.getElementById('create-btn').innerHTML = '🪄 Crear sala nueva';
+  document.getElementById('create-btn').disabled = false;
+  document.getElementById('pts-toggle-btn').classList.remove('visible');
+  document.getElementById('points-panel').classList.remove('open');
+}
+
+// ══ RECONEXIÓN ══
+function checkReconnectBanner() {
+  try {
+    const s = localStorage.getItem('hg_session');
+    if (!s) return;
+    const d = JSON.parse(s);
+    if (Date.now() - d.ts < 8*3600*1000) {
+      const b = document.getElementById('reconnect-banner');
+      b.textContent = `🔄 Reconectarte como ${d.user} — tocá aquí`;
+      b.style.display = 'block';
+    }
+  } catch(e){}
+}
+async function reconnectSession() {
+  try {
+    const s = localStorage.getItem('hg_session');
+    if (!s) return;
+    const d = JSON.parse(s);
+    document.getElementById('lobby-name').value = d.user;
+    document.getElementById('reconnect-banner').style.display = 'none';
+    if (d.org) {
+      // Reconnect as organizer without overwriting room data
+      await reconnectAsOrganizer(d.user);
+    } else {
+      await joinRoom();
+    }
+  } catch(e){}
+}
+
+async function reconnectAsOrganizer(name) {
+  if (!window._fbReady) { alert('Firebase cargando, esperá...'); return; }
+  const btn = document.getElementById('create-btn');
+  btn.innerHTML = '<span class="spinner"></span>Reconectando...'; btn.disabled = true;
+  try {
+    const {doc, getDoc} = fsH;
+    const snap = await getDoc(doc(db, 'rooms', ROOM_CODE));
+    if (!snap.exists()) {
+      // Sala no existe, crear nueva
+      btn.innerHTML = '🪄 Crear sala nueva'; btn.disabled = false;
+      await createRoom(); return;
+    }
+    currentRoom = ROOM_CODE; currentUser = name; isOrganizer = true;
+    enterApp();
+  } catch(e) {
+    alert('Error: ' + e.message);
+    btn.innerHTML = '🪄 Crear sala nueva'; btn.disabled = false;
+  }
+}
+
+// ══ LISTEN CASAS — marcador en tiempo real ══
+function listenHouses() {
+  if (!db || !currentRoom) return;
+  const {doc, onSnapshot} = fsH;
+  let lastHousesJson = '';
+  const unsub = onSnapshot(doc(db,'rooms',currentRoom), snap => {
+    const data = snap.data();
+    if (!data) return;
+    // Only re-render if houses actually changed
+    const housesJson = JSON.stringify(data.houses||{});
+    if (housesJson !== lastHousesJson) {
+      lastHousesJson = housesJson;
+      renderHouseScores(data.houses || {});
+    }
+    // Actualizar casa del jugador si fue asignado
+    if (!currentHouse && !isOrganizer) {
+      const houses = data.houses || {};
+      for (const [hk, hv] of Object.entries(houses)) {
+        if ((hv.members||[]).includes(currentUser)) {
+          currentHouse = hk;
+          updateMenuInfo();
+          break;
+        }
+      }
+    }
+  });
+  unsubscribers.push(unsub);
+}
+
+function listenPlayerCount() {
+  if (!db||!currentRoom) return;
+  const {collection,onSnapshot} = fsH;
+  const unsub = onSnapshot(collection(db,'rooms',currentRoom,'players'), snap => {
+    document.getElementById('menu-player-count-num').textContent = snap.size;
+  });
+  unsubscribers.push(unsub);
+}
+
+// ══ NAVEGACIÓN ══
+function cancelScreenListeners() {
+  screenUnsubs.forEach(u=>{try{u();}catch(e){}});
+  screenUnsubs = [];
+  if (hqVoteUnsub) { try{hqVoteUnsub();}catch(e){} hqVoteUnsub=null; }
+  if (triOrgResUnsub) { try{triOrgResUnsub();}catch(e){} triOrgResUnsub=null; }
+}
+function goHome() {
+  cancelScreenListeners();
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('main-menu').style.display = 'flex';
+}
+
+// ══ PUNTOS MANUALES ══
+function togglePtsPanel() {
+  document.getElementById('points-panel').classList.toggle('open');
+}
+function ptsSelectHouse(hk, btn) {
+  ptsSelectedHouse = hk;
+  document.querySelectorAll('.pts-house-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+async function ptsGive(amount) {
+  if (!ptsSelectedHouse) { alert('Seleccioná una casa primero'); return; }
+  await applyPoints(ptsSelectedHouse, amount, document.getElementById('pts-note').value.trim());
+  document.getElementById('pts-note').value = '';
+}
+async function ptsGiveCustom() {
+  const v = parseInt(document.getElementById('pts-custom').value);
+  if (!v || isNaN(v)) { alert('Ingresá un número'); return; }
+  await ptsGive(v);
+  document.getElementById('pts-custom').value = '';
+}
+
+// ══ SOMBRERO SELECCIONADOR ══
+let sortSelectedPlayer = null;
+
+function initSortingScreen() {
+  document.getElementById('sort-org-panel').classList.toggle('hidden', !isOrganizer);
+  document.getElementById('sort-player-panel').classList.toggle('hidden', isOrganizer);
+  if (isOrganizer) {
+    loadUnassignedPlayers();
+    listenSortingOrg();
+  } else {
+    listenSortingPlayer();
+  }
+}
+
+async function loadUnassignedPlayers() {
+  if (!db) return;
+  const {collection, getDocs, doc, getDoc} = fsH;
+  const [playersSnap, roomSnap] = await Promise.all([
+    getDocs(collection(db,'rooms',currentRoom,'players')),
+    getDoc(doc(db,'rooms',currentRoom))
+  ]);
+  const allPlayers = playersSnap.docs.map(d=>d.data().name);
+  const houses = roomSnap.data()?.houses || {};
+  const assigned = HOUSE_KEYS.flatMap(hk => houses[hk]?.members||[]);
+  const unassigned = allPlayers.filter(p => !assigned.includes(p));
+  renderUnassignedChips(unassigned);
+  renderHousesDisplay(houses);
+}
+
+function renderUnassignedChips(players) {
+  const el = document.getElementById('sort-unassigned-chips');
+  el.innerHTML = '';
+  if (!players.length) {
+    el.innerHTML = '<span style="font-size:.85rem;opacity:.6">Todos asignados ✓</span>';
+    return;
+  }
+  players.forEach(p => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.style.cssText = 'background:rgba(201,168,76,.15);color:var(--gold2);border:1px solid var(--border);cursor:pointer';
+    chip.textContent = p;
+    chip.onclick = () => selectPlayerForSorting(p, chip);
+    el.appendChild(chip);
+  });
+}
+
+function selectPlayerForSorting(name, chipEl) {
+  sortSelectedPlayer = name;
+  document.querySelectorAll('#sort-unassigned-chips .chip').forEach(c => c.style.outline='');
+  chipEl.style.outline = '2px solid var(--gold)';
+  document.getElementById('sort-current-name').textContent = name;
+  document.getElementById('sort-btn').style.display = 'block';
+  document.getElementById('sort-result-card').classList.add('hidden');
+  document.getElementById('sort-hat').style.animation = '';
+  document.getElementById('sort-status-msg').textContent = `"${name}" listo/a para ser seleccionado/a`;
+}
+
+function renderHousesDisplay(houses) {
+  const el = document.getElementById('sort-houses-display');
+  el.innerHTML = '';
+  HOUSE_KEYS.forEach(hk => {
+    const h = HOUSES[hk];
+    const members = (houses[hk]||{}).members || [];
+    if (!members.length) return;
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.style.borderColor = h.color + '88';
+    div.innerHTML = `<div style="font-family:'Cinzel',serif;font-size:.8rem;color:${h.accent};margin-bottom:.4rem;letter-spacing:.08em">${h.crest} ${h.name} (${members.length})</div>`;
+    div.innerHTML += members.map(m => `<span class="chip chip-${hk}" style="margin:.15rem;font-size:.72rem">${m}</span>`).join('');
+    el.appendChild(div);
+  });
+}
+
+function pickBalancedHouse(houses) {
+  const counts = HOUSE_KEYS.map(hk => ({ hk, count: (houses[hk]?.members||[]).length }));
+  const minCount = Math.min(...counts.map(c=>c.count));
+  const eligible = counts.filter(c => c.count === minCount);
+  // Shuffle eligible antes de elegir para evitar sesgo de orden
+  for (let i = eligible.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [eligible[i], eligible[j]] = [eligible[j], eligible[i]];
+  }
+  return eligible[Math.floor(Math.random() * eligible.length)].hk;
+}
+
+async function doSort() {
+  if (!sortSelectedPlayer) return;
+  const {doc, getDoc, setDoc} = fsH;
+  const btn = document.getElementById('sort-btn');
+  btn.disabled = true;
+  btn.textContent = '🎩 Seleccionando...';
+
+  // Animación del sombrero pensando
+  const hat = document.getElementById('sort-hat');
+  hat.classList.add('sorting-hat-thinking');
+  document.getElementById('sort-status-msg').textContent = 'El sombrero está pensando...';
+
+  // Publicar en Firebase para que la TV lo muestre
+  await setDoc(doc(db,'rooms',currentRoom), {
+    sorting: { phase:'thinking', currentPlayer: sortSelectedPlayer, revealedHouse: null }
+  }, {merge:true});
+
+  // Decidir casa (balanceada)
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const houses = snap.data()?.houses || {};
+  const chosenHouse = pickBalancedHouse(houses);
+
+  // Esperar dramatismo (2.5s)
+  await new Promise(r => setTimeout(r, 2500));
+
+  // Revelar
+  hat.classList.remove('sorting-hat-thinking');
+  const h = HOUSES[chosenHouse];
+
+  // Re-fetch para evitar stale data después de la espera dramática
+  const freshSnap = await getDoc(doc(db,'rooms',currentRoom));
+  const freshMembers = [...(freshSnap.data()?.houses?.[chosenHouse]?.members||[])];
+  if (!freshMembers.includes(sortSelectedPlayer)) freshMembers.push(sortSelectedPlayer);
+
+  await setDoc(doc(db,'rooms',currentRoom), {
+    houses: { [chosenHouse]: { members: freshMembers } },
+    sorting: { phase:'revealed', currentPlayer: sortSelectedPlayer, revealedHouse: chosenHouse }
+  }, {merge:true});
+
+  // Mostrar resultado
+  const result = document.getElementById('sort-result-card');
+  result.className = 'house-reveal';
+  result.innerHTML = `
+    <div style="font-size:3rem;margin-bottom:.5rem">${h.crest}</div>
+    <div style="font-family:'Cinzel Decorative',cursive;font-size:1.4rem;color:${h.accent};text-shadow:0 0 20px ${h.accent}66">${h.name}</div>
+  `;
+  result.classList.remove('hidden');
+  hat.textContent = h.crest;
+
+  confetti(h.accent);
+  playSortingAudio(chosenHouse);
+
+  // Recargar sin casa asignada
+  sortSelectedPlayer = null;
+  btn.disabled = false;
+  btn.textContent = '🎩 ¡Seleccionar!';
+  btn.style.display = 'none';
+  await loadUnassignedPlayers();
+}
+
+function listenSortingOrg() {
+  if (!db) return;
+  const {doc, onSnapshot} = fsH;
+  const unsub = onSnapshot(doc(db,'rooms',currentRoom), snap => {
+    const data = snap.data();
+    if (!data) return;
+    renderHousesDisplay(data.houses || {});
+    // Cargar URLs de audio si las hay
+    if (data.sortingAudio) {
+      HOUSE_KEYS.forEach(hk => {
+        const inp = document.getElementById('audio-'+hk);
+        if (inp && data.sortingAudio[hk] && !inp.value) {
+          inp.value = data.sortingAudio[hk];
+        }
+      });
+    }
+  });
+  screenUnsubs.push(unsub);
+}
+
+async function saveSortingAudio() {
+  if (!db || !currentRoom || !isOrganizer) return;
+  const {doc, setDoc} = fsH;
+  const urls = {};
+  HOUSE_KEYS.forEach(hk => {
+    const val = (document.getElementById('audio-'+hk)||{}).value?.trim();
+    if (val) urls[hk] = val;
+  });
+  await setDoc(doc(db,'rooms',currentRoom), { sortingAudio: urls }, {merge:true});
+}
+
+function playSortingAudio(houseKey) {
+  // Buscar URL guardada en Firebase (ya cargada en los inputs)
+  const inp = document.getElementById('audio-'+houseKey);
+  const url = inp?.value?.trim();
+  if (!url) {
+    // Fallback: sonido sintético
+    playSound('win');
+    return;
+  }
+  try {
+    const audio = new Audio(url);
+    audio.volume = 0.9;
+    audio.play().catch(() => playSound('win'));
+  } catch(e) { playSound('win'); }
+}
+
+function listenSortingPlayer() {
+  if (!db) return;
+  const {doc, onSnapshot} = fsH;
+  const unsub = onSnapshot(doc(db,'rooms',currentRoom), snap => {
+    const data = snap.data();
+    if (!data) return;
+    const sort = data.sorting || {};
+    const el = document.getElementById('sort-player-house');
+    // Verificar si este jugador ya tiene casa
+    const houses = data.houses || {};
+    let myHouse = null;
+    for (const [hk, hv] of Object.entries(houses)) {
+      if ((hv.members||[]).includes(currentUser)) { myHouse = hk; break; }
+    }
+    if (myHouse) {
+      const h = HOUSES[myHouse];
+      currentHouse = myHouse;
+      updateMenuInfo();
+      el.innerHTML = `<div class="house-reveal"><div style="font-size:3rem;margin-bottom:.5rem">${h.crest}</div><div style="font-family:'Cinzel Decorative',cursive;font-size:1.3rem;color:${h.accent}">${h.name}</div><div style="margin-top:.5rem;font-size:.85rem;opacity:.7">¡Esa es tu casa!</div></div>`;
+    } else if (sort.phase === 'thinking' && sort.currentPlayer === currentUser) {
+      el.innerHTML = '<div style="font-size:2.5rem;animation:float 1s infinite">🎩</div><div style="margin-top:.5rem;font-family:\'Cinzel\',serif;font-size:.9rem">El sombrero te está seleccionando...</div>';
+    } else {
+      el.textContent = 'Esperando que el organizador te llame...';
+    }
+  });
+  screenUnsubs.push(unsub);
+}
+
+// ══ MODO TV ══
+function initBigscreen() {
+  document.getElementById('bigscreen-app').classList.add('open');
+  document.getElementById('main-page').style.display = 'none';
+  if (db) { bsListen(); }
+  else { document.addEventListener('fbready', ()=>{ db=window._db; fsH=window._fsHelpers; bsListen(); }, {once:true}); }
+}
+
+
+function bsGoWaiting() {
+  document.querySelectorAll('.bs-screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('bs-waiting').classList.add('active');
+}
+
+// ══ SONIDOS ══
+let _audioCtx = null;
+function getAudioCtx() {
+  if (!_audioCtx || _audioCtx.state === 'closed') {
+    _audioCtx = new(window.AudioContext||window.webkitAudioContext)();
+  }
+  // Reanudar si fue suspendido por el browser
+  if (_audioCtx.state === 'suspended') _audioCtx.resume();
+  return _audioCtx;
+}
+function playSound(type) {
+  try {
+    const ctx = getAudioCtx();
+    if (type==='ding') {
+      const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.setValueAtTime(880,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(1200,ctx.currentTime+.1);
+      g.gain.setValueAtTime(.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.5);o.start();o.stop(ctx.currentTime+.5);
+    } else if (type==='buzz') {
+      const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
+      o.type='sawtooth';o.frequency.setValueAtTime(200,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(80,ctx.currentTime+.3);
+      g.gain.setValueAtTime(.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.4);o.start();o.stop(ctx.currentTime+.4);
+    } else if (type==='win') {
+      [523,659,784,1047].forEach((f,i)=>{
+        const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
+        o.type='sine';o.frequency.value=f;const t=ctx.currentTime+i*.1;
+        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.3,t+.05);g.gain.exponentialRampToValueAtTime(.001,t+.4);
+        o.start(t);o.stop(t+.4);
+      });
+    }
+  } catch(e){}
+}
+
+// ══ CONFETTI con colores de casa ══
+function confetti(color) {
+  const cols = color ? [color, '#fff', color+'99'] : ['#c9a84c','#f0d080','#fff','#740001','#1a472a','#ecb939','#0e1a40'];
+  for (let i=0;i<28;i++) {
+    const el=document.createElement('div');
+    el.className='cp';
+    el.style.cssText=`left:${Math.random()*100}vw;background:${cols[Math.floor(Math.random()*cols.length)]};animation-duration:${1.5+Math.random()*1.5}s;animation-delay:${Math.random()*.4}s;transform:rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),3500);
+  }
+}
+
+// ══ BEFOREUNLOAD ══
+window.addEventListener('beforeunload', e => {
+  if (window._inRoom) { e.preventDefault(); e.returnValue=''; }
+});
+
+// ══════════════════════════════════════════
+// CEREMONIA DE APERTURA
+// ══════════════════════════════════════════
+async function saveCeremonyPhrase() {
+  if (!db||!currentRoom||!isOrganizer) return;
+  const phrase = document.getElementById('ceremony-phrase')?.value?.trim();
+  const {doc,setDoc} = fsH;
+  await setDoc(doc(db,'rooms',currentRoom),{ceremonyPhrase:phrase},{merge:true});
+}
+
+async function triggerCeremony() {
+  if (!db||!currentRoom) return;
+  const {doc,setDoc} = fsH;
+  await setDoc(doc(db,'rooms',currentRoom),{activeEvent:'ceremony',ceremonyTs:Date.now()},{merge:true});
+}
+
+function runCeremonyTV(phrase) {
+  document.querySelectorAll('.bs-screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('bs-ceremony').classList.add('active');
+  const torchEl = document.getElementById('bs-torches');
+  const phraseEl = document.getElementById('bs-dumbledore-phrase');
+  torchEl.innerHTML = '';
+  phraseEl.style.opacity = '0';
+  phraseEl.textContent = phrase || '¡Bienvenidos a Hogwarts!';
+
+  // Crear antorchas
+  const torches = [
+    {hk:'gryffindor',delay:600},
+    {hk:'hufflepuff',delay:1400},
+    {hk:'ravenclaw',delay:2200},
+    {hk:'slytherin',delay:3000}
+  ];
+  torches.forEach(({hk,delay}) => {
+    const h = HOUSES[hk];
+    const wrap = document.createElement('div');
+    wrap.className = 'torch';
+    wrap.innerHTML = `<div class="torch-icon" id="bt-${hk}" style="--tc:${h.accent}">🔥</div><div class="torch-name" id="btn-${hk}" style="--tc:${h.accent}">${h.name}</div>`;
+    torchEl.appendChild(wrap);
+    setTimeout(() => {
+      document.getElementById('bt-'+hk)?.classList.add('lit');
+      document.getElementById('btn-'+hk)?.classList.add('lit');
+      playSound('ding');
+    }, delay);
+  });
+
+  // Mostrar frase después de que prendan todas las antorchas
+  setTimeout(() => {
+    phraseEl.style.opacity = '1';
+  }, 4200);
+}
+
+// Cargar frase guardada al abrir setup
+function initCeremonySetup() {
+  if (!db||!currentRoom) return;
+  const {doc,getDoc} = fsH;
+  getDoc(doc(db,'rooms',currentRoom)).then(snap => {
+    const phrase = snap.data()?.ceremonyPhrase;
+    if (phrase) {
+      const el = document.getElementById('ceremony-phrase');
+      if (el && !el.value) el.value = phrase;
+    }
+  });
+}
+
+// ══════════════════════════════════════════
+// MARCADOR ANIMADO + ANUNCIO LIDERAZGO
+// ══════════════════════════════════════════
+let lastHousePoints = {};
+
+function renderHouseScores(houses) {
+  const el = document.getElementById('houses-row');
+  if (!el) return;
+  let maxPts = -1;
+  HOUSE_KEYS.forEach(hk => { const pts=(houses[hk]||{}).points||0; if(pts>maxPts)maxPts=pts; });
+
+  // Detectar qué casa cambió para animarla
+  const changedHouse = HOUSE_KEYS.find(hk => {
+    const newPts = (houses[hk]||{}).points||0;
+    return lastHousePoints[hk] !== undefined && lastHousePoints[hk] !== newPts;
+  });
+  // Detectar si hay nuevo líder
+  let prevLeader = null, newLeader = null;
+  if (Object.keys(lastHousePoints).length) {
+    const prevMax = Math.max(...HOUSE_KEYS.map(hk=>lastHousePoints[hk]||0));
+    const candidates = HOUSE_KEYS.filter(hk=>(lastHousePoints[hk]||0)===prevMax);
+    if (candidates.length===1) prevLeader = candidates[0];
+    const newCandidates = HOUSE_KEYS.filter(hk=>(houses[hk]?.points||0)===maxPts && maxPts>0);
+    if (newCandidates.length===1) newLeader = newCandidates[0];
+  }
+
+  el.innerHTML = '';
+  HOUSE_KEYS.forEach(hk => {
+    const h = HOUSES[hk];
+    const pts = (houses[hk]||{}).points||0;
+    const leading = pts===maxPts && pts>0;
+    const div = document.createElement('div');
+    div.className = `house-score hs-${hk}${leading?' leading':''}`;
+    if (hk===changedHouse) div.classList.add('flash');
+    div.innerHTML = `<span class="house-crest">${h.crest}</span><span class="house-name-sm">${h.name.substring(0,4)}</span><span class="house-pts">${pts}</span>`;
+    el.appendChild(div);
+  });
+
+  // Anunciar nuevo líder si cambió
+  if (newLeader && newLeader !== prevLeader && IS_BIGSCREEN === false) {
+    // Solo el modo normal lo detecta; la TV lo muestra vía Firebase
+  }
+
+  // Guardar para comparar la próxima vez
+  HOUSE_KEYS.forEach(hk => { lastHousePoints[hk] = (houses[hk]||{}).points||0; });
+}
+
+// ══════════════════════════════════════════
+// ANUNCIO DE PUNTOS EN TV
+// ══════════════════════════════════════════
+async function applyPoints(houseKey, amount, note='') {
+  if (!db||!currentRoom) return;
+  const {doc,getDoc,setDoc,addDoc,collection,serverTimestamp} = fsH;
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const current = (snap.data()?.houses?.[houseKey]?.points)||0;
+  const prevMax = Math.max(...HOUSE_KEYS.map(hk=>(snap.data()?.houses?.[hk]?.points)||0));
+  const newPts = current + amount;
+
+  // Detectar si esta casa toma el liderazgo
+  const otherMax = Math.max(...HOUSE_KEYS.filter(hk=>hk!==houseKey).map(hk=>(snap.data()?.houses?.[hk]?.points)||0));
+  const takesLead = newPts > otherMax && newPts > current;
+
+  await setDoc(doc(db,'rooms',currentRoom),{
+    houses:{[houseKey]:{points:newPts}},
+    activeEvent:'points-announce',
+    lastPointsEvent:{house:houseKey,amount,note,takesLead,ts:Date.now()}
+  },{merge:true});
+
+  await addDoc(collection(db,'rooms',currentRoom,'pointsLog'),{
+    house:houseKey, amount, note, by:currentUser, ts:serverTimestamp()
+  });
+
+  confetti(HOUSES[houseKey].accent);
+  playSound(amount>0?'ding':'buzz');
+}
+
+let _ptsAnnounceTimeout = null;
+function showPointsAnnounceTV(event) {
+  const h = HOUSES[event.house];
+  if (!h) return;
+  // Cancelar timeout anterior si hay otro anuncio en curso
+  if (_ptsAnnounceTimeout) { clearTimeout(_ptsAnnounceTimeout); _ptsAnnounceTimeout = null; }
+  document.querySelectorAll('.bs-screen').forEach(s=>s.classList.remove('active'));
+  const screen = document.getElementById('bs-points-announce');
+  screen.classList.add('active');
+  screen.style.color = h.accent;
+
+  const crest = document.getElementById('bs-pa-crest');
+  const houseName = document.getElementById('bs-pa-house');
+  const amount = document.getElementById('bs-pa-amount');
+  const noteEl = document.getElementById('bs-pa-note');
+
+  crest.textContent = h.crest;
+  crest.className = 'pts-announce-enter';
+  houseName.textContent = h.name;
+  houseName.style.color = h.accent;
+  amount.textContent = (event.amount>0?'+':'')+event.amount+' puntos';
+  amount.style.color = event.amount>0?'#7fffb2':'#ffa0a0';
+  noteEl.textContent = event.note || '';
+
+  // Fuegos artificiales con color de la casa
+  fireHousework(h.accent, h.color);
+
+  // Si toma el liderazgo, anunciarlo
+  if (event.takesLead) {
+    setTimeout(() => {
+      houseName.innerHTML = h.crest+' '+h.name+'<br><span style="font-size:.6em;color:var(--gold)">⚡ ¡TOMA LA DELANTERA!</span>';
+    }, 800);
+  }
+
+  // Volver a waiting después de 4.5s
+  _ptsAnnounceTimeout = setTimeout(() => {
+    _ptsAnnounceTimeout = null;
+    bsGoWaiting();
+  }, 4500);
+}
+
+// ══════════════════════════════════════════
+// SOMBRERO — miembros de la casa después de revelar
+// ══════════════════════════════════════════
+function bsRenderSorting(sort, houses) {
+  const hatEl = document.getElementById('bs-hat-emoji');
+  const nameEl = document.getElementById('bs-sorting-name');
+  const resultEl = document.getElementById('bs-sorting-result');
+  const membersEl = document.getElementById('bs-sorting-members');
+  if (!hatEl) return;
+
+  if (sort.phase==='thinking') {
+    document.querySelectorAll('.bs-screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('bs-sorting').classList.add('active');
+    hatEl.textContent = '🎩';
+    hatEl.className = 'sorting-hat-emoji sorting-hat-thinking';
+    nameEl.textContent = sort.currentPlayer||'';
+    resultEl.innerHTML = '';
+    if (membersEl) membersEl.innerHTML = '';
+  } else if (sort.phase==='revealed'&&sort.revealedHouse) {
+    const h = HOUSES[sort.revealedHouse];
+    document.querySelectorAll('.bs-screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('bs-sorting').classList.add('active');
+    hatEl.textContent = h.crest;
+    hatEl.className = 'sorting-hat-emoji house-reveal';
+    nameEl.textContent = sort.currentPlayer||'';
+    resultEl.innerHTML = `<div style="font-family:'Cinzel Decorative',cursive;font-size:clamp(1.5rem,5vw,3rem);color:${h.accent};text-shadow:0 0 30px ${h.accent}88">${h.name}</div>`;
+    // Mostrar miembros de la casa
+    if (membersEl && houses) {
+      const members = (houses[sort.revealedHouse]?.members)||[];
+      membersEl.innerHTML = members.map(m =>
+        `<span style="background:${h.color}44;border:1px solid ${h.color}88;color:${h.accent};padding:.25rem .75rem;border-radius:20px;font-family:'Cinzel',serif;font-size:clamp(.65rem,1.5vw,.9rem);letter-spacing:.06em">${m}</span>`
+      ).join('');
+    }
+  } else if (sort.phase==='waiting') {
+    bsGoWaiting();
+  }
+}
+
+// ══════════════════════════════════════════
+// CIERRE DEL EVENTO — PODIO
+// ══════════════════════════════════════════
+async function triggerClosing() {
+  if (!db||!currentRoom) return;
+  const {doc,setDoc} = fsH;
+  await setDoc(doc(db,'rooms',currentRoom),{activeEvent:'closing',closingTs:Date.now()},{merge:true});
+}
+
+function showClosingTV(houses) {
+  document.querySelectorAll('.bs-screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('bs-closing').classList.add('active');
+
+  const sorted = HOUSE_KEYS
+    .map(hk=>({hk,pts:(houses[hk]?.points||0),h:HOUSES[hk]}))
+    .sort((a,b)=>b.pts-a.pts);
+
+  // Orden del podio: 2do, 1ro, 3ro (clásico)
+  const podiumOrder = [sorted[1],sorted[0],sorted[2],sorted[3]];
+  const heights = [160,220,120,80];
+  const medals = ['🥈','🥇','🥉','4°'];
+
+  const content = document.getElementById('bs-closing-content');
+  content.innerHTML = `
+    <div style="font-family:'Cinzel Decorative',cursive;font-size:clamp(1.2rem,3vw,2.2rem);color:var(--gold);text-shadow:0 0 30px rgba(201,168,76,.6);margin-bottom:1.5rem">🏆 Copa de las Casas</div>
+    <div class="podium-wrap" id="podium-wrap"></div>
+    <div style="font-family:'Cinzel',serif;font-size:clamp(.7rem,1.5vw,.95rem);color:var(--gold2);opacity:.6;margin-top:1rem;letter-spacing:.1em">¡GRACIAS POR JUGAR!</div>
+  `;
+
+  const podiumWrap = document.getElementById('podium-wrap');
+  podiumOrder.forEach((item,i) => {
+    if (!item) return;
+    const div = document.createElement('div');
+    div.className = 'podium-house';
+    div.style.cssText = `animation:reveal .6s ${i*.2}s cubic-bezier(.36,2,.6,1) both`;
+    div.innerHTML = `
+      <div class="podium-crest">${item.h.crest}</div>
+      <div class="podium-name" style="color:${item.h.accent}">${item.h.name}</div>
+      <div class="podium-pts" style="color:${item.h.accent}">${item.pts} pts</div>
+      <div class="podium-block" style="height:${heights[i]}px;background:${item.h.color};border-top:3px solid ${item.h.accent}">${medals[i]}</div>
+    `;
+    podiumWrap.appendChild(div);
+  });
+
+  // Fuegos artificiales prolongados
+  const winner = sorted[0];
+  for (let i=0;i<8;i++) {
+    setTimeout(()=>fireHousework(winner.h.accent, winner.h.color), i*600);
+  }
+}
+
+// ══════════════════════════════════════════
+// FUEGOS ARTIFICIALES
+// ══════════════════════════════════════════
+function fireHousework(color1, color2) {
+  const colors = [color1, color2, '#ffffff', color1+'cc'];
+  const cx = 20 + Math.random()*60; // % horizontal
+  const cy = 20 + Math.random()*40; // % vertical
+  for (let i=0;i<24;i++) {
+    const el = document.createElement('div');
+    el.className = 'fireworks-particle';
+    const angle = (i/24)*Math.PI*2;
+    const dist = 80+Math.random()*120;
+    el.style.cssText = `
+      left:${cx}vw;top:${cy}vh;
+      width:${4+Math.random()*4}px;height:${4+Math.random()*4}px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      --dx:${Math.cos(angle)*dist}px;--dy:${Math.sin(angle)*dist}px;
+      animation-duration:${.8+Math.random()*.6}s;
+      animation-delay:${Math.random()*.2}s;
+    `;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),1800);
+  }
+}
+
+// ══ ACTUALIZAR bsListen para manejar todos los eventos ══
+function bsListen() {
+  if (!db||!bsRoom) return;
+  if (bsUnsub) try{bsUnsub();}catch(e){}
+  const {doc,onSnapshot} = fsH;
+  let lastEvent = null, lastCeremonyTs = 0, lastClosingTs = 0, lastPointsTs = 0;
+  bsUnsub = onSnapshot(doc(db,'rooms',bsRoom), snap => {
+    const data = snap.data();
+    if (!data) return;
+
+    // Copa siempre
+    bsRenderCup(data.houses||{});
+
+    // Eventos
+    const event = data.activeEvent;
+    const ceremonyTs = data.ceremonyTs||0;
+    const closingTs = data.closingTs||0;
+    const pointsTs = data.lastPointsEvent?.ts||0;
+
+    if (event==='ceremony' && ceremonyTs>lastCeremonyTs) {
+      lastCeremonyTs = ceremonyTs;
+      runCeremonyTV(data.ceremonyPhrase||'¡Bienvenidos a Hogwarts!');
+    } else if (event==='points-announce' && data.lastPointsEvent && pointsTs>lastPointsTs) {
+      lastPointsTs = pointsTs;
+      showPointsAnnounceTV(data.lastPointsEvent);
+    } else if (event==='closing' && closingTs>lastClosingTs) {
+      lastClosingTs = closingTs;
+      showClosingTV(data.houses||{});
+    }
+
+    // Sombrero — solo actuar si no hay otro evento tomando la pantalla
+    const activeEvt = data.activeEvent;
+    const sortingPhase = (data.sorting||{}).phase;
+    if (!activeEvt || activeEvt === 'sorting' ||
+        (sortingPhase === 'thinking' || sortingPhase === 'revealed')) {
+      bsRenderSorting(data.sorting||{}, data.houses||{});
+    } else if (sortingPhase === 'waiting') {
+      // No hacer nada — otro evento tiene la pantalla
+    }
+  });
+}
+
+// ══ TV marcador: flash cuando cambian puntos ══
+let bsLastHousePts = {};
+function bsRenderCup(houses) {
+  const el = document.getElementById('bs-cup');
+  if (!el) return;
+  let maxPts = -1;
+  HOUSE_KEYS.forEach(hk=>{const pts=(houses[hk]||{}).points||0;if(pts>maxPts)maxPts=pts;});
+
+  const changedHouse = HOUSE_KEYS.find(hk=>{
+    const p=(houses[hk]||{}).points||0;
+    return bsLastHousePts[hk]!==undefined && bsLastHousePts[hk]!==p;
+  });
+
+  el.innerHTML='';
+  HOUSE_KEYS.forEach(hk=>{
+    const h=HOUSES[hk];
+    const pts=(houses[hk]||{}).points||0;
+    const leading=pts===maxPts&&pts>0;
+    const div=document.createElement('div');
+    div.className=`bs-house-card bsh-${hk}${leading?' leading':''}${hk===changedHouse?' flash':''}`;
+    div.innerHTML=`<span class="bs-house-crest">${h.crest}</span><span class="bs-house-name">${h.name}</span><span class="bs-house-pts">${pts}</span>`;
+    el.appendChild(div);
+  });
+  HOUSE_KEYS.forEach(hk=>{bsLastHousePts[hk]=(houses[hk]||{}).points||0;});
+}
+
+// ══ Mostrar menú extra del org al entrar ══
+// (se llama desde enterApp)
+function showOrgExtras() {
+  const el = document.getElementById('org-menu-extra');
+  if (el && isOrganizer) el.style.display = 'block';
+}
+
+// ══ showScreen: agregar ceremony-setup y closing ══
+function showScreen(n) {
+  cancelScreenListeners();
+  document.getElementById('main-menu').style.display='none';
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const target = document.getElementById('screen-'+n);
+  if (target) target.classList.add('active');
+  if (n==='sorting') initSortingScreen();
+  if (n==='ceremony-setup') initCeremonySetup();
+  if (n==='house-quiz') initHouseQuizScreen();
+}
+
+// ══════════════════════════════════════════
+// DUELO DE CASAS
+// ══════════════════════════════════════════
+let hqQuestions = [], hqIdx = 0, hqTurnIdx = 0;
+let hqVoteUnsub = null;
+
+function initHouseQuizScreen() {
+  document.getElementById('hq-org').classList.toggle('hidden', !isOrganizer);
+  document.getElementById('hq-player').classList.toggle('hidden', isOrganizer);
+  if (isOrganizer) {
+    hqRenderQList();
+    hqTab('setup');
+    hqLoadFromFirebase();
+  } else {
+    hqListenPlayer();
+  }
+}
+
+function hqTab(t) {
+  ['setup','play'].forEach(x => {
+    document.getElementById('hqtab-'+x+'-content').classList.toggle('hidden', x!==t);
+    const btn = document.getElementById('hqtab-'+x);
+    if (btn) {
+      btn.style.background = x===t ? 'linear-gradient(135deg,var(--grif),#c9a84c)' : 'rgba(255,255,255,.07)';
+      btn.style.color = x===t ? 'white' : 'var(--gold2)';
+    }
+  });
+  if (t==='play') hqInitPlay();
+}
+
+// ── Cargar/guardar preguntas en Firebase ──
+async function hqLoadFromFirebase() {
+  if (!db||!currentRoom) return;
+  const {doc,getDoc} = fsH;
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const qs = snap.data()?.hqQuestions;
+  if (qs?.length) {
+    hqQuestions = qs;
+    hqRenderQList();
+    document.getElementById('hq-play-btn').style.display = 'block';
+  }
+}
+
+async function hqSaveToFirebase() {
+  if (!db||!currentRoom||!isOrganizer) return;
+  const {doc,setDoc} = fsH;
+  await setDoc(doc(db,'rooms',currentRoom),{hqQuestions},{merge:true});
+}
+
+function hqAddQuestion() {
+  const qtext = document.getElementById('hq-qtext').value.trim();
+  if (!qtext) { alert('Escribí la pregunta'); return; }
+  const rows = document.querySelectorAll('#hq-opts-inputs div');
+  const opts = [], radios = document.querySelectorAll('input[name="hq-correct"]');
+  let correct = 0, correctRadioIdx = -1;
+  // Primero encontrar qué radio está seleccionado
+  radios.forEach((r,i) => { if (r.checked) correctRadioIdx = i; });
+  rows.forEach((row,i) => {
+    const inp = row.querySelectorAll('input')[1];
+    const val = inp?.value.trim();
+    if (val) opts.push(val);
+  });
+  if (opts.length < 2) { alert('Agregá al menos 2 opciones'); return; }
+  // Calcular el índice correcto dentro de opts (solo opciones no vacías)
+  let nonEmptyCount = 0;
+  for (let i = 0; i < rows.length; i++) {
+    const inp = rows[i].querySelectorAll('input')[1];
+    if (inp?.value.trim()) {
+      if (i === correctRadioIdx) { correct = nonEmptyCount; break; }
+      nonEmptyCount++;
+    }
+  }
+  // Si el radio marcado estaba en una fila vacía, usar la primera opción
+  if (correctRadioIdx >= 0) {
+    const inp = rows[correctRadioIdx]?.querySelectorAll('input')[1];
+    if (!inp?.value.trim()) correct = 0;
+  }
+  const pts = parseInt(document.getElementById('hq-pts').value)||10;
+  hqQuestions.push({ q:qtext, opts, correct, pts });
+  // Limpiar form
+  document.getElementById('hq-qtext').value='';
+  rows.forEach(row=>{ const inp=row.querySelectorAll('input')[1]; if(inp) inp.value=''; });
+  radios[0].checked=true;
+  document.getElementById('hq-pts').value='10';
+  hqRenderQList();
+  document.getElementById('hq-play-btn').style.display='block';
+  hqSaveToFirebase();
+}
+
+function hqRenderQList() {
+  const el = document.getElementById('hq-qlist');
+  el.innerHTML = '';
+  hqQuestions.forEach((q,i) => {
+    const h = HOUSES[HOUSE_KEYS[i % 4]];
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.style.borderColor = h.color+'88';
+    div.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:start;gap:.5rem">
+        <div>
+          <div style="font-size:.68rem;font-family:'Cinzel',serif;color:${h.accent};letter-spacing:.08em;margin-bottom:.2rem">${h.crest} Turno: ${h.name} · <span style="color:var(--gold)">${q.pts} pts</span></div>
+          <div style="font-family:'EB Garamond',serif;font-size:.95rem">${i+1}. ${q.q}</div>
+          <div style="margin-top:.3rem;display:flex;flex-wrap:wrap;gap:.3rem">
+            ${q.opts.map((o,oi)=>`<span style="font-size:.75rem;padding:.15rem .5rem;border-radius:8px;background:${oi===q.correct?'rgba(26,71,42,.5)':'rgba(255,255,255,.06)'};border:1px solid ${oi===q.correct?'rgba(26,71,42,.6)':'rgba(255,255,255,.1)'}">${oi===q.correct?'✓ ':''}${o}</span>`).join('')}
+          </div>
+        </div>
+        <button onclick="hqRemoveQ(${i})" style="background:none;border:none;color:rgba(255,100,100,.6);cursor:pointer;font-size:.9rem;flex-shrink:0">✕</button>
+      </div>`;
+    el.appendChild(div);
+  });
+}
+
+function hqRemoveQ(i) {
+  hqQuestions.splice(i,1);
+  hqRenderQList();
+  document.getElementById('hq-play-btn').style.display=hqQuestions.length?'block':'none';
+  hqSaveToFirebase();
+}
+
+// ── Juego ──
+async function hqInitPlay() {
+  if (!hqQuestions.length) {
+    document.getElementById('hq-game-empty').classList.remove('hidden');
+    document.getElementById('hq-game-org').classList.add('hidden');
+    return;
+  }
+  document.getElementById('hq-game-empty').classList.add('hidden');
+  document.getElementById('hq-game-org').classList.remove('hidden');
+  // Limpiar estado anterior — resetear el map de votes en Firebase
+  if (db) {
+    const {doc,setDoc} = fsH;
+    await setDoc(doc(db,'rooms',currentRoom),{
+      houseQuiz:{ phase:'idle', votes:{}, qIdx:null, activeHouse:null }
+    },{merge:true});
+  }
+  hqIdx = 0; hqTurnIdx = 0;
+  hqShowQuestion(0);
+  hqListenVotes();
+}
+
+function hqShowQuestion(idx) {
+  if (idx >= hqQuestions.length) { hqEndGame(); return; }
+  hqIdx = idx;
+  const q = hqQuestions[idx];
+  const houseKey = HOUSE_KEYS[idx % 4];
+  hqTurnIdx = idx % 4;
+  const h = HOUSES[houseKey];
+
+  // Turno card
+  document.getElementById('hq-turn-card').style.borderColor = h.color+'88';
+  document.getElementById('hq-turn-crest').textContent = h.crest;
+  document.getElementById('hq-turn-name').textContent = h.name;
+  document.getElementById('hq-turn-name').style.color = h.accent;
+  document.getElementById('hq-turn-pts-badge').textContent = `Vale ${q.pts} puntos`;
+
+  // Pregunta
+  document.getElementById('hq-org-counter').textContent = `Pregunta ${idx+1} / ${hqQuestions.length}`;
+  document.getElementById('hq-org-qtext').textContent = q.q;
+  const optsEl = document.getElementById('hq-org-opts');
+  optsEl.innerHTML = '';
+  q.opts.forEach((op,i) => {
+    const d = document.createElement('div');
+    d.style.cssText = `background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:.6rem .75rem;font-family:'EB Garamond',serif;font-size:.9rem`;
+    d.textContent = op;
+    optsEl.appendChild(d);
+  });
+
+  // Reset botones y resultado
+  document.getElementById('hq-reveal-btn').style.display='block';
+  document.getElementById('hq-next-btn').style.display='none';
+  document.getElementById('hq-reveal-result').innerHTML='';
+  document.getElementById('hq-vote-tally').innerHTML='<div class="info" style="text-align:center">Esperando votos...</div>';
+
+  // Publicar en Firebase
+  if (db) {
+    const {doc,setDoc,collection,getDocs,deleteDoc} = fsH;
+    // Limpiar votos del turno anterior
+    getDocs(collection(db,'rooms',currentRoom,'hqVotes')).then(snap=>{
+      snap.docs.forEach(d=>deleteDoc(d.ref));
+    });
+    setDoc(doc(db,'rooms',currentRoom),{
+      houseQuiz:{
+        phase:'voting',
+        qIdx:idx,
+        q:q.q,
+        opts:q.opts,
+        pts:q.pts,
+        activeHouse:houseKey,
+        correctIdx:null,
+        votes:{}
+      }
+    },{merge:true});
+  }
+}
+
+async function hqOrgReveal() {
+  const q = hqQuestions[hqIdx];
+  if (!q||!db) return;
+  // Calcular respuesta más votada
+  const {doc,getDoc,setDoc} = fsH;
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const votes = snap.data()?.houseQuiz?.votes||{};
+  const tally = {};
+  Object.values(votes).forEach(v=>{tally[v]=(tally[v]||0)+1;});
+  // Opción más votada
+  let chosenIdx = -1, maxVotes = -1;
+  Object.entries(tally).forEach(([idx,cnt])=>{
+    if(cnt>maxVotes){maxVotes=cnt;chosenIdx=parseInt(idx);}
+  });
+  const isCorrect = chosenIdx === q.correct;
+  const noVotes = chosenIdx === -1;
+
+  await setDoc(doc(db,'rooms',currentRoom),{
+    houseQuiz:{phase:'revealed',correctIdx:q.correct,chosenIdx,isCorrect}
+  },{merge:true});
+
+  // Mostrar resultado en org
+  const resultEl = document.getElementById('hq-reveal-result');
+  const optsEl = document.getElementById('hq-org-opts');
+  Array.from(optsEl.children).forEach((d,i)=>{
+    if(i===q.correct) d.style.cssText+=';background:rgba(26,71,42,.4);border-color:rgba(26,71,42,.8);color:#a0d4a0';
+    else if(i===chosenIdx&&!isCorrect) d.style.cssText+=';background:rgba(116,0,1,.4);border-color:rgba(116,0,1,.8);color:#ffa0a0';
+  });
+
+  if (noVotes) {
+    resultEl.innerHTML = `<span style="font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold2);opacity:.7">Sin votos — nadie respondió</span>`;
+  } else if (isCorrect) {
+    const houseKey = HOUSE_KEYS[hqIdx%4];
+    const h = HOUSES[houseKey];
+    resultEl.innerHTML = `<span style="font-family:'Cinzel Decorative',cursive;font-size:1.1rem;color:${h.accent}">✓ ¡Correcto! ${h.crest} ${h.name} suma ${q.pts} puntos</span>`;
+    await applyPoints(houseKey, q.pts, `Duelo de Casas: pregunta ${hqIdx+1}`);
+  } else {
+    resultEl.innerHTML = `<span style="font-family:'Cinzel',serif;font-size:.9rem;color:#ffa0a0">✗ Incorrecto — la respuesta era: ${q.opts[q.correct]}</span>`;
+    playSound('buzz');
+  }
+
+  document.getElementById('hq-reveal-btn').style.display='none';
+  document.getElementById('hq-next-btn').style.display='block';
+}
+
+function hqOrgNext() { hqShowQuestion(hqIdx+1); }
+
+function hqListenVotes() {
+  if (!db) return;
+  if (hqVoteUnsub) { try{hqVoteUnsub();}catch(e){} }
+  const {doc,onSnapshot} = fsH;
+  let lastVotesJson = '';
+  hqVoteUnsub = onSnapshot(doc(db,'rooms',currentRoom), snap=>{
+    const data = snap.data();
+    if (!data?.houseQuiz) return;
+    const hq = data.houseQuiz;
+    const votes = hq.votes||{};
+    // Skip if votes haven't changed
+    const votesJson = JSON.stringify(votes);
+    if (votesJson === lastVotesJson) return;
+    lastVotesJson = votesJson;
+    // Tally
+    const tally = {};
+    Object.values(votes).forEach(v=>{tally[v]=(tally[v]||0)+1;});
+    const total = Object.keys(votes).length;
+    const tallyEl = document.getElementById('hq-vote-tally');
+    if (!tallyEl) return;
+    if (!total) { tallyEl.innerHTML='<div class="info" style="text-align:center">Esperando votos...</div>'; return; }
+    const q = hqQuestions[hq.qIdx]||{};
+    tallyEl.innerHTML = (q.opts||[]).map((op,i)=>{
+      const cnt = tally[i]||0;
+      const pct = total>0?Math.round(cnt/total*100):0;
+      return `<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem">
+        <span style="font-size:.8rem;flex:1;font-family:'EB Garamond',serif">${op}</span>
+        <div style="flex:2;background:rgba(255,255,255,.06);border-radius:6px;height:18px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--grif),var(--gold));border-radius:6px;transition:width .4s"></div>
+        </div>
+        <span style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold);min-width:2rem;text-align:right">${cnt}</span>
+      </div>`;
+    }).join('');
+  });
+  // hqVoteUnsub is already tracked separately in cancelScreenListeners — not pushed to screenUnsubs
+}
+
+function hqEndGame() {
+  if (db) {
+    const {doc,setDoc}=fsH;
+    setDoc(doc(db,'rooms',currentRoom),{houseQuiz:{phase:'ended'}},{merge:true});
+  }
+  document.getElementById('hq-game-org').innerHTML=`<div style="text-align:center;padding:2rem"><div style="font-size:3rem">⚡</div><div style="font-family:'Cinzel Decorative',cursive;font-size:1.3rem;color:var(--gold);margin-top:.75rem">¡Duelo terminado!</div><button onclick="hqTab('setup')" class="btn btn-gold" style="max-width:240px;margin:1.5rem auto 0;display:block">Volver</button></div>`;
+  confetti();
+}
+
+// ── Lado jugador ──
+function hqListenPlayer() {
+  if (!db) return;
+  const {doc,onSnapshot} = fsH;
+  const unsub = onSnapshot(doc(db,'rooms',currentRoom), snap=>{
+    const data = snap.data();
+    if (!data?.houseQuiz) return;
+    const hq = data.houseQuiz;
+    const waiting = document.getElementById('hq-player-waiting');
+    const watching = document.getElementById('hq-player-watching');
+    const voting = document.getElementById('hq-player-voting');
+    const result = document.getElementById('hq-player-result');
+    [waiting,watching,voting,result].forEach(el=>el&&el.classList.add('hidden'));
+
+    if (hq.phase==='ended') { waiting.classList.remove('hidden'); waiting.querySelector('div:last-child').textContent='¡Duelo terminado!'; return; }
+    if (!hq.phase||hq.phase==='idle') { waiting.classList.remove('hidden'); return; }
+
+    const activeHouse = hq.activeHouse;
+    const h = HOUSES[activeHouse]||{};
+    const isMyTurn = currentHouse === activeHouse;
+
+    if (hq.phase==='voting') {
+      if (isMyTurn) {
+        voting.classList.remove('hidden');
+        document.getElementById('hq-vote-house-crest').textContent = h.crest||'';
+        document.getElementById('hq-vote-house-crest').style.filter = `drop-shadow(0 0 12px ${h.accent||'#fff'})`;
+        document.getElementById('hq-player-counter').textContent = `Pregunta ${(hq.qIdx||0)+1} · Vale ${hq.pts||0} puntos`;
+        document.getElementById('hq-player-qtext').textContent = hq.q||'';
+        const optsEl = document.getElementById('hq-player-opts');
+        // Solo reconstruir si es pregunta nueva
+        if (optsEl.dataset.qIdx !== String(hq.qIdx)) {
+          optsEl.dataset.qIdx = hq.qIdx;
+          optsEl.innerHTML='';
+          document.getElementById('hq-player-voted-msg').classList.add('hidden');
+          const myVote = (hq.votes||{})[currentUser];
+          (hq.opts||[]).forEach((op,i)=>{
+            const b = document.createElement('button');
+            b.style.cssText=`width:100%;background:${myVote!==undefined&&myVote===i?h.color+'66':'rgba(255,255,255,.06)'};border:2px solid ${myVote!==undefined&&myVote===i?h.accent:'rgba(255,255,255,.12)'};border-radius:12px;padding:.75rem 1rem;font-family:'EB Garamond',serif;font-size:1rem;color:#e8dfc0;cursor:pointer;text-align:left;transition:all .2s;margin-bottom:.1rem`;
+            b.textContent = op;
+            b.onclick = () => hqPlayerVote(i, hq.qIdx);
+            optsEl.appendChild(b);
+          });
+          if (myVote!==undefined) {
+            document.getElementById('hq-player-voted-msg').classList.remove('hidden');
+            optsEl.querySelectorAll('button').forEach(b=>b.disabled=true);
+          }
+        }
+      } else {
+        // Observando
+        watching.classList.remove('hidden');
+        document.getElementById('hq-watch-house-crest').textContent = h.crest||'';
+        document.getElementById('hq-watch-house-name').textContent = h.name||'';
+        document.getElementById('hq-watch-card').style.borderColor = (h.color||'')+'88';
+        document.getElementById('hq-watch-qtext').textContent = hq.q||'';
+        const wopts = document.getElementById('hq-watch-opts');
+        if (wopts.dataset.qIdx !== String(hq.qIdx)) {
+          wopts.dataset.qIdx = hq.qIdx;
+          wopts.innerHTML = (hq.opts||[]).map(op=>
+            `<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.55rem .75rem;font-family:'EB Garamond',serif;font-size:.9rem;opacity:.7">${op}</div>`
+          ).join('');
+          document.getElementById('hq-watch-result').classList.add('hidden');
+        }
+      }
+    } else if (hq.phase==='revealed') {
+      // Mostrar resultado a todos
+      result.classList.remove('hidden');
+      const icon = document.getElementById('hq-player-result-icon');
+      const text = document.getElementById('hq-player-result-text');
+      if (hq.isCorrect) {
+        icon.textContent = '✨';
+        text.innerHTML = `<span style="color:${h.accent};font-family:'Cinzel',serif">¡${h.name} acertó! +${hq.pts||0} puntos</span>`;
+        if (isMyTurn) confetti(h.accent);
+      } else if (hq.chosenIdx===-1||hq.chosenIdx===undefined) {
+        icon.textContent = '😶'; text.innerHTML = `<span style="font-family:'Cinzel',serif;opacity:.7">Sin respuesta</span>`;
+      } else {
+        icon.textContent = '💀';
+        text.innerHTML = `<span style="color:#ffa0a0;font-family:'Cinzel',serif">Incorrecto</span>`;
+      }
+      // Mostrar opciones con resultado a los que observaban
+      if (!isMyTurn) {
+        const wres = document.getElementById('hq-watch-result');
+        wres.classList.remove('hidden');
+        wres.style.color = hq.isCorrect ? '#a0d4a0' : '#ffa0a0';
+        wres.textContent = hq.isCorrect ? `✓ ¡Correcto!` : `✗ Era: ${(hq.opts||[])[hq.correctIdx]||''}`;
+      }
+    }
+  });
+  screenUnsubs.push(unsub);
+}
+
+let _hqVoting = false;
+async function hqPlayerVote(optIdx, qIdx) {
+  if (!db || _hqVoting) return;
+  _hqVoting = true;
+  const {doc,getDoc,setDoc} = fsH;
+  // Leer votos actuales para no pisar otros
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const currentVotes = snap.data()?.houseQuiz?.votes||{};
+  currentVotes[currentUser] = optIdx;
+  await setDoc(doc(db,'rooms',currentRoom),{houseQuiz:{votes:currentVotes}},{merge:true});
+  // Actualizar UI
+  const optsEl = document.getElementById('hq-player-opts');
+  optsEl.querySelectorAll('button').forEach((b,i)=>{
+    const h = HOUSES[HOUSE_KEYS[qIdx%4]]||{};
+    b.style.background = i===optIdx ? h.color+'66' : 'rgba(255,255,255,.06)';
+    b.style.borderColor = i===optIdx ? h.accent : 'rgba(255,255,255,.12)';
+    b.disabled = true;
+  });
+  document.getElementById('hq-player-voted-msg').classList.remove('hidden');
+  _hqVoting = false;
+}
+
+</script>
+</body>
+</html>
