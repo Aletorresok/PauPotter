@@ -12,12 +12,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCi8x5__x9Q0BLaAzjQdRurx4ze2l1pYvQ",
-  authDomain: "paupotter.firebaseapp.com",
-  projectId: "paupotter",
-  storageBucket: "paupotter.firebasestorage.app",
-  messagingSenderId: "429840268976",
-  appId: "1:429840268976:web:6d21ff356cdb2613e60575",
+  apiKey: "FIREBASE_API_KEY",
+  authDomain: "FIREBASE_PROJECT.firebaseapp.com",
+  projectId: "FIREBASE_PROJECT",
+  storageBucket: "FIREBASE_PROJECT.firebasestorage.app",
+  messagingSenderId: "FIREBASE_SENDER_ID",
+  appId: "FIREBASE_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -201,8 +201,11 @@ header {
   font-size: .52rem;
   letter-spacing: .08em;
   opacity: .8;
-  display: block;
+  display: none;
   margin-top: .15rem;
+}
+@media (min-width: 400px) {
+  .house-name-sm { display: block; }
 }
 .house-pts {
   font-family: 'Cinzel Decorative', cursive;
@@ -915,6 +918,7 @@ header {
       <span style="opacity:.4">·</span>
       <span id="menu-player-count" style="opacity:.6"><span id="menu-player-count-num">0</span> magos</span>
     </div>
+    <div id="room-code-display" style="display:none;font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.15em;color:var(--gold);opacity:.5;text-align:center;margin-bottom:.25rem"></div>
 
     <button class="game-card gc3" onclick="showScreen('sorting')">
       <span class="gc-icon">🎩</span>
@@ -978,6 +982,10 @@ header {
           <span>Revelar la casa ganadora</span>
         </div>
       </button>
+      <div style="display:flex;gap:.5rem;margin-top:.4rem;width:100%">
+        <button class="btn btn-ghost" onclick="resetPoints()" style="flex:1;font-size:.78rem;padding:.5rem;font-family:'Cinzel',serif;letter-spacing:.05em">🔄 Resetear puntos</button>
+        <button class="btn btn-ghost" onclick="resetRoom()" style="flex:1;font-size:.78rem;padding:.5rem;font-family:'Cinzel',serif;letter-spacing:.05em;border-color:rgba(255,100,100,.3);color:rgba(255,150,150,.8)">⚠️ Resetear sala</button>
+      </div>
     </div>
     <button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:.5rem;font-size:.8rem;padding:.55rem;font-family:'Cinzel',serif;letter-spacing:.08em">🚪 Salir de Hogwarts</button>
   </div>
@@ -1133,12 +1141,15 @@ header {
           </div>
           <!-- Votos en vivo -->
           <div class="card card-gold" style="margin-bottom:.75rem">
-            <div style="font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.1em;color:var(--gold2);opacity:.7;margin-bottom:.5rem">VOTOS EN TIEMPO REAL</div>
-            <div id="hq-vote-tally"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+            <div style="font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.1em;color:var(--gold2);opacity:.7">VOTOS EN TIEMPO REAL</div>
+            <div id="hq-vote-counter" style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold);opacity:.8"></div>
+          </div>
+          <div id="hq-vote-tally"></div>
           </div>
           <!-- Botones -->
           <div style="display:flex;gap:.5rem">
-            <button class="btn" onclick="hqOrgReveal()" id="hq-reveal-btn" style="flex:1;background:linear-gradient(135deg,var(--slyth),#2d7a4a);color:#c8e8c8;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer">👁️ Revelar</button>
+            <button class="btn" onclick="hqConfirmReveal()" id="hq-reveal-btn" style="flex:1;background:linear-gradient(135deg,var(--slyth),#2d7a4a);color:#c8e8c8;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer">👁️ Revelar</button>
             <button class="btn" onclick="hqOrgNext()" id="hq-next-btn" style="flex:1;display:none;background:linear-gradient(135deg,var(--grif),#c9a84c);color:white;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer">Siguiente ➡️</button>
           </div>
           <div id="hq-reveal-result" style="margin-top:.75rem;text-align:center;min-height:2rem"></div>
@@ -1329,6 +1340,9 @@ function enterApp() {
     document.getElementById('pts-toggle-btn').classList.add('visible');
     showOrgExtras();
   }
+  // Mostrar código de sala
+  const rcEl = document.getElementById('room-code-display');
+  if (rcEl) { rcEl.textContent = '⚡ ' + currentRoom; rcEl.style.display = 'block'; }
   window._inRoom = true;
 }
 
@@ -1346,6 +1360,7 @@ function updateMenuInfo() {
 }
 
 function leaveRoom() {
+  if (!confirm('¿Salir de Hogwarts?')) return;
   cancelScreenListeners();
   unsubscribers.forEach(u=>{try{u();}catch(e){}});
   unsubscribers = [];
@@ -1472,6 +1487,7 @@ function ptsSelectHouse(hk, btn) {
   btn.classList.add('selected');
 }
 async function ptsGive(amount) {
+  if (!isOrganizer) return;
   if (!ptsSelectedHouse) { alert('Seleccioná una casa primero'); return; }
   await applyPoints(ptsSelectedHouse, amount, document.getElementById('pts-note').value.trim());
   document.getElementById('pts-note').value = '';
@@ -1551,9 +1567,23 @@ function renderHousesDisplay(houses) {
     div.className = 'card';
     div.style.borderColor = h.color + '88';
     div.innerHTML = `<div style="font-family:'Cinzel',serif;font-size:.8rem;color:${h.accent};margin-bottom:.4rem;letter-spacing:.08em">${h.crest} ${h.name} (${members.length})</div>`;
-    div.innerHTML += members.map(m => `<span class="chip chip-${hk}" style="margin:.15rem;font-size:.72rem">${m}</span>`).join('');
+    div.innerHTML += members.map(m =>
+      isOrganizer
+        ? `<span class="chip chip-${hk}" style="margin:.15rem;font-size:.72rem;cursor:pointer" title="Click para desasignar" onclick="unassignPlayer('${m}','${hk}')">${m} ✕</span>`
+        : `<span class="chip chip-${hk}" style="margin:.15rem;font-size:.72rem">${m}</span>`
+    ).join('');
     el.appendChild(div);
   });
+}
+
+async function unassignPlayer(playerName, houseKey) {
+  if (!isOrganizer || !db) return;
+  if (!confirm(\`¿Desasignar a \${playerName} de \${HOUSES[houseKey].name}?\`)) return;
+  const {doc, getDoc, setDoc} = fsH;
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const members = (snap.data()?.houses?.[houseKey]?.members||[]).filter(m => m !== playerName);
+  await setDoc(doc(db,'rooms',currentRoom), { houses:{ [houseKey]:{ members } } }, {merge:true});
+  await loadUnassignedPlayers();
 }
 
 function pickBalancedHouse(houses) {
@@ -1569,7 +1599,7 @@ function pickBalancedHouse(houses) {
 }
 
 async function doSort() {
-  if (!sortSelectedPlayer) return;
+  if (!isOrganizer || !sortSelectedPlayer) return;
   const {doc, getDoc, setDoc} = fsH;
   const btn = document.getElementById('sort-btn');
   btn.disabled = true;
@@ -1630,22 +1660,25 @@ async function doSort() {
 
 function listenSortingOrg() {
   if (!db) return;
-  const {doc, onSnapshot} = fsH;
-  const unsub = onSnapshot(doc(db,'rooms',currentRoom), snap => {
+  const {doc, onSnapshot, collection} = fsH;
+  // Escuchar cambios en el doc (casas, audio)
+  const unsub1 = onSnapshot(doc(db,'rooms',currentRoom), snap => {
     const data = snap.data();
     if (!data) return;
     renderHousesDisplay(data.houses || {});
-    // Cargar URLs de audio si las hay
     if (data.sortingAudio) {
       HOUSE_KEYS.forEach(hk => {
         const inp = document.getElementById('audio-'+hk);
-        if (inp && data.sortingAudio[hk] && !inp.value) {
-          inp.value = data.sortingAudio[hk];
-        }
+        if (inp && data.sortingAudio[hk] && !inp.value) inp.value = data.sortingAudio[hk];
       });
     }
   });
-  screenUnsubs.push(unsub);
+  // Escuchar nuevos jugadores para refrescar la lista de sin casa
+  const unsub2 = onSnapshot(collection(db,'rooms',currentRoom,'players'), () => {
+    loadUnassignedPlayers();
+  });
+  screenUnsubs.push(unsub1);
+  screenUnsubs.push(unsub2);
 }
 
 async function saveSortingAudio() {
@@ -1836,6 +1869,7 @@ function initCeremonySetup() {
 let lastHousePoints = {};
 
 function renderHouseScores(houses) {
+  window._lastHousesData = houses; // cache para vote counter
   const el = document.getElementById('houses-row');
   if (!el) return;
   let maxPts = -1;
@@ -2138,6 +2172,9 @@ function showOrgExtras() {
 
 // ══ showScreen: agregar ceremony-setup y closing ══
 function showScreen(n) {
+  // Proteger pantallas de solo-org
+  const orgOnly = ['ceremony-setup','closing'];
+  if (orgOnly.includes(n) && !isOrganizer) return;
   cancelScreenListeners();
   document.getElementById('main-menu').style.display='none';
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -2163,6 +2200,8 @@ function initHouseQuizScreen() {
     hqTab('setup');
     hqLoadFromFirebase();
   } else {
+    // Jugadores no ven el tab de cargar
+    document.getElementById('hqtab-setup').style.display = 'none';
     hqListenPlayer();
   }
 }
@@ -2345,6 +2384,7 @@ function hqShowQuestion(idx) {
 }
 
 async function hqOrgReveal() {
+  if (!isOrganizer) return;
   const q = hqQuestions[hqIdx];
   if (!q||!db) return;
   // Calcular respuesta más votada
@@ -2389,7 +2429,7 @@ async function hqOrgReveal() {
   document.getElementById('hq-next-btn').style.display='block';
 }
 
-function hqOrgNext() { hqShowQuestion(hqIdx+1); }
+function hqOrgNext() { if (!isOrganizer) return; hqShowQuestion(hqIdx+1); }
 
 function hqListenVotes() {
   if (!db) return;
@@ -2410,7 +2450,14 @@ function hqListenVotes() {
     Object.values(votes).forEach(v=>{tally[v]=(tally[v]||0)+1;});
     const total = Object.keys(votes).length;
     const tallyEl = document.getElementById('hq-vote-tally');
+    const counterEl = document.getElementById('hq-vote-counter');
     if (!tallyEl) return;
+    // Actualizar contador de votos
+    if (counterEl) {
+      const houseKey = hq.activeHouse;
+      const houseMembers = (window._lastHousesData?.[houseKey]?.members||[]).length || '?';
+      counterEl.textContent = `${total} de ${houseMembers} votos`;
+    }
     if (!total) { tallyEl.innerHTML='<div class="info" style="text-align:center">Esperando votos...</div>'; return; }
     const q = hqQuestions[hq.qIdx]||{};
     tallyEl.innerHTML = (q.opts||[]).map((op,i)=>{
@@ -2451,8 +2498,14 @@ function hqListenPlayer() {
     const result = document.getElementById('hq-player-result');
     [waiting,watching,voting,result].forEach(el=>el&&el.classList.add('hidden'));
 
-    if (hq.phase==='ended') { waiting.classList.remove('hidden'); waiting.querySelector('div:last-child').textContent='¡Duelo terminado!'; return; }
+    if (hq.phase==='ended') { waiting.classList.remove('hidden'); waiting.innerHTML='<div style="font-size:2rem">⚡</div><div style="font-family:'Cinzel',serif;font-weight:700;margin-top:.5rem">¡Duelo terminado!</div>'; return; }
     if (!hq.phase||hq.phase==='idle') { waiting.classList.remove('hidden'); return; }
+    // Jugador sin casa
+    if (!currentHouse) {
+      waiting.classList.remove('hidden');
+      waiting.innerHTML = '<div style="font-size:2rem">🎩</div><div style="font-family:'Cinzel',serif;font-weight:700;margin-top:.5rem">Primero pasá por el Sombrero Seleccionador</div>';
+      return;
+    }
 
     const activeHouse = hq.activeHouse;
     const h = HOUSES[activeHouse]||{};
@@ -2525,6 +2578,48 @@ function hqListenPlayer() {
     }
   });
   screenUnsubs.push(unsub);
+}
+
+// ══════════════════════════════════════════
+// MEJORAS — funciones nuevas
+// ══════════════════════════════════════════
+
+// MEJORA 1: Resetear puntos / resetear sala completa
+async function resetPoints() {
+  if (!isOrganizer || !db) return;
+  if (!confirm('¿Resetear los puntos de todas las casas a 0?')) return;
+  const {doc, setDoc} = fsH;
+  const houses = {};
+  HOUSE_KEYS.forEach(hk => { houses[hk] = { points: 0 }; });
+  await setDoc(doc(db,'rooms',currentRoom), { houses }, {merge:true});
+  playSound('ding');
+}
+
+async function resetRoom() {
+  if (!isOrganizer || !db) return;
+  if (!confirm('⚠️ Esto resetea puntos Y casas asignadas. ¿Estás segura?')) return;
+  const {doc, setDoc, collection, getDocs, deleteDoc} = fsH;
+  const houses = {};
+  HOUSE_KEYS.forEach(hk => { houses[hk] = { points: 0, members: [] }; });
+  await setDoc(doc(db,'rooms',currentRoom), {
+    houses,
+    sorting: { phase:'waiting', currentPlayer:null, revealedHouse:null },
+    activeEvent: null
+  }, {merge:true});
+  // Borrar jugadores
+  const playersSnap = await getDocs(collection(db,'rooms',currentRoom,'players'));
+  playersSnap.docs.forEach(d => deleteDoc(d.ref));
+  playSound('buzz');
+}
+
+// MEJORA 5: Confirmación reveal
+function hqConfirmReveal() {
+  if (!isOrganizer) return;
+  const q = hqQuestions[hqIdx];
+  if (!q) return;
+  const houseKey = HOUSE_KEYS[hqIdx % 4];
+  const h = HOUSES[houseKey];
+  if (confirm(`¿Revelar la respuesta para ${h.name}?`)) hqOrgReveal();
 }
 
 let _hqVoting = false;
