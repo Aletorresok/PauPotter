@@ -824,6 +824,174 @@ header {
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: rgba(255,255,255,.03); }
 ::-webkit-scrollbar-thumb { background: rgba(201,168,76,.3); border-radius: 3px; }
+
+/* ══ MODAL PROPIO ══ */
+#hg-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0,0,0,.7);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+#hg-modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.hg-modal {
+  background: #1a1408;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1.75rem 1.5rem 1.5rem;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+  transform: scale(.92);
+  transition: transform .2s cubic-bezier(.36,2,.6,1);
+}
+#hg-modal-overlay.open .hg-modal {
+  transform: scale(1);
+}
+.hg-modal-icon { font-size: 2.5rem; margin-bottom: .6rem; }
+.hg-modal-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  color: var(--gold);
+  margin-bottom: .5rem;
+  letter-spacing: .05em;
+}
+.hg-modal-msg {
+  font-family: 'EB Garamond', serif;
+  font-size: .95rem;
+  opacity: .75;
+  line-height: 1.55;
+  margin-bottom: 1.25rem;
+}
+.hg-modal-btns { display: flex; gap: .6rem; }
+.hg-modal-btns .btn { margin-top: 0; }
+
+/* ══ TOAST ══ */
+#hg-toast {
+  position: fixed;
+  bottom: 5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  z-index: 99998;
+  background: rgba(10,10,15,.95);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: .55rem 1.2rem;
+  font-family: 'Cinzel', serif;
+  font-size: .82rem;
+  color: var(--gold2);
+  letter-spacing: .06em;
+  opacity: 0;
+  transition: opacity .3s, transform .3s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+#hg-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ══ MÍMICA / RULETA — botones de selección ══ */
+.mim-timer-btn, .rul-mode-btn {
+  transition: background .15s, color .15s, border-color .15s;
+}
+.mim-timer-btn.selected-timer, .rul-mode-btn.selected-rul {
+  background: rgba(201,168,76,.2);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* ══ RULETA — animación de spin ══ */
+@keyframes rul-spin {
+  0%   { transform: scale(1) rotate(0deg); }
+  30%  { transform: scale(1.15) rotate(8deg); }
+  60%  { transform: scale(1.1) rotate(-6deg); }
+  80%  { transform: scale(1.05) rotate(3deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+.rul-spinning { animation: rul-spin .7s cubic-bezier(.36,2,.6,1); }
+
+/* ══ CHIP editable (con X) ══ */
+.chip-removable {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .3rem .8rem;
+  border-radius: 20px;
+  font-family: 'Cinzel', serif;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  background: rgba(201,168,76,.15);
+  border: 1px solid var(--border);
+  color: var(--gold2);
+  cursor: default;
+}
+.chip-removable .chip-x {
+  cursor: pointer;
+  opacity: .5;
+  font-size: .8rem;
+  line-height: 1;
+  transition: opacity .15s;
+}
+.chip-removable .chip-x:hover { opacity: 1; }
+
+/* ══ TIMER URGENTE ══ */
+.timer-urgent { color: #ffa0a0 !important; animation: pulse-urgent .5s infinite alternate; }
+@keyframes pulse-urgent { from{opacity:1} to{opacity:.6} }
+
+
+.vote-bar-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .4rem;
+}
+.vote-bar-label { font-size: .82rem; flex: 1; font-family: 'EB Garamond', serif; }
+.vote-bar-track {
+  flex: 2;
+  background: rgba(255,255,255,.06);
+  border-radius: 6px;
+  height: 20px;
+  overflow: hidden;
+  position: relative;
+}
+.vote-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width .4s cubic-bezier(.4,0,.2,1);
+  background: linear-gradient(90deg, var(--grif), var(--gold));
+}
+.vote-bar-count {
+  font-family: 'Cinzel', serif;
+  font-size: .72rem;
+  color: var(--gold);
+  min-width: 2rem;
+  text-align: right;
+}
+
+/* ══ CORRECT / WRONG REVEAL ══ */
+.reveal-correct {
+  background: rgba(26,71,42,.4);
+  border-color: rgba(26,71,42,.8) !important;
+  color: #a0d4a0 !important;
+}
+.reveal-wrong {
+  background: rgba(116,0,1,.4);
+  border-color: rgba(116,0,1,.8) !important;
+  color: #ffa0a0 !important;
+}
 </style>
 </head>
 <body>
@@ -926,46 +1094,22 @@ header {
         <span>Descubrí a qué casa pertenecés</span>
       </div>
     </button>
-    <button class="game-card gc1" onclick="showScreen('cancion')">
-      <span class="gc-icon">🎵</span>
-      <div class="gc-text">El Coro Encantado
-        <span>Adivinar la canción</span>
-      </div>
-    </button>
-    <button class="game-card gc2" onclick="showScreen('impostor')">
-      <span class="gc-icon">🕵️</span>
-      <div class="gc-text">El Mortífago Infiltrado
-        <span>Hay un impostor entre nosotros</span>
-      </div>
-    </button>
-    <button class="game-card gc3" onclick="showScreen('trivia')">
-      <span class="gc-icon">🧙</span>
-      <div class="gc-text">¿Quién es la cumpleañera?
-        <span>Respuesta abierta y votación</span>
-      </div>
-    </button>
-    <button class="game-card gc4" onclick="showScreen('memoria')">
-      <span class="gc-icon">📜</span>
-      <div class="gc-text">Pergaminos de Memoria
-        <span>Memorizá las categorías</span>
-      </div>
-    </button>
-    <button class="game-card gc5" onclick="showScreen('rosco')">
-      <span class="gc-icon">🌀</span>
-      <div class="gc-text">El Rosco de Dumbledore
-        <span>Pasapalabra al estilo Hogwarts</span>
-      </div>
-    </button>
     <button class="game-card gc2" onclick="showScreen('house-quiz')">
       <span class="gc-icon">⚡</span>
       <div class="gc-text">Duelo de Casas
         <span>Preguntas por equipo, vota tu casa</span>
       </div>
     </button>
-    <button class="game-card gc-dark" onclick="showScreen('guestbook')">
-      <span class="gc-icon">🗺️</span>
-      <div class="gc-text">El Mapa del Merodeador
-        <span>Dejá tu mensaje</span>
+    <button class="game-card gc1" onclick="showScreen('mimica')">
+      <span class="gc-icon">🎭</span>
+      <div class="gc-text">Mímica de Casas
+        <span>Actuá y que tu casa adivine</span>
+      </div>
+    </button>
+    <button class="game-card gc3" onclick="showScreen('ruleta')">
+      <span class="gc-icon">🎯</span>
+      <div class="gc-text">¿A quién le toca?
+        <span>Sorteo por casas para desafíos</span>
       </div>
     </button>
 
@@ -1085,6 +1229,172 @@ header {
   <div id="screen-memoria" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">📜 Pergaminos de Memoria</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
   <div id="screen-rosco" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">🌀 El Rosco de Dumbledore</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
   <div id="screen-guestbook" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">🗺️ El Mapa del Merodeador</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
+
+  <!-- ══ MÍMICA DE CASAS ══ -->
+  <div id="screen-mimica" class="screen">
+    <button class="back-btn" onclick="goHome()">← Volver</button>
+    <div class="stitle">🎭 Mímica de Casas</div>
+
+    <!-- ORGANIZADOR -->
+    <div id="mim-org" class="hidden">
+
+      <!-- Setup: cargar palabras -->
+      <div id="mim-setup">
+        <div class="card card-gold">
+          <div class="ilabel">Palabras predefinidas (Harry Potter)</div>
+          <div id="mim-default-chips" class="chips" style="margin-bottom:.75rem"></div>
+          <div class="ilabel">Agregar palabra personalizada</div>
+          <div style="display:flex;gap:.5rem">
+            <input class="ifield" id="mim-custom-input" placeholder="Ej: Expelliarmus, Pau bailando..." maxlength="40"
+              onkeydown="if(event.key==='Enter')mimAddWord()">
+            <button class="btn btn-gold btn-sm" onclick="mimAddWord()" style="flex-shrink:0;margin-top:0">+ Agregar</button>
+          </div>
+          <div id="mim-custom-chips" class="chips" style="margin-top:.6rem"></div>
+        </div>
+
+        <div class="card card-gold" style="margin-top:.5rem">
+          <div class="ilabel">Timer por ronda</div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm mim-timer-btn" data-sec="30" onclick="mimSetTimer(30,this)">30s</button>
+            <button class="btn btn-ghost btn-sm mim-timer-btn" data-sec="45" onclick="mimSetTimer(45,this)">45s</button>
+            <button class="btn btn-ghost btn-sm mim-timer-btn selected-timer" data-sec="60" onclick="mimSetTimer(60,this)">60s ✓</button>
+            <button class="btn btn-ghost btn-sm mim-timer-btn" data-sec="90" onclick="mimSetTimer(90,this)">90s</button>
+          </div>
+          <div style="margin-top:.6rem">
+            <div class="ilabel">Puntos por ronda ganada</div>
+            <input class="ifield" id="mim-pts-input" type="number" value="20" min="1" max="500" style="max-width:120px;padding:.4rem .7rem">
+          </div>
+        </div>
+
+        <button class="btn btn-gold" onclick="mimStartGame()" style="margin-top:.75rem">🎭 Iniciar juego</button>
+      </div>
+
+      <!-- Juego activo -->
+      <div id="mim-game" class="hidden">
+        <!-- Casa sorteada -->
+        <div class="card" id="mim-house-card" style="text-align:center;padding:1.5rem;margin-bottom:.75rem">
+          <div style="font-size:.72rem;font-family:'Cinzel',serif;letter-spacing:.15em;opacity:.6;margin-bottom:.5rem">LE TOCA A</div>
+          <div id="mim-house-crest" style="font-size:3.5rem;line-height:1"></div>
+          <div id="mim-house-name" style="font-family:'Cinzel Decorative',cursive;font-size:1.3rem;margin:.4rem 0"></div>
+          <div style="font-size:.85rem;opacity:.65;font-style:italic">Cualquier miembro puede actuar</div>
+        </div>
+
+        <!-- Palabra (solo org la ve) -->
+        <div class="card card-gold" style="text-align:center;padding:1.25rem;margin-bottom:.75rem">
+          <div style="font-size:.72rem;font-family:'Cinzel',serif;letter-spacing:.12em;opacity:.6;margin-bottom:.4rem">PALABRA A ACTUAR</div>
+          <div id="mim-word-display" style="font-family:'Cinzel Decorative',cursive;font-size:1.8rem;color:var(--gold);letter-spacing:.05em"></div>
+        </div>
+
+        <!-- Timer -->
+        <div class="card card-gold" style="text-align:center;padding:1.25rem;margin-bottom:.75rem">
+          <div id="mim-timer-display" style="font-family:'Cinzel Decorative',cursive;font-size:3.5rem;color:var(--gold);line-height:1;transition:color .3s"></div>
+          <div style="margin-top:.5rem;background:rgba(255,255,255,.06);border-radius:8px;height:8px;overflow:hidden">
+            <div id="mim-timer-bar" style="height:100%;background:linear-gradient(90deg,var(--grif),var(--gold));border-radius:8px;transition:width 1s linear;width:100%"></div>
+          </div>
+          <div style="display:flex;gap:.5rem;margin-top:.75rem">
+            <button class="btn btn-ghost btn-sm" onclick="mimPauseResume()" id="mim-pause-btn" style="flex:1;margin-top:0">⏸ Pausar</button>
+            <button class="btn btn-ghost btn-sm" onclick="mimSkipWord()" style="flex:1;margin-top:0">⏭ Saltear</button>
+          </div>
+        </div>
+
+        <!-- Botones resultado -->
+        <div id="mim-result-btns" style="display:flex;gap:.5rem">
+          <button class="btn" onclick="mimResult(true)" style="flex:1;background:linear-gradient(135deg,var(--slyth),#2d7a4a);color:#c8e8c8;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;padding:.85rem">✓ ¡Adivinaron!</button>
+          <button class="btn" onclick="mimResult(false)" style="flex:1;background:rgba(116,0,1,.5);color:#ffc0b0;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;padding:.85rem">✗ No adivinaron</button>
+        </div>
+
+        <!-- Siguiente ronda -->
+        <div style="display:flex;gap:.5rem;margin-top:.5rem">
+          <button class="btn btn-gold" onclick="mimNextRound()" style="flex:1">🎲 Siguiente ronda</button>
+          <button class="btn btn-ghost" onclick="mimEndGame()" style="flex:0 0 auto;width:auto;padding:.85rem 1rem;font-size:.8rem;font-family:'Cinzel',serif">Terminar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JUGADOR -->
+    <div id="mim-player" class="hidden">
+      <div id="mim-player-waiting" style="text-align:center;padding:2.5rem">
+        <div style="font-size:3rem">🎭</div>
+        <div style="font-family:'Cinzel',serif;font-weight:700;margin-top:.75rem;font-size:1.1rem">Esperando que empiece el juego...</div>
+        <div style="font-size:.85rem;opacity:.6;margin-top:.4rem">El organizador controla el juego</div>
+      </div>
+      <div id="mim-player-active" class="hidden">
+        <div class="card" id="mim-p-house-card" style="text-align:center;padding:1.25rem;margin-bottom:.75rem">
+          <div style="font-size:.72rem;font-family:'Cinzel',serif;letter-spacing:.15em;opacity:.6;margin-bottom:.4rem">LE TOCA A</div>
+          <div id="mim-p-crest" style="font-size:3rem;line-height:1"></div>
+          <div id="mim-p-name" style="font-family:'Cinzel Decorative',cursive;font-size:1.1rem;margin:.3rem 0"></div>
+        </div>
+        <div class="card card-gold" style="text-align:center;padding:1.25rem;margin-bottom:.75rem">
+          <div id="mim-p-timer" style="font-family:'Cinzel Decorative',cursive;font-size:3rem;color:var(--gold)">--</div>
+          <div style="margin-top:.4rem;background:rgba(255,255,255,.06);border-radius:8px;height:8px;overflow:hidden">
+            <div id="mim-p-timer-bar" style="height:100%;background:linear-gradient(90deg,var(--grif),var(--gold));border-radius:8px;transition:width 1s linear;width:100%"></div>
+          </div>
+        </div>
+        <div id="mim-p-result" class="hidden" style="text-align:center;padding:1.5rem">
+          <div id="mim-p-result-icon" style="font-size:3rem"></div>
+          <div id="mim-p-result-text" style="font-family:'Cinzel',serif;font-size:1rem;margin-top:.5rem"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ¿A QUIÉN LE TOCA? (RULETA) ══ -->
+  <div id="screen-ruleta" class="screen">
+    <button class="back-btn" onclick="goHome()">← Volver</button>
+    <div class="stitle">🎯 ¿A quién le toca?</div>
+
+    <!-- ORGANIZADOR -->
+    <div id="rul-org" class="hidden">
+      <div class="card card-gold">
+        <div class="ilabel">Modo de sorteo</div>
+        <div style="display:flex;gap:.5rem;margin-bottom:.75rem">
+          <button class="btn btn-ghost btn-sm rul-mode-btn selected-rul" id="rul-mode-casa" onclick="rulSetMode('casa',this)" style="flex:1;margin-top:0">🏰 Por casa</button>
+          <button class="btn btn-ghost btn-sm rul-mode-btn" id="rul-mode-jugador" onclick="rulSetMode('jugador',this)" style="flex:1;margin-top:0">👤 Por jugador</button>
+        </div>
+        <div class="ilabel">Desafío (opcional)</div>
+        <input class="ifield" id="rul-challenge-input" placeholder="Ej: Cantar 30 segundos, contar un secreto..." maxlength="80">
+        <div style="margin-top:.6rem">
+          <div class="ilabel">Puntos si lo cumple</div>
+          <input class="ifield" id="rul-pts-input" type="number" value="15" min="1" max="500" style="max-width:120px;padding:.4rem .7rem">
+        </div>
+      </div>
+
+      <button class="btn btn-gold" id="rul-spin-btn" onclick="rulSpin()" style="margin-top:.75rem;font-size:1.1rem">🎲 ¡Sortear!</button>
+
+      <!-- Resultado del sorteo -->
+      <div id="rul-result" class="hidden" style="margin-top:.75rem">
+        <div class="card" id="rul-result-card" style="text-align:center;padding:2rem">
+          <div id="rul-result-icon" style="font-size:4rem;line-height:1"></div>
+          <div id="rul-result-name" style="font-family:'Cinzel Decorative',cursive;font-size:1.4rem;margin:.5rem 0"></div>
+          <div id="rul-result-challenge" style="font-family:'EB Garamond',serif;font-size:1rem;opacity:.8;margin-bottom:1rem;font-style:italic"></div>
+          <div style="display:flex;gap:.5rem">
+            <button class="btn" onclick="rulGivePoints(true)" style="flex:1;background:linear-gradient(135deg,var(--slyth),#2d7a4a);color:#c8e8c8;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;padding:.75rem">✓ Lo cumplió</button>
+            <button class="btn" onclick="rulGivePoints(false)" style="flex:1;background:rgba(116,0,1,.4);color:#ffc0b0;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;padding:.75rem">✗ No lo hizo</button>
+          </div>
+        </div>
+        <button class="btn btn-gold" onclick="rulSpin()" style="margin-top:.5rem">🎲 Sortear de nuevo</button>
+      </div>
+    </div>
+
+    <!-- JUGADOR -->
+    <div id="rul-player" class="hidden">
+      <div id="rul-player-waiting" style="text-align:center;padding:2.5rem">
+        <div style="font-size:3rem">🎯</div>
+        <div style="font-family:'Cinzel',serif;font-weight:700;margin-top:.75rem">Esperando el sorteo...</div>
+      </div>
+      <div id="rul-player-active" class="hidden">
+        <div class="card" id="rul-p-card" style="text-align:center;padding:2rem">
+          <div id="rul-p-icon" style="font-size:4rem"></div>
+          <div id="rul-p-name" style="font-family:'Cinzel Decorative',cursive;font-size:1.3rem;margin:.5rem 0"></div>
+          <div id="rul-p-challenge" style="font-family:'EB Garamond',serif;font-size:1rem;opacity:.8;font-style:italic"></div>
+          <div id="rul-p-result" class="hidden" style="margin-top:1rem">
+            <div id="rul-p-result-icon" style="font-size:2.5rem"></div>
+            <div id="rul-p-result-text" style="font-family:'Cinzel',serif;margin-top:.4rem"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ══ DUELO DE CASAS ══ -->
   <div id="screen-house-quiz" class="screen">
@@ -1225,6 +1535,19 @@ header {
 </div>
 <button class="pts-toggle" id="pts-toggle-btn" onclick="togglePtsPanel()">⚡</button>
 
+<!-- ══ MODAL HOGWARTS ══ -->
+<div id="hg-modal-overlay">
+  <div class="hg-modal">
+    <div class="hg-modal-icon" id="hg-modal-icon">⚡</div>
+    <div class="hg-modal-title" id="hg-modal-title"></div>
+    <div class="hg-modal-msg" id="hg-modal-msg"></div>
+    <div class="hg-modal-btns" id="hg-modal-btns"></div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div id="hg-toast"></div>
+
 <script>
 // ══ CONSTANTES ══
 const ROOM_CODE = 'HOGWARTS2025';
@@ -1243,6 +1566,51 @@ let currentHouse = null;
 let unsubscribers = [], screenUnsubs = [];
 let ptsSelectedHouse = null;
 let IS_BIGSCREEN = false, bsRoom = null, bsUnsub = null;
+
+// ══ MODAL PROPIO ══
+let _modalResolve = null;
+function hgModal({ icon='⚡', title, msg, confirmText='Confirmar', confirmClass='btn-gold', cancelText='Cancelar', danger=false } = {}) {
+  return new Promise(resolve => {
+    _modalResolve = resolve;
+    document.getElementById('hg-modal-icon').textContent = icon;
+    document.getElementById('hg-modal-title').textContent = title;
+    document.getElementById('hg-modal-msg').textContent = msg;
+    const btns = document.getElementById('hg-modal-btns');
+    btns.innerHTML = '';
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn btn-ghost';
+    cancelBtn.style.flex = '1';
+    cancelBtn.textContent = cancelText;
+    cancelBtn.onclick = () => closeModal(false);
+    const confirmBtn = document.createElement('button');
+    confirmBtn.className = `btn ${danger ? 'btn-danger' : confirmClass}`;
+    if (danger) confirmBtn.style.cssText = 'flex:1;background:linear-gradient(135deg,#6a0000,#a00);color:#ffccc0;border:none;border-radius:12px;font-family:\'Cinzel\',serif;font-weight:600;cursor:pointer';
+    else confirmBtn.style.flex = '1';
+    confirmBtn.textContent = confirmText;
+    confirmBtn.onclick = () => closeModal(true);
+    btns.appendChild(cancelBtn);
+    btns.appendChild(confirmBtn);
+    document.getElementById('hg-modal-overlay').classList.add('open');
+  });
+}
+function closeModal(result) {
+  document.getElementById('hg-modal-overlay').classList.remove('open');
+  if (_modalResolve) { _modalResolve(result); _modalResolve = null; }
+}
+document.getElementById('hg-modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('hg-modal-overlay')) closeModal(false);
+});
+
+// ══ TOAST ══
+let _toastTimer = null;
+function showToast(msg, duration=2500) {
+  const el = document.getElementById('hg-toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), duration);
+}
+
 
 document.addEventListener('fbready', () => {
   db = window._db;
@@ -1265,7 +1633,7 @@ function fbReady() { return !!window._fbReady; }
 
 // ══ FIREBASE SALA ══
 async function createRoom() {
-  if (!fbReady()) { alert('Firebase cargando, esperá...'); return; }
+  if (!fbReady()) { setLobbyStatus('⏳ Firebase cargando, esperá...'); return; }
   const name = document.getElementById('lobby-name').value.trim() || 'Organizador';
   const btn = document.getElementById('create-btn');
   btn.innerHTML = '<span class="spinner"></span>Creando...'; btn.disabled = true;
@@ -1283,18 +1651,17 @@ async function createRoom() {
       sorting: { phase: 'waiting', currentPlayer: null, revealedHouse: null },
       sortingAudio: {},
       activeGame: null,
-      // gameData: todos los datos de juegos se guardan acá para persistencia cross-device
     });
     currentRoom = ROOM_CODE; currentUser = name; isOrganizer = true;
     enterApp();
   } catch(e) {
-    alert('Error: ' + e.message);
+    setLobbyStatus('❌ Error: ' + e.message);
     btn.innerHTML = '🪄 Crear sala nueva'; btn.disabled = false;
   }
 }
 
 async function joinRoom() {
-  if (!fbReady()) { alert('Firebase cargando, esperá...'); return; }
+  if (!fbReady()) { setLobbyStatus('⏳ Firebase cargando, esperá...'); return; }
   const name = document.getElementById('lobby-name').value.trim();
   if (!name) { setLobbyStatus('⚠️ Escribí tu nombre'); return; }
 
@@ -1359,8 +1726,15 @@ function updateMenuInfo() {
   }
 }
 
-function leaveRoom() {
-  if (!confirm('¿Salir de Hogwarts?')) return;
+async function leaveRoom() {
+  const ok = await hgModal({
+    icon: '🚪',
+    title: 'Salir de Hogwarts',
+    msg: '¿Seguro que querés salir? Vas a perder tu sesión actual.',
+    confirmText: 'Salir',
+    danger: true
+  });
+  if (!ok) return;
   cancelScreenListeners();
   unsubscribers.forEach(u=>{try{u();}catch(e){}});
   unsubscribers = [];
@@ -1407,21 +1781,20 @@ async function reconnectSession() {
 }
 
 async function reconnectAsOrganizer(name) {
-  if (!window._fbReady) { alert('Firebase cargando, esperá...'); return; }
+  if (!window._fbReady) { setLobbyStatus('⏳ Firebase cargando, esperá...'); return; }
   const btn = document.getElementById('create-btn');
   btn.innerHTML = '<span class="spinner"></span>Reconectando...'; btn.disabled = true;
   try {
     const {doc, getDoc} = fsH;
     const snap = await getDoc(doc(db, 'rooms', ROOM_CODE));
     if (!snap.exists()) {
-      // Sala no existe, crear nueva
       btn.innerHTML = '🪄 Crear sala nueva'; btn.disabled = false;
       await createRoom(); return;
     }
     currentRoom = ROOM_CODE; currentUser = name; isOrganizer = true;
     enterApp();
   } catch(e) {
-    alert('Error: ' + e.message);
+    setLobbyStatus('❌ Error: ' + e.message);
     btn.innerHTML = '🪄 Crear sala nueva'; btn.disabled = false;
   }
 }
@@ -1473,6 +1846,8 @@ function cancelScreenListeners() {
 }
 function goHome() {
   cancelScreenListeners();
+  // Cancelar timer de mímica si estaba corriendo
+  if (mimTimerInterval) { clearInterval(mimTimerInterval); mimTimerInterval = null; }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('main-menu').style.display = 'flex';
 }
@@ -1488,13 +1863,15 @@ function ptsSelectHouse(hk, btn) {
 }
 async function ptsGive(amount) {
   if (!isOrganizer) return;
-  if (!ptsSelectedHouse) { alert('Seleccioná una casa primero'); return; }
+  if (!ptsSelectedHouse) { showToast('⚠️ Seleccioná una casa primero'); return; }
+  const h = HOUSES[ptsSelectedHouse];
   await applyPoints(ptsSelectedHouse, amount, document.getElementById('pts-note').value.trim());
   document.getElementById('pts-note').value = '';
+  showToast(`${h.crest} ${h.name}: ${amount>0?'+':''}${amount} pts`);
 }
 async function ptsGiveCustom() {
   const v = parseInt(document.getElementById('pts-custom').value);
-  if (!v || isNaN(v)) { alert('Ingresá un número'); return; }
+  if (!v || isNaN(v)) { showToast('⚠️ Ingresá un número válido'); return; }
   await ptsGive(v);
   document.getElementById('pts-custom').value = '';
 }
@@ -1578,11 +1955,19 @@ function renderHousesDisplay(houses) {
 
 async function unassignPlayer(playerName, houseKey) {
   if (!isOrganizer || !db) return;
-  if (!confirm(\`¿Desasignar a \${playerName} de \${HOUSES[houseKey].name}?\`)) return;
+  const ok = await hgModal({
+    icon: HOUSES[houseKey].crest,
+    title: 'Desasignar jugador',
+    msg: `¿Sacar a ${playerName} de ${HOUSES[houseKey].name}?`,
+    confirmText: 'Desasignar',
+    danger: true
+  });
+  if (!ok) return;
   const {doc, getDoc, setDoc} = fsH;
   const snap = await getDoc(doc(db,'rooms',currentRoom));
   const members = (snap.data()?.houses?.[houseKey]?.members||[]).filter(m => m !== playerName);
   await setDoc(doc(db,'rooms',currentRoom), { houses:{ [houseKey]:{ members } } }, {merge:true});
+  showToast(`🎩 ${playerName} desasignado/a`);
   await loadUnassignedPlayers();
 }
 
@@ -2183,6 +2568,8 @@ function showScreen(n) {
   if (n==='sorting') initSortingScreen();
   if (n==='ceremony-setup') initCeremonySetup();
   if (n==='house-quiz') initHouseQuizScreen();
+  if (n==='mimica') initMimicaScreen();
+  if (n==='ruleta') initRuletaScreen();
 }
 
 // ══════════════════════════════════════════
@@ -2239,7 +2626,7 @@ async function hqSaveToFirebase() {
 
 function hqAddQuestion() {
   const qtext = document.getElementById('hq-qtext').value.trim();
-  if (!qtext) { alert('Escribí la pregunta'); return; }
+  if (!qtext) { showToast('⚠️ Escribí la pregunta'); return; }
   const rows = document.querySelectorAll('#hq-opts-inputs div');
   const opts = [], radios = document.querySelectorAll('input[name="hq-correct"]');
   let correct = 0, correctRadioIdx = -1;
@@ -2250,7 +2637,7 @@ function hqAddQuestion() {
     const val = inp?.value.trim();
     if (val) opts.push(val);
   });
-  if (opts.length < 2) { alert('Agregá al menos 2 opciones'); return; }
+  if (opts.length < 2) { showToast('⚠️ Agregá al menos 2 opciones'); return; }
   // Calcular el índice correcto dentro de opts (solo opciones no vacías)
   let nonEmptyCount = 0;
   for (let i = 0; i < rows.length; i++) {
@@ -2409,19 +2796,22 @@ async function hqOrgReveal() {
   const resultEl = document.getElementById('hq-reveal-result');
   const optsEl = document.getElementById('hq-org-opts');
   Array.from(optsEl.children).forEach((d,i)=>{
-    if(i===q.correct) d.style.cssText+=';background:rgba(26,71,42,.4);border-color:rgba(26,71,42,.8);color:#a0d4a0';
-    else if(i===chosenIdx&&!isCorrect) d.style.cssText+=';background:rgba(116,0,1,.4);border-color:rgba(116,0,1,.8);color:#ffa0a0';
+    if(i===q.correct) d.classList.add('reveal-correct');
+    else if(i===chosenIdx&&!isCorrect) d.classList.add('reveal-wrong');
   });
 
   if (noVotes) {
-    resultEl.innerHTML = `<span style="font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold2);opacity:.7">Sin votos — nadie respondió</span>`;
+    resultEl.innerHTML = `<span style="font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold2);opacity:.7">😶 Sin votos — nadie respondió</span>`;
+    showToast('Sin votos para esta pregunta');
   } else if (isCorrect) {
     const houseKey = HOUSE_KEYS[hqIdx%4];
     const h = HOUSES[houseKey];
-    resultEl.innerHTML = `<span style="font-family:'Cinzel Decorative',cursive;font-size:1.1rem;color:${h.accent}">✓ ¡Correcto! ${h.crest} ${h.name} suma ${q.pts} puntos</span>`;
+    resultEl.innerHTML = `<span style="font-family:'Cinzel Decorative',cursive;font-size:1.1rem;color:${h.accent}">✓ ¡Correcto! ${h.crest} ${h.name} suma ${q.pts} pts</span>`;
+    showToast(`${h.crest} ¡${h.name} acertó! +${q.pts} puntos`);
     await applyPoints(houseKey, q.pts, `Duelo de Casas: pregunta ${hqIdx+1}`);
   } else {
-    resultEl.innerHTML = `<span style="font-family:'Cinzel',serif;font-size:.9rem;color:#ffa0a0">✗ Incorrecto — la respuesta era: ${q.opts[q.correct]}</span>`;
+    resultEl.innerHTML = `<span style="font-family:'Cinzel',serif;font-size:.9rem;color:#ffa0a0">✗ Incorrecto — era: <strong>${q.opts[q.correct]}</strong></span>`;
+    showToast('✗ Respuesta incorrecta');
     playSound('buzz');
   }
 
@@ -2458,17 +2848,17 @@ function hqListenVotes() {
       const houseMembers = (window._lastHousesData?.[houseKey]?.members||[]).length || '?';
       counterEl.textContent = `${total} de ${houseMembers} votos`;
     }
-    if (!total) { tallyEl.innerHTML='<div class="info" style="text-align:center">Esperando votos...</div>'; return; }
+    if (!total) { tallyEl.innerHTML='<div class="info" style="text-align:center;padding:.5rem 0">Esperando votos...</div>'; return; }
     const q = hqQuestions[hq.qIdx]||{};
     tallyEl.innerHTML = (q.opts||[]).map((op,i)=>{
       const cnt = tally[i]||0;
       const pct = total>0?Math.round(cnt/total*100):0;
-      return `<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem">
-        <span style="font-size:.8rem;flex:1;font-family:'EB Garamond',serif">${op}</span>
-        <div style="flex:2;background:rgba(255,255,255,.06);border-radius:6px;height:18px;overflow:hidden">
-          <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--grif),var(--gold));border-radius:6px;transition:width .4s"></div>
+      return `<div class="vote-bar-row">
+        <span class="vote-bar-label">${op}</span>
+        <div class="vote-bar-track">
+          <div class="vote-bar-fill" style="width:${pct}%"></div>
         </div>
-        <span style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold);min-width:2rem;text-align:right">${cnt}</span>
+        <span class="vote-bar-count">${cnt}</span>
       </div>`;
     }).join('');
   });
@@ -2498,12 +2888,12 @@ function hqListenPlayer() {
     const result = document.getElementById('hq-player-result');
     [waiting,watching,voting,result].forEach(el=>el&&el.classList.add('hidden'));
 
-    if (hq.phase==='ended') { waiting.classList.remove('hidden'); waiting.innerHTML='<div style="font-size:2rem">⚡</div><div style="font-family:'Cinzel',serif;font-weight:700;margin-top:.5rem">¡Duelo terminado!</div>'; return; }
+    if (hq.phase==='ended') { waiting.classList.remove('hidden'); waiting.innerHTML=`<div style="font-size:2rem">⚡</div><div style="font-family:'Cinzel',serif;font-weight:700;margin-top:.5rem">¡Duelo terminado!</div>`; return; }
     if (!hq.phase||hq.phase==='idle') { waiting.classList.remove('hidden'); return; }
     // Jugador sin casa
     if (!currentHouse) {
       waiting.classList.remove('hidden');
-      waiting.innerHTML = '<div style="font-size:2rem">🎩</div><div style="font-family:'Cinzel',serif;font-weight:700;margin-top:.5rem">Primero pasá por el Sombrero Seleccionador</div>';
+      waiting.innerHTML = `<div style="font-size:2rem">🎩</div><div style="font-family:'Cinzel',serif;font-weight:700;margin-top:.5rem">Primero pasá por el Sombrero Seleccionador</div>`;
       return;
     }
 
@@ -2587,17 +2977,32 @@ function hqListenPlayer() {
 // MEJORA 1: Resetear puntos / resetear sala completa
 async function resetPoints() {
   if (!isOrganizer || !db) return;
-  if (!confirm('¿Resetear los puntos de todas las casas a 0?')) return;
+  const ok = await hgModal({
+    icon: '🔄',
+    title: 'Resetear puntos',
+    msg: '¿Resetear los puntos de todas las casas a 0? Esta acción no se puede deshacer.',
+    confirmText: 'Resetear',
+    danger: true
+  });
+  if (!ok) return;
   const {doc, setDoc} = fsH;
   const houses = {};
   HOUSE_KEYS.forEach(hk => { houses[hk] = { points: 0 }; });
   await setDoc(doc(db,'rooms',currentRoom), { houses }, {merge:true});
+  showToast('⚡ Puntos reseteados a 0');
   playSound('ding');
 }
 
 async function resetRoom() {
   if (!isOrganizer || !db) return;
-  if (!confirm('⚠️ Esto resetea puntos Y casas asignadas. ¿Estás segura?')) return;
+  const ok = await hgModal({
+    icon: '⚠️',
+    title: 'Resetear sala completa',
+    msg: 'Esto borra los puntos, las casas asignadas y los jugadores registrados. No se puede deshacer.',
+    confirmText: '⚠️ Resetear todo',
+    danger: true
+  });
+  if (!ok) return;
   const {doc, setDoc, collection, getDocs, deleteDoc} = fsH;
   const houses = {};
   HOUSE_KEYS.forEach(hk => { houses[hk] = { points: 0, members: [] }; });
@@ -2609,17 +3014,25 @@ async function resetRoom() {
   // Borrar jugadores
   const playersSnap = await getDocs(collection(db,'rooms',currentRoom,'players'));
   playersSnap.docs.forEach(d => deleteDoc(d.ref));
+  showToast('🧹 Sala reseteada completamente');
   playSound('buzz');
 }
 
 // MEJORA 5: Confirmación reveal
-function hqConfirmReveal() {
+async function hqConfirmReveal() {
   if (!isOrganizer) return;
   const q = hqQuestions[hqIdx];
   if (!q) return;
   const houseKey = HOUSE_KEYS[hqIdx % 4];
   const h = HOUSES[houseKey];
-  if (confirm(`¿Revelar la respuesta para ${h.name}?`)) hqOrgReveal();
+  const ok = await hgModal({
+    icon: h.crest,
+    title: 'Revelar respuesta',
+    msg: `¿Revelar la respuesta correcta para el turno de ${h.name}?`,
+    confirmText: '👁️ Revelar',
+    confirmClass: 'btn-gold'
+  });
+  if (ok) hqOrgReveal();
 }
 
 let _hqVoting = false;
@@ -2642,6 +3055,453 @@ async function hqPlayerVote(optIdx, qIdx) {
   });
   document.getElementById('hq-player-voted-msg').classList.remove('hidden');
   _hqVoting = false;
+}
+
+// ══════════════════════════════════════════
+// MÍMICA DE CASAS
+// ══════════════════════════════════════════
+const MIM_DEFAULT_WORDS = [
+  'Harry Potter','Hermione Granger','Ron Weasley','Dumbledore','Voldemort',
+  'Draco Malfoy','Hagrid','Dobby','Snape','Sirius Black',
+  'Quidditch','Nimbus 2000','Expelliarmus','Accio','Lumos',
+  'Castillo de Hogwarts','El Mapa del Merodeador','La Piedra Filosofal',
+  'Capa Invisible','Patronus','Dementor','Hipogrifo','Fénix',
+  'Plataforma 9 y ¾','El Sombrero Seleccionador'
+];
+
+let mimCustomWords = [];
+let mimTimerSecs = 60;
+let mimTimerRemaining = 0;
+let mimTimerInterval = null;
+let mimTimerPaused = false;
+let mimTimerTotal = 60;
+let mimCurrentWord = '';
+let mimCurrentHouse = '';
+let mimUsedWords = [];
+
+function initMimicaScreen() {
+  document.getElementById('mim-org').classList.toggle('hidden', !isOrganizer);
+  document.getElementById('mim-player').classList.toggle('hidden', isOrganizer);
+  if (isOrganizer) {
+    mimRenderDefaultChips();
+    mimRenderCustomChips();
+  } else {
+    mimListenPlayer();
+  }
+}
+
+function mimRenderDefaultChips() {
+  const el = document.getElementById('mim-default-chips');
+  el.innerHTML = '';
+  MIM_DEFAULT_WORDS.forEach(w => {
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.style.cssText = 'background:rgba(255,255,255,.06);color:var(--gold2);border:1px solid var(--border);cursor:default';
+    chip.textContent = w;
+    el.appendChild(chip);
+  });
+}
+
+function mimRenderCustomChips() {
+  const el = document.getElementById('mim-custom-chips');
+  el.innerHTML = '';
+  mimCustomWords.forEach((w, i) => {
+    const chip = document.createElement('span');
+    chip.className = 'chip-removable';
+    chip.innerHTML = `${w} <span class="chip-x" onclick="mimRemoveWord(${i})">✕</span>`;
+    el.appendChild(chip);
+  });
+}
+
+function mimAddWord() {
+  const inp = document.getElementById('mim-custom-input');
+  const val = inp.value.trim();
+  if (!val) return;
+  if (mimCustomWords.includes(val) || MIM_DEFAULT_WORDS.includes(val)) {
+    showToast('⚠️ Esa palabra ya está en la lista');
+    return;
+  }
+  mimCustomWords.push(val);
+  inp.value = '';
+  mimRenderCustomChips();
+  showToast(`✓ "${val}" agregada`);
+}
+
+function mimRemoveWord(i) {
+  mimCustomWords.splice(i, 1);
+  mimRenderCustomChips();
+}
+
+function mimSetTimer(secs, btn) {
+  mimTimerSecs = secs;
+  document.querySelectorAll('.mim-timer-btn').forEach(b => {
+    b.classList.remove('selected-timer');
+    b.textContent = b.dataset.sec + 's';
+  });
+  btn.classList.add('selected-timer');
+  btn.textContent = secs + 's ✓';
+}
+
+function mimPickWord() {
+  const allWords = [...MIM_DEFAULT_WORDS, ...mimCustomWords];
+  const available = allWords.filter(w => !mimUsedWords.includes(w));
+  if (!available.length) { mimUsedWords = []; return mimPickWord(); }
+  const w = available[Math.floor(Math.random() * available.length)];
+  mimUsedWords.push(w);
+  return w;
+}
+
+function mimPickHouse() {
+  // Rotar casas balanceando quién tuvo menos turnos
+  return HOUSE_KEYS[Math.floor(Math.random() * HOUSE_KEYS.length)];
+}
+
+function mimStartGame() {
+  document.getElementById('mim-setup').classList.add('hidden');
+  document.getElementById('mim-game').classList.remove('hidden');
+  mimNextRound();
+}
+
+function mimNextRound() {
+  // Cancelar timer anterior
+  if (mimTimerInterval) { clearInterval(mimTimerInterval); mimTimerInterval = null; }
+  mimTimerPaused = false;
+
+  mimCurrentHouse = mimPickHouse();
+  mimCurrentWord = mimPickWord();
+  mimTimerTotal = mimTimerSecs;
+  mimTimerRemaining = mimTimerSecs;
+
+  const h = HOUSES[mimCurrentHouse];
+
+  // Actualizar UI org
+  document.getElementById('mim-house-card').style.borderColor = h.color + '88';
+  document.getElementById('mim-house-crest').textContent = h.crest;
+  document.getElementById('mim-house-crest').style.filter = `drop-shadow(0 0 16px ${h.accent}88)`;
+  document.getElementById('mim-house-name').textContent = h.name;
+  document.getElementById('mim-house-name').style.color = h.accent;
+  document.getElementById('mim-word-display').textContent = mimCurrentWord;
+  document.getElementById('mim-timer-display').textContent = mimTimerSecs;
+  document.getElementById('mim-timer-display').classList.remove('timer-urgent');
+  document.getElementById('mim-timer-bar').style.width = '100%';
+  document.getElementById('mim-pause-btn').textContent = '⏸ Pausar';
+  document.getElementById('mim-result-btns').style.display = 'flex';
+
+  // Publicar en Firebase para jugadores
+  if (db) {
+    const {doc, setDoc} = fsH;
+    const pts = parseInt(document.getElementById('mim-pts-input').value) || 20;
+    setDoc(doc(db,'rooms',currentRoom), {
+      mimica: {
+        phase: 'playing',
+        house: mimCurrentHouse,
+        timerSecs: mimTimerSecs,
+        startTs: Date.now(),
+        pts,
+        result: null
+      }
+    }, {merge: true});
+  }
+
+  // Iniciar timer
+  mimTimerInterval = setInterval(() => {
+    if (mimTimerPaused) return;
+    mimTimerRemaining--;
+    const pct = Math.max(0, mimTimerRemaining / mimTimerTotal * 100);
+    document.getElementById('mim-timer-display').textContent = mimTimerRemaining;
+    document.getElementById('mim-timer-bar').style.width = pct + '%';
+
+    // Sync timer para jugadores (cada 5s para ahorrar writes)
+    if (mimTimerRemaining % 5 === 0 && db) {
+      const {doc, setDoc} = fsH;
+      setDoc(doc(db,'rooms',currentRoom), { mimica: { timerRemaining: mimTimerRemaining } }, {merge:true});
+    }
+
+    if (mimTimerRemaining <= 10) {
+      document.getElementById('mim-timer-display').classList.add('timer-urgent');
+      document.getElementById('mim-timer-bar').style.background = 'linear-gradient(90deg,#740001,#ffa0a0)';
+    }
+    if (mimTimerRemaining <= 0) {
+      clearInterval(mimTimerInterval); mimTimerInterval = null;
+      playSound('buzz');
+      showToast('⏰ ¡Se acabó el tiempo!');
+      // Sync final
+      if (db) {
+        const {doc, setDoc} = fsH;
+        setDoc(doc(db,'rooms',currentRoom), { mimica: { phase: 'timeout', timerRemaining: 0 } }, {merge:true});
+      }
+    }
+  }, 1000);
+}
+
+function mimPauseResume() {
+  mimTimerPaused = !mimTimerPaused;
+  document.getElementById('mim-pause-btn').textContent = mimTimerPaused ? '▶ Reanudar' : '⏸ Pausar';
+}
+
+function mimSkipWord() {
+  if (mimTimerInterval) { clearInterval(mimTimerInterval); mimTimerInterval = null; }
+  mimCurrentWord = mimPickWord();
+  document.getElementById('mim-word-display').textContent = mimCurrentWord;
+  // Reiniciar timer
+  mimTimerRemaining = mimTimerTotal;
+  mimTimerPaused = false;
+  document.getElementById('mim-pause-btn').textContent = '⏸ Pausar';
+  document.getElementById('mim-timer-display').textContent = mimTimerRemaining;
+  document.getElementById('mim-timer-display').classList.remove('timer-urgent');
+  document.getElementById('mim-timer-bar').style.width = '100%';
+  document.getElementById('mim-timer-bar').style.background = 'linear-gradient(90deg,var(--grif),var(--gold))';
+  showToast('⏭ Nueva palabra: ' + mimCurrentWord);
+  // Re-iniciar intervalo
+  mimTimerInterval = setInterval(() => {
+    if (mimTimerPaused) return;
+    mimTimerRemaining--;
+    const pct = Math.max(0, mimTimerRemaining / mimTimerTotal * 100);
+    document.getElementById('mim-timer-display').textContent = mimTimerRemaining;
+    document.getElementById('mim-timer-bar').style.width = pct + '%';
+    if (mimTimerRemaining <= 10) {
+      document.getElementById('mim-timer-display').classList.add('timer-urgent');
+      document.getElementById('mim-timer-bar').style.background = 'linear-gradient(90deg,#740001,#ffa0a0)';
+    }
+    if (mimTimerRemaining <= 0) {
+      clearInterval(mimTimerInterval); mimTimerInterval = null;
+      playSound('buzz');
+      showToast('⏰ ¡Se acabó el tiempo!');
+      if (db) {
+        const {doc, setDoc} = fsH;
+        setDoc(doc(db,'rooms',currentRoom), { mimica: { phase: 'timeout', timerRemaining: 0 } }, {merge:true});
+      }
+    }
+  }, 1000);
+}
+
+async function mimResult(won) {
+  if (mimTimerInterval) { clearInterval(mimTimerInterval); mimTimerInterval = null; }
+  const h = HOUSES[mimCurrentHouse];
+  const pts = parseInt(document.getElementById('mim-pts-input').value) || 20;
+
+  if (db) {
+    const {doc, setDoc} = fsH;
+    await setDoc(doc(db,'rooms',currentRoom), {
+      mimica: { phase: 'result', result: won ? 'won' : 'lost', word: mimCurrentWord }
+    }, {merge:true});
+  }
+
+  if (won) {
+    await applyPoints(mimCurrentHouse, pts, `Mímica: "${mimCurrentWord}"`);
+    confetti(h.accent);
+    showToast(`${h.crest} ¡${h.name} adivinó! +${pts} pts`);
+  } else {
+    playSound('buzz');
+    showToast(`✗ ${h.name} no adivinó — era: ${mimCurrentWord}`);
+  }
+}
+
+function mimEndGame() {
+  if (mimTimerInterval) { clearInterval(mimTimerInterval); mimTimerInterval = null; }
+  if (db) {
+    const {doc, setDoc} = fsH;
+    setDoc(doc(db,'rooms',currentRoom), { mimica: { phase: 'ended' } }, {merge:true});
+  }
+  document.getElementById('mim-setup').classList.remove('hidden');
+  document.getElementById('mim-game').classList.add('hidden');
+  mimUsedWords = [];
+  showToast('🎭 Mímica terminada');
+}
+
+// Jugador escucha el estado de mímica
+function mimListenPlayer() {
+  if (!db) return;
+  const {doc, onSnapshot} = fsH;
+  const unsub = onSnapshot(doc(db,'rooms',currentRoom), snap => {
+    const data = snap.data();
+    if (!data?.mimica) return;
+    const m = data.mimica;
+    const waiting = document.getElementById('mim-player-waiting');
+    const active = document.getElementById('mim-player-active');
+    const resultEl = document.getElementById('mim-p-result');
+
+    if (!m.phase || m.phase === 'ended') {
+      waiting.classList.remove('hidden'); active.classList.add('hidden'); return;
+    }
+
+    waiting.classList.add('hidden'); active.classList.remove('hidden');
+    const h = HOUSES[m.house] || {};
+    document.getElementById('mim-p-card').style.borderColor = (h.color||'') + '88';
+    document.getElementById('mim-p-crest').textContent = h.crest || '';
+    document.getElementById('mim-p-name').textContent = h.name || '';
+    document.getElementById('mim-p-name').style.color = h.accent || '';
+
+    if (m.phase === 'playing') {
+      resultEl.classList.add('hidden');
+      const remaining = m.timerRemaining !== undefined ? m.timerRemaining : m.timerSecs;
+      const pct = Math.max(0, remaining / (m.timerSecs||60) * 100);
+      document.getElementById('mim-p-timer').textContent = remaining;
+      document.getElementById('mim-p-timer-bar').style.width = pct + '%';
+      if (remaining <= 10) document.getElementById('mim-p-timer').classList.add('timer-urgent');
+      else document.getElementById('mim-p-timer').classList.remove('timer-urgent');
+    } else if (m.phase === 'timeout') {
+      document.getElementById('mim-p-timer').textContent = '0';
+      document.getElementById('mim-p-timer').classList.add('timer-urgent');
+    } else if (m.phase === 'result') {
+      resultEl.classList.remove('hidden');
+      const won = m.result === 'won';
+      document.getElementById('mim-p-result-icon').textContent = won ? '🎉' : '💀';
+      document.getElementById('mim-p-result-text').innerHTML = won
+        ? `<span style="color:#a0d4a0;font-family:'Cinzel',serif">¡Adivinaron! Era: <strong>${m.word}</strong></span>`
+        : `<span style="color:#ffa0a0;font-family:'Cinzel',serif">Era: <strong>${m.word}</strong></span>`;
+    }
+  });
+  screenUnsubs.push(unsub);
+}
+
+// ══════════════════════════════════════════
+// ¿A QUIÉN LE TOCA? (RULETA)
+// ══════════════════════════════════════════
+let rulMode = 'casa'; // 'casa' | 'jugador'
+let rulLastResult = null;
+
+function initRuletaScreen() {
+  document.getElementById('rul-org').classList.toggle('hidden', !isOrganizer);
+  document.getElementById('rul-player').classList.toggle('hidden', isOrganizer);
+  document.getElementById('rul-result').classList.add('hidden');
+  if (!isOrganizer) rulListenPlayer();
+}
+
+function rulSetMode(mode, btn) {
+  rulMode = mode;
+  document.querySelectorAll('.rul-mode-btn').forEach(b => b.classList.remove('selected-rul'));
+  btn.classList.add('selected-rul');
+}
+
+async function rulSpin() {
+  const btn = document.getElementById('rul-spin-btn');
+  btn.disabled = true;
+  btn.textContent = '🎲 Sorteando...';
+
+  // Animar el botón con un pequeño spin
+  btn.classList.add('rul-spinning');
+  setTimeout(() => btn.classList.remove('rul-spinning'), 700);
+
+  // Elegir resultado
+  let icon, name, houseKey;
+  if (rulMode === 'casa') {
+    houseKey = HOUSE_KEYS[Math.floor(Math.random() * HOUSE_KEYS.length)];
+    const h = HOUSES[houseKey];
+    icon = h.crest;
+    name = h.name;
+  } else {
+    // Jugador: traer lista de jugadores de Firebase
+    if (db) {
+      const {collection, getDocs} = fsH;
+      const snap = await getDocs(collection(db,'rooms',currentRoom,'players'));
+      const players = snap.docs.map(d => d.data().name);
+      if (!players.length) { showToast('⚠️ No hay jugadores registrados'); btn.disabled=false; btn.textContent='🎲 ¡Sortear!'; return; }
+      const picked = players[Math.floor(Math.random() * players.length)];
+      // Encontrar casa del jugador
+      const roomSnap = await (fsH.getDoc)(fsH.doc(db,'rooms',currentRoom));
+      const houses = roomSnap.data()?.houses || {};
+      houseKey = null;
+      for (const [hk, hv] of Object.entries(houses)) {
+        if ((hv.members||[]).includes(picked)) { houseKey = hk; break; }
+      }
+      const h = houseKey ? HOUSES[houseKey] : null;
+      icon = h ? h.crest : '👤';
+      name = picked;
+    } else {
+      btn.disabled=false; btn.textContent='🎲 ¡Sortear!'; return;
+    }
+  }
+
+  const challenge = document.getElementById('rul-challenge-input').value.trim();
+  const pts = parseInt(document.getElementById('rul-pts-input').value) || 15;
+  rulLastResult = { icon, name, houseKey, challenge, pts };
+
+  // Publicar en Firebase
+  if (db) {
+    const {doc, setDoc} = fsH;
+    setDoc(doc(db,'rooms',currentRoom), {
+      ruleta: { phase: 'picked', icon, name, houseKey, challenge, pts, ts: Date.now() }
+    }, {merge:true});
+  }
+
+  // Mostrar resultado con animación
+  await new Promise(r => setTimeout(r, 400));
+  const resultCard = document.getElementById('rul-result-card');
+  if (houseKey) resultCard.style.borderColor = HOUSES[houseKey].color + '88';
+  document.getElementById('rul-result-icon').textContent = icon;
+  document.getElementById('rul-result-icon').style.filter = houseKey ? `drop-shadow(0 0 20px ${HOUSES[houseKey].accent}88)` : '';
+  document.getElementById('rul-result-name').textContent = name;
+  document.getElementById('rul-result-name').style.color = houseKey ? HOUSES[houseKey].accent : 'var(--gold)';
+  document.getElementById('rul-result-challenge').textContent = challenge || '';
+  document.getElementById('rul-result').classList.remove('hidden');
+
+  confetti(houseKey ? HOUSES[houseKey].accent : null);
+  playSound('ding');
+
+  btn.disabled = false;
+  btn.textContent = '🎲 ¡Sortear!';
+}
+
+async function rulGivePoints(won) {
+  if (!rulLastResult) return;
+  const { houseKey, name, challenge, pts } = rulLastResult;
+  if (won) {
+    if (houseKey) {
+      await applyPoints(houseKey, pts, `Desafío${challenge ? ': '+challenge : ''} — ${name}`);
+      showToast(`${HOUSES[houseKey].crest} +${pts} pts para ${HOUSES[houseKey].name}`);
+    } else {
+      showToast(`✓ ${name} cumplió el desafío`);
+    }
+  } else {
+    playSound('buzz');
+    showToast(`✗ ${name} no lo cumplió`);
+  }
+  // Publicar resultado en Firebase
+  if (db) {
+    const {doc, setDoc} = fsH;
+    setDoc(doc(db,'rooms',currentRoom), {
+      ruleta: { phase: 'result', result: won ? 'won' : 'lost' }
+    }, {merge:true});
+  }
+}
+
+function rulListenPlayer() {
+  if (!db) return;
+  const {doc, onSnapshot} = fsH;
+  const unsub = onSnapshot(doc(db,'rooms',currentRoom), snap => {
+    const data = snap.data();
+    if (!data?.ruleta) return;
+    const r = data.ruleta;
+    const waiting = document.getElementById('rul-player-waiting');
+    const active = document.getElementById('rul-player-active');
+    const resultEl = document.getElementById('rul-p-result');
+
+    if (!r.phase || r.phase === 'idle') {
+      waiting.classList.remove('hidden'); active.classList.add('hidden'); return;
+    }
+
+    waiting.classList.add('hidden'); active.classList.remove('hidden');
+    const h = r.houseKey ? HOUSES[r.houseKey] : null;
+    document.getElementById('rul-p-card').style.borderColor = h ? h.color+'88' : 'var(--border)';
+    document.getElementById('rul-p-icon').textContent = r.icon || '🎯';
+    document.getElementById('rul-p-icon').style.filter = h ? `drop-shadow(0 0 20px ${h.accent}88)` : '';
+    document.getElementById('rul-p-name').textContent = r.name || '';
+    document.getElementById('rul-p-name').style.color = h ? h.accent : 'var(--gold)';
+    document.getElementById('rul-p-challenge').textContent = r.challenge || '';
+
+    if (r.phase === 'result') {
+      resultEl.classList.remove('hidden');
+      const won = r.result === 'won';
+      document.getElementById('rul-p-result-icon').textContent = won ? '🏆' : '💀';
+      document.getElementById('rul-p-result-text').innerHTML = won
+        ? `<span style="color:#a0d4a0;font-family:'Cinzel',serif">¡Lo cumplió!</span>`
+        : `<span style="color:#ffa0a0;font-family:'Cinzel',serif">No lo cumplió</span>`;
+    } else {
+      resultEl.classList.add('hidden');
+    }
+  });
+  screenUnsubs.push(unsub);
 }
 
 </script>
