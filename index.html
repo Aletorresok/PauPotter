@@ -17,7 +17,7 @@ const firebaseConfig = {
   projectId: "paupotter",
   storageBucket: "paupotter.firebasestorage.app",
   messagingSenderId: "429840268976",
-  appId: "1:429840268976:web:6d21ff356cdb2613e60575",
+  appId: "1:429840268976:web:6d21ff356cdb2613e60575"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -3708,10 +3708,11 @@ function bsListen() {
     // Guardar audio URLs en cache global para TV
     if (data.sortingAudio) window._bsAudioUrls = data.sortingAudio;
 
-    // Copa siempre
+    // Copa siempre visible
     bsRenderCup(data.houses||{});
 
-    // Eventos
+    // ── Eventos de pantalla completa (interrumpen) ──
+    // Cada uno es independiente — no encadenados con else if
     const event = data.activeEvent;
     const ceremonyTs = data.ceremonyTs||0;
     const closingTs = data.closingTs||0;
@@ -3720,23 +3721,33 @@ function bsListen() {
     if (event==='ceremony' && ceremonyTs>lastCeremonyTs) {
       lastCeremonyTs = ceremonyTs;
       runCeremonyTV(data.ceremonyPhrase||'¡Bienvenidos a Hogwarts!');
-    } else if (event==='points-announce' && data.lastPointsEvent && pointsTs>lastPointsTs) {
-      lastPointsTs = pointsTs;
-      showPointsAnnounceTV(data.lastPointsEvent);
-    } else if (event==='closing' && closingTs>lastClosingTs) {
+      return; // ceremonia toma pantalla completa
+    }
+    if (event==='closing' && closingTs>lastClosingTs) {
       lastClosingTs = closingTs;
       showClosingTV(data.houses||{});
-    } else if (event==='tiebreaker') {
+      return;
+    }
+    if (event==='tiebreaker') {
       const tb = data.tiebreakerHouses||[];
       if (tb.length) bsShowTiebreaker(tb, data.houses||{});
+      return;
     }
 
-    // Sombrero — solo actuar si no hay otro evento tomando la pantalla
-    const activeEvt = data.activeEvent;
+    // Anuncio de puntos — interrupción breve, no bloquea el resto
+    if (event==='points-announce' && data.lastPointsEvent && pointsTs>lastPointsTs) {
+      lastPointsTs = pointsTs;
+      showPointsAnnounceTV(data.lastPointsEvent);
+      // No return — después del timeout vuelve solo a la pantalla activa
+    }
+
+    // ── Juegos — cada uno evalúa su propio estado ──
+
+    // Sombrero
     const sortingPhase = (data.sorting||{}).phase;
-    if (!activeEvt || activeEvt === 'sorting' ||
-        (sortingPhase === 'thinking' || sortingPhase === 'revealed')) {
+    if (sortingPhase === 'thinking' || sortingPhase === 'revealed') {
       bsRenderSorting(data.sorting||{}, data.houses||{});
+      return;
     }
 
     // Mímica en TV
@@ -3967,9 +3978,17 @@ function bsListen() {
         }
       }
     } else if (hq.phase === 'ended' || hq.phase === 'idle' || !hq.phase) {
-      // Solo volver a waiting si houseQuiz era la pantalla activa
       const bsHQ = document.getElementById('bs-house-quiz');
       if (bsHQ && bsHQ.classList.contains('active')) bsGoWaiting();
+    }
+
+    // Sombrero en waiting — si no hay juego activo, mostrar waiting
+    if (sortingPhase === 'waiting') {
+      const anyActive = ['bs-mimica','bs-house-quiz','bs-ruleta','bs-snitch'].some(id => {
+        const el = document.getElementById(id);
+        return el && el.classList.contains('active');
+      });
+      if (!anyActive) bsGoWaiting();
     }
   });
 }
