@@ -1786,7 +1786,8 @@ header {
           <!-- Botones -->
           <div style="display:flex;gap:.5rem">
             <button class="btn" onclick="hqConfirmReveal()" id="hq-reveal-btn" style="flex:1;background:linear-gradient(135deg,var(--slyth),#2d7a4a);color:#c8e8c8;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer">👁️ Revelar</button>
-            <button class="btn" onclick="hqOrgNext()" id="hq-next-btn" style="flex:1;display:none;background:linear-gradient(135deg,var(--grif),#c9a84c);color:white;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer">Siguiente ➡️</button>
+            <button class="btn btn-ghost" onclick="hqEndGame()" style="width:100%;margin-top:.4rem;font-size:.8rem;display:block">✕ Terminar duelo</button>
+        <button class="btn" onclick="hqOrgNext()" id="hq-next-btn" style="flex:1;display:none;background:linear-gradient(135deg,var(--grif),#c9a84c);color:white;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer">Siguiente ➡️</button>
           </div>
           <div id="hq-reveal-result" style="margin-top:.75rem;text-align:center;min-height:2rem"></div>
         </div>
@@ -2199,7 +2200,8 @@ function goHome() {
     setDoc(doc(db,'rooms',currentRoom), {
       mimica: { phase: 'ended' },
       ruleta: { phase: 'idle' },
-      snitch: { phase: 'idle' }
+      snitch: { phase: 'idle' },
+      houseQuiz: { phase: 'idle' }
     }, {merge:true});
   }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -2347,7 +2349,8 @@ async function doManualSort(houseKey) {
   if (manualBtn) manualBtn.style.display = 'none';
 
   const hat = document.getElementById('sort-hat');
-  hat.classList.add('sorting-hat-thinking');
+  hat.textContent = '🎩';
+  hat.className = 'sorting-hat-emoji sorting-hat-thinking';
   document.getElementById('sort-status-msg').textContent = 'El sombrero está pensando...';
 
   await setDoc(doc(db,'rooms',currentRoom), {
@@ -2443,9 +2446,10 @@ async function doSort() {
   btn.disabled = true;
   btn.textContent = '🎩 Seleccionando...';
 
-  // Animación del sombrero pensando
+  // Resetear sombrero antes de animar
   const hat = document.getElementById('sort-hat');
-  hat.classList.add('sorting-hat-thinking');
+  hat.textContent = '🎩';
+  hat.className = 'sorting-hat-emoji sorting-hat-thinking';
   document.getElementById('sort-status-msg').textContent = 'El sombrero está pensando...';
 
   // Publicar en Firebase para que la TV lo muestre
@@ -4080,19 +4084,24 @@ function bsListen() {
       const resultEl = document.getElementById('bs-hq-result');
       if (resultEl) {
         if (hq.phase === 'revealed') {
+          const wasRevealed = resultEl.dataset.revealedIdx === String(hq.qIdx);
           resultEl.style.display = 'block';
           if (hq.isCorrect) {
             resultEl.textContent = '✨ ¡Correcto!';
             resultEl.style.color = h.accent || '#a0d4a0';
+            if (!wasRevealed) { confetti(h.accent); setTimeout(()=>confetti(h.accent),400); }
           } else if (hq.chosenIdx === -1 || hq.chosenIdx === undefined) {
             resultEl.textContent = '😶 Sin votos';
             resultEl.style.color = 'var(--gold2)';
           } else {
             resultEl.textContent = '💀 Incorrecto';
             resultEl.style.color = '#ffa0a0';
+            if (!wasRevealed) showRedFlash();
           }
+          resultEl.dataset.revealedIdx = String(hq.qIdx);
         } else {
           resultEl.style.display = 'none';
+          resultEl.dataset.revealedIdx = '';
         }
       }
     } else if (hq.phase === 'ended' || hq.phase === 'idle' || !hq.phase) {
@@ -4596,26 +4605,22 @@ function hqListenPlayer() {
       const text = document.getElementById('hq-player-result-text');
 
       if (hq.isCorrect) {
-        // CORRECTO — confetti para toda la casa activa
         icon.innerHTML = '<div style="font-size:4rem;animation:reveal .4s cubic-bezier(.36,2,.6,1)">🎉</div>';
         text.innerHTML = `<span style="color:${h.accent};font-family:'Cinzel',serif;font-size:1.1rem">¡${h.name} acertó! +${hq.pts||0} pts</span>`;
+        // Confetti solo para la casa que jugó
         if (isMyTurn) {
-          // Casa ganadora: confetti grande
           confetti(h.accent);
           setTimeout(()=>confetti(h.accent), 400);
-        } else {
-          // Observadores: confetti más suave con los colores del ganador
-          confetti(h.accent);
         }
         playSound('win');
       } else if (hq.chosenIdx===-1||hq.chosenIdx===undefined) {
         icon.innerHTML = '<div style="font-size:4rem;animation:reveal .4s cubic-bezier(.36,2,.6,1)">😶</div>';
         text.innerHTML = `<span style="font-family:'Cinzel',serif;opacity:.7">Sin respuesta</span>`;
       } else {
-        // INCORRECTO — cruz roja grande para todos
         icon.innerHTML = '<div style="font-size:4rem;animation:reveal .4s cubic-bezier(.36,2,.6,1)">❌</div>';
         text.innerHTML = `<span style="color:#ffa0a0;font-family:'Cinzel',serif">Era: <strong>${(hq.opts||[])[hq.correctIdx]||''}</strong></span>`;
-        showRedFlash();
+        // Flash rojo solo para la casa que jugó
+        if (isMyTurn) showRedFlash();
         playSound('buzz');
       }
 
