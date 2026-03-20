@@ -4745,7 +4745,11 @@ async function resetPoints() {
   const {doc, setDoc} = fsH;
   const houses = {};
   HOUSE_KEYS.forEach(hk => { houses[hk] = { points: 0 }; });
-  await setDoc(doc(db,'rooms',currentRoom), { houses }, {merge:true});
+  const {doc: doc2, setDoc: setDoc2, collection: col2, getDocs: getDocs2, deleteDoc: del2} = fsH;
+  await setDoc(doc2(db,'rooms',currentRoom), { houses }, {merge:true});
+  // Borrar historial
+  const logsSnap = await getDocs2(col2(db,'rooms',currentRoom,'pointsLog'));
+  await Promise.all(logsSnap.docs.map(d => del2(d.ref)));
   showToast('⚡ Puntos reseteados a 0');
   playSound('ding');
 }
@@ -4775,9 +4779,15 @@ async function resetRoom() {
     snitchLeaders: {},
     snitchLeaderVote: { phase: 'idle', votes: {} }
   }, {merge:true});
-  // Borrar jugadores en paralelo y esperar que todos terminen
-  const playersSnap = await getDocs(collection(db,'rooms',currentRoom,'players'));
-  await Promise.all(playersSnap.docs.map(d => deleteDoc(d.ref)));
+  // Borrar jugadores y pointsLog en paralelo
+  const [playersSnap, logsSnap] = await Promise.all([
+    getDocs(collection(db,'rooms',currentRoom,'players')),
+    getDocs(collection(db,'rooms',currentRoom,'pointsLog'))
+  ]);
+  await Promise.all([
+    ...playersSnap.docs.map(d => deleteDoc(d.ref)),
+    ...logsSnap.docs.map(d => deleteDoc(d.ref))
+  ]);
   showToast('🧹 Sala reseteada completamente');
   playSound('buzz');
 }
