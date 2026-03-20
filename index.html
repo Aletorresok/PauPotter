@@ -1455,11 +1455,8 @@ header {
           <div id="snitch-leaders-display"></div>
         </div>
         <div class="card card-gold" style="margin-bottom:.75rem">
-          <div style="font-family:'Cinzel',serif;font-size:.78rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.5rem">⚙️ CONFIGURACIÓN</div>
-          <div class="ilabel">Puntos iniciales por casa</div>
-          <input class="ifield" id="snitch-initial-pts" type="number" value="100" min="50" max="500" style="margin-bottom:.5rem">
-          <div class="ilabel">Bonus por ronda (+)</div>
-          <input class="ifield" id="snitch-bonus-pts" type="number" value="25" min="0" max="100">
+          <div style="font-family:'Cinzel',serif;font-size:.78rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.3rem">⚙️ APUESTAS</div>
+          <div style="font-size:.82rem;opacity:.7">Las casas apuestan sus puntos de la Copa. Cada ronda reciben +25 pts de bonus. Mínimo 10 pts por apuesta.</div>
         </div>
         <button class="btn btn-gold" onclick="snitchStartGame()" id="snitch-start-btn" style="opacity:.5;pointer-events:none">🏆 Iniciar juego</button>
       </div>
@@ -2793,43 +2790,44 @@ function snitchCheckCanStart() {
 
 async function snitchStartGame() {
   if (!snitchSecretBox || !db) return;
-  snitchInitialPts = parseInt(document.getElementById('snitch-initial-pts').value) || 100;
-  snitchBonusPts = parseInt(document.getElementById('snitch-bonus-pts').value) || 25;
-  // Inicializar presupuestos
-  snitchBudgets = {};
-  HOUSE_KEYS.forEach(hk => { snitchBudgets[hk] = snitchInitialPts; });
   snitchCurrentRound = 1;
-  const {doc, setDoc} = fsH;
+  const {doc, getDoc, setDoc} = fsH;
+  // Leer puntos actuales de la Copa
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const houses = snap.data()?.houses || {};
   await setDoc(doc(db,'rooms',currentRoom), {
     snitch: {
       phase: 'hints',
       round: 1,
       repHouse: SNITCH_REPS[0],
-      budgets: snitchBudgets,
       bets: {},
-      result: null,
-      initialPts: snitchInitialPts,
-      bonusPts: snitchBonusPts
+      result: null
     }
   }, {merge:true});
+  // Dar +25 pts de arranque a cada casa
+  for (const hk of HOUSE_KEYS) {
+    await applyPoints(hk, 25, 'Snitch: puntos de arranque');
+  }
   document.getElementById('snitch-setup').classList.add('hidden');
   document.getElementById('snitch-game').classList.remove('hidden');
-  snitchUpdateOrgGame(1, snitchBudgets, {});
+  // Releer puntos actualizados
+  const snap2 = await getDoc(doc(db,'rooms',currentRoom));
+  snitchUpdateOrgGame(1, snap2.data()?.houses||{}, {});
 }
 
-function snitchUpdateOrgGame(round, budgets, bets) {
+function snitchUpdateOrgGame(round, houses, bets) {
   document.getElementById('snitch-round-display').textContent = `${round} / ${SNITCH_ROUNDS}`;
   const repHk = SNITCH_REPS[(round-1) % 4];
   const repH = HOUSES[repHk];
   document.getElementById('snitch-rep-display').textContent = `Representante: ${repH.crest} ${repH.name}`;
   document.getElementById('snitch-secret-display').textContent = snitchSecretBox ? `Caja ${snitchSecretBox}` : '— Sin elegir —';
-  // Presupuestos
+  // Puntos actuales de la Copa
   const el = document.getElementById('snitch-budgets-org');
   if (el) {
     el.innerHTML = '';
     HOUSE_KEYS.forEach(hk => {
       const h = HOUSES[hk];
-      const pts = budgets[hk] || 0;
+      const pts = houses[hk]?.points || 0;
       const bet = bets[hk];
       const row = document.createElement('div');
       row.className = 'snitch-budget-row';
@@ -2869,15 +2867,28 @@ async function snitchOpenBetting() {
   document.getElementById('snitch-reveal-btn').style.display = 'block';
 }
 
+function snitchResetBettingForm() {
+  // Resetear el formulario de apuesta para nueva ronda
+  const sentEl = document.getElementById('snitch-bet-sent');
+  if (sentEl) sentEl.classList.add('hidden');
+  const amountEl = document.getElementById('snitch-bet-amount');
+  if (amountEl) { amountEl.disabled = false; amountEl.value = ''; }
+  document.querySelectorAll('#snitch-bet-boxes .snitch-box-btn').forEach(b => {
+    b.disabled = false;
+    b.classList.remove('selected-box');
+  });
+  snitchMyBetBox = null;
+}
+
 async function snitchReveal() {
   if (!db || !snitchSecretBox) return;
   const {doc, getDoc, setDoc} = fsH;
   const snap = await getDoc(doc(db,'rooms',currentRoom));
   const snitchData = snap.data()?.snitch || {};
   const bets = snitchData.bets || {};
-  const budgets = { ...(snitchData.budgets || {}) };
+  const houses = snap.data()?.houses || {};
 
-  // Calcular resultado
+  // Calcular resultado usando puntos reales de la Copa
   const winners = [], losers = [];
   let poolFromLosers = 0;
   HOUSE_KEYS.forEach(hk => {
@@ -2888,7 +2899,6 @@ async function snitchReveal() {
     } else {
       losers.push({ hk, amount: bet.amount });
       poolFromLosers += bet.amount;
-      budgets[hk] = Math.max(0, (budgets[hk]||0) - bet.amount);
     }
   });
 
@@ -2899,11 +2909,9 @@ async function snitchReveal() {
     const share = totalWinnerBets > 0
       ? Math.round((w.amount / totalWinnerBets) * poolFromLosers)
       : 0;
-    budgets[w.hk] = (budgets[w.hk]||0) + share;
     pointsGained[w.hk] = share;
   });
 
-  // Si nadie apostó a la caja correcta → todos pierden su apuesta
   const noWinner = winners.length === 0;
 
   await setDoc(doc(db,'rooms',currentRoom), {
@@ -2911,7 +2919,6 @@ async function snitchReveal() {
       phase: 'revealed',
       correctBox: snitchSecretBox,
       bets,
-      budgets,
       winners: winners.map(w=>w.hk),
       pointsGained,
       noWinner,
@@ -2919,16 +2926,20 @@ async function snitchReveal() {
     }
   }, {merge:true});
 
-  // Sumar puntos ganados a la Copa
+  // Aplicar cambios a la Copa directamente
+  for (const l of losers) {
+    await applyPoints(l.hk, -l.amount, `Snitch R${snitchCurrentRound}: apuesta perdida`);
+  }
   for (const w of winners) {
-    if (pointsGained[w.hk] > 0) {
-      await applyPoints(w.hk, pointsGained[w.hk], `Snitch Ronda ${snitchCurrentRound}: Caja ${snitchSecretBox}`);
-    }
+    const gain = pointsGained[w.hk] || 0;
+    if (gain > 0) await applyPoints(w.hk, gain, `Snitch R${snitchCurrentRound}: ganó caja ${snitchSecretBox}`);
   }
 
   document.getElementById('snitch-reveal-btn').style.display = 'none';
   document.getElementById('snitch-next-btn').style.display = 'block';
-  snitchUpdateOrgGame(snitchCurrentRound, budgets, bets);
+  // Releer casas actualizadas para el display
+  const snap2 = await getDoc(doc(db,'rooms',currentRoom));
+  snitchUpdateOrgGame(snitchCurrentRound, snap2.data()?.houses||{}, bets);
 }
 
 async function snitchNextRound() {
@@ -2950,25 +2961,22 @@ async function snitchNextRound() {
   // Limpiar selector de caja en org
   document.querySelectorAll('#snitch-box-selector .snitch-box-btn').forEach(b=>b.classList.remove('selected-box'));
   document.getElementById('snitch-box-chosen').textContent = '';
-  // Añadir bonus al presupuesto
   const {doc, getDoc, setDoc} = fsH;
   const snap = await getDoc(doc(db,'rooms',currentRoom));
-  const currentBudgets = snap.data()?.snitch?.budgets || {};
-  const newBudgets = {};
-  HOUSE_KEYS.forEach(hk => {
-    newBudgets[hk] = (currentBudgets[hk]||0) + snitchBonusPts;
-  });
-  snitchBudgets = newBudgets;
+  const houses = snap.data()?.houses || {};
   await setDoc(doc(db,'rooms',currentRoom), {
     snitch: {
       phase: 'hints',
       round: nextRound,
       repHouse: SNITCH_REPS[(nextRound-1) % 4],
-      budgets: newBudgets,
       bets: {},
       result: null
     }
   }, {merge:true});
+  // Dar +25 pts bonus de ronda a cada casa
+  for (const hk of HOUSE_KEYS) {
+    await applyPoints(hk, 25, `Snitch R${nextRound}: bonus`);
+  }
   document.getElementById('snitch-next-btn').style.display = 'none';
   document.getElementById('snitch-open-bet-btn').style.display = 'block';
   document.getElementById('snitch-reveal-btn').style.display = 'none';
@@ -2977,7 +2985,9 @@ async function snitchNextRound() {
   document.querySelectorAll('#snitch-box-selector-game .snitch-box-btn').forEach(b=>b.classList.remove('selected-box'));
   const secEl = document.getElementById('snitch-secret-display');
   if (secEl) secEl.textContent = '— Sin elegir —';
-  snitchUpdateOrgGame(nextRound, newBudgets, {});
+  // Releer puntos actualizados después del bonus
+  const snap2 = await getDoc(doc(db,'rooms',currentRoom));
+  snitchUpdateOrgGame(nextRound, snap2.data()?.houses||{}, {});
   showToast(`Ronda ${nextRound} — elegí la nueva caja`);
 }
 
@@ -3085,14 +3095,17 @@ async function snitchSendBet() {
   if (!snitchMyBetBox) { showToast('⚠️ Elegí una caja'); return; }
   const amount = parseInt(document.getElementById('snitch-bet-amount').value);
   if (!amount || amount < 10) { showToast('⚠️ Mínimo 10 puntos'); return; }
-  if (!db || !currentHouse) return;
+  const myHouse = window._snitchMyHouse || currentHouse;
+  if (!db || !myHouse) return;
   const {doc, getDoc, setDoc} = fsH;
   const snap = await getDoc(doc(db,'rooms',currentRoom));
-  const budget = snap.data()?.snitch?.budgets?.[currentHouse] || 0;
-  if (amount > budget) { showToast(`⚠️ Solo tenés ${budget} pts`); return; }
-  // Leer bets actuales para no pisar
+  // Validar contra puntos reales de la Copa
+  const currentPts = snap.data()?.houses?.[myHouse]?.points || 0;
+  if (amount > currentPts) { showToast(`⚠️ Tu casa tiene ${currentPts} pts`); return; }
+  if (currentPts <= 0) { showToast('⚠️ Tu casa no tiene puntos para apostar'); return; }
+  // Registrar apuesta
   const currentBets = snap.data()?.snitch?.bets || {};
-  currentBets[currentHouse] = { box: snitchMyBetBox, amount };
+  currentBets[myHouse] = { box: snitchMyBetBox, amount };
   await setDoc(doc(db,'rooms',currentRoom), {
     snitch: { bets: currentBets }
   }, {merge:true});
@@ -3113,22 +3126,36 @@ function snitchListenPlayer() {
     const s = data.snitch || {};
     const leaders = data.snitchLeaders || {};
     const voteData = data.snitchLeaderVote || {};
-    window._snitchIsLeader = leaders[currentHouse] === currentUser;
+
+    // Leer casa del snapshot — evita race condition con listenHouses
+    const houses = data.houses || {};
+    let myHouseSnap = currentHouse;
+    for (const [hk, hv] of Object.entries(houses)) {
+      if ((hv.members||[]).includes(currentUser)) {
+        myHouseSnap = hk;
+        if (!currentHouse) { currentHouse = hk; updateMenuInfo(); }
+        break;
+      }
+    }
+
+    window._snitchIsLeader = myHouseSnap ? leaders[myHouseSnap] === currentUser : false;
+    window._snitchMyHouse = myHouseSnap;
 
     // Si hay votación abierta y el juego no empezó, mostrar panel de voto
     if (voteData.phase === 'open' && (!s.phase || s.phase === 'idle')) {
       snitchRenderLeaderVotePanel(voteData, leaders, data.houses||{});
       return;
     }
-    snitchRenderPlayerPanels(s, leaders);
+    snitchRenderPlayerPanels(s, leaders, myHouseSnap);
     if (s.timerTs && s.timerSecs) snitchRunTimer(s.timerTs, s.timerSecs, s.timerPhase);
   });
   screenUnsubs.push(unsub);
 }
 
-function snitchRenderPlayerPanels(s, leaders) {
-  const hasLeader = !!leaders[currentHouse];
-  const isLeader = window._snitchIsLeader;
+function snitchRenderPlayerPanels(s, leaders, myHouse) {
+  myHouse = myHouse || currentHouse;
+  const hasLeader = !!leaders[myHouse];
+  const isLeader = myHouse ? leaders[myHouse] === currentUser : false;
 
   // Ocultar todos
   ['snitch-leader-panel','snitch-player-panel','snitch-choose-leader','snitch-result-panel'].forEach(id=>{
@@ -3150,17 +3177,17 @@ function snitchRenderPlayerPanels(s, leaders) {
     const resEl = document.getElementById('snitch-result-panel');
     if (resEl) {
       resEl.classList.remove('hidden');
-      const won = s.winners?.includes(currentHouse);
+      const won = s.winners?.includes(myHouse);
       const noWinner = s.noWinner;
       document.getElementById('snitch-result-icon').textContent = noWinner ? '😶' : won ? '🏆' : '❌';
       document.getElementById('snitch-result-text').textContent = noWinner
         ? 'La snitch escapó — nadie acertó'
-        : won ? `¡${HOUSES[currentHouse].name} acertó!` : 'Incorrecto';
-      const myBet = s.bets?.[currentHouse];
-      const gained = s.pointsGained?.[currentHouse] || 0;
+        : won ? `¡${HOUSES[myHouse]?.name} acertó!` : 'Incorrecto';
+      const myBet = s.bets?.[myHouse];
+      const gained = s.pointsGained?.[myHouse] || 0;
       document.getElementById('snitch-result-detail').textContent =
         `La snitch estaba en la Caja ${s.correctBox}${myBet ? ` · Apostaste Caja ${myBet.box}` : ''}${gained > 0 ? ` · +${gained} pts` : ''}`;
-      if (won && !noWinner) confetti(HOUSES[currentHouse]?.accent);
+      if (won && !noWinner) confetti(HOUSES[myHouse]?.accent);
     }
     return;
   }
@@ -3176,7 +3203,8 @@ function snitchRenderPlayerPanels(s, leaders) {
     if (panel) {
       panel.classList.remove('hidden');
       // Actualizar presupuesto
-      const budget = s.budgets?.[currentHouse] || 0;
+      // Leer puntos de la Copa — usar window._lastHousesData si está disponible
+      const budget = window._lastHousesData?.[myHouse]?.points || 0;
       const ptsEl = document.getElementById('snitch-leader-pts');
       if (ptsEl) ptsEl.textContent = budget;
       // Panel de apuesta
@@ -3185,11 +3213,14 @@ function snitchRenderPlayerPanels(s, leaders) {
       if (s.phase === 'betting') {
         bettingEl?.classList.remove('hidden');
         waitingEl?.classList.add('hidden');
-        // Si ya aposté, mostrar confirmación
-        if (s.bets?.[currentHouse]) {
+        if (s.bets?.[myHouse]) {
+          // Ya aposté — mostrar confirmación
           document.getElementById('snitch-bet-sent')?.classList.remove('hidden');
           document.getElementById('snitch-bet-amount').disabled = true;
           document.querySelectorAll('#snitch-bet-boxes .snitch-box-btn').forEach(b=>b.disabled=true);
+        } else {
+          // No aposté todavía — asegurar formulario limpio
+          snitchResetBettingForm();
         }
       } else {
         bettingEl?.classList.add('hidden');
@@ -3209,7 +3240,7 @@ function snitchRenderPlayerPanels(s, leaders) {
       const roundNum = s.round || 1;
       const repHk = SNITCH_REPS[(roundNum-1)%4];
       const repH = HOUSES[repHk] || {};
-      const budget = s.budgets?.[currentHouse] || 0;
+      const budget = window._lastHousesData?.[myHouse]?.points || 0;
       if (s.phase === 'betting') {
         waiting?.classList.add('hidden');
         if (info) {
