@@ -26,255 +26,6 @@ window._db = db;
 window._fsHelpers = { doc, setDoc, getDoc, onSnapshot, collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, getDocs, updateDoc, increment };
 window._fbReady = true;
 document.dispatchEvent(new Event('fbready'));
-// ══ EL ROSCO DE DUMBLEDORE ══
-let roscDefs = []; // [{l, q, ans}]
-let roscTimer = 30;
-let roscCurrentIdx = 0;
-let roscState = {}; // {A: 'pending'|'correct'|'wrong'|'passed'}
-let roscTimerInterval = null;
-let roscTimeLeft = 0;
-let roscLetters = [];
-
-function initRoscoScreen() {
-  document.getElementById('rosc-org').classList.toggle('hidden', !isOrganizer);
-  document.getElementById('rosc-player').classList.toggle('hidden', isOrganizer);
-}
-
-function roscSetTimer(secs, btn) {
-  roscTimer = secs;
-  document.querySelectorAll('#rosc-timer-btns button').forEach(b => {
-    b.style.background = 'rgba(255,255,255,.07)';
-    b.style.color = 'var(--gold2)';
-  });
-  btn.style.background = 'linear-gradient(135deg,var(--grif),#c9a84c)';
-  btn.style.color = 'white';
-}
-
-function roscLoadJson() {
-  const raw = document.getElementById('rosc-json-input').value.trim();
-  const statusEl = document.getElementById('rosc-load-status');
-  try {
-    const data = JSON.parse(raw);
-    if (!Array.isArray(data) || !data.length) throw new Error('Array vacío');
-    roscDefs = data.map(d => ({ l: (d.l||'').toUpperCase(), q: d.q||'', ans: d.ans||'' }));
-    roscLetters = roscDefs.map(d => d.l);
-    roscState = {};
-    roscLetters.forEach(l => { roscState[l] = 'pending'; });
-    statusEl.textContent = `✓ ${roscDefs.length} preguntas cargadas`;
-    statusEl.style.color = '#a0d4a0';
-    roscBuildRing('rosc-ring-org');
-  } catch(e) {
-    statusEl.textContent = '⚠️ JSON inválido: ' + e.message;
-    statusEl.style.color = '#ffa0a0';
-  }
-}
-
-function roscBuildRing(containerId) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  el.innerHTML = '';
-  const n = roscLetters.length;
-  if (!n) return;
-  const size = el.offsetWidth || 280;
-  const r = size * 0.42;
-  const cx = size / 2, cy = size / 2;
-  roscLetters.forEach((l, i) => {
-    const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
-    const x = cx + r * Math.cos(angle);
-    const y = cy + r * Math.sin(angle);
-    const div = document.createElement('div');
-    const state = roscState[l] || 'pending';
-    const colors = { pending:'rgba(255,255,255,.15)', correct:'#2d7a4a', wrong:'#7a1a1a', passed:'#4a4a1a', current:'var(--grif)' };
-    const isCurrent = roscLetters[roscCurrentIdx] === l;
-    div.style.cssText = `position:absolute;width:clamp(28px,7%,36px);height:clamp(28px,7%,36px);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:clamp(.55rem,1.3vw,.8rem);font-weight:700;background:${isCurrent ? colors.current : colors[state]};border:2px solid ${isCurrent ? 'var(--gold)' : 'transparent'};color:${state==='correct'?'#a0d4a0':state==='wrong'?'#d4a0a0':'#e8dfc0'};transition:all .3s;transform:translate(-50%,-50%);left:${x}px;top:${y}px;cursor:pointer;`;
-    div.textContent = l;
-    div.onclick = () => roscJumpTo(i);
-    el.appendChild(div);
-  });
-}
-
-function roscJumpTo(idx) {
-  roscCurrentIdx = idx;
-  roscShowCurrent();
-}
-
-function roscShowCurrent() {
-  if (roscCurrentIdx >= roscLetters.length) { roscEndGame(); return; }
-  const l = roscLetters[roscCurrentIdx];
-  const def = roscDefs.find(d => d.l === l);
-  if (!def) return;
-  document.getElementById('rosc-org-letter').textContent = l;
-  document.getElementById('rosc-org-clue').textContent = def.q;
-  document.getElementById('rosc-org-answer').textContent = def.ans;
-  document.getElementById('rosc-org-answer').classList.add('hidden');
-  roscStartTimer();
-  roscBuildRing('rosc-ring-org');
-  roscUpdateCounts();
-  // Publicar en Firebase para TV
-  if (db) {
-    const {doc, setDoc} = fsH;
-    setDoc(doc(db,'rooms',currentRoom), {
-      rosco: { phase: 'playing', letter: l, q: def.q, states: roscState, counts: roscGetCounts() }
-    }, {merge:true});
-  }
-}
-
-function roscStartTimer() {
-  if (roscTimerInterval) clearInterval(roscTimerInterval);
-  roscTimeLeft = roscTimer;
-  const timerEl = document.getElementById('rosc-org-timer');
-  const update = () => {
-    if (timerEl) {
-      timerEl.textContent = roscTimeLeft;
-      timerEl.style.color = roscTimeLeft <= 5 ? '#ff6b6b' : 'var(--gold)';
-    }
-    if (roscTimeLeft <= 0) { clearInterval(roscTimerInterval); roscTimerInterval = null; roscWrong(); }
-    roscTimeLeft--;
-  };
-  update();
-  roscTimerInterval = setInterval(update, 1000);
-}
-
-function roscCorrect() {
-  const l = roscLetters[roscCurrentIdx];
-  roscState[l] = 'correct';
-  if (roscTimerInterval) { clearInterval(roscTimerInterval); roscTimerInterval = null; }
-  // +15 pts para la casa en juego (quien sea el representante)
-  // Por ahora: puntos rápidos al org — en fiesta el org decides quién ganó
-  showToast(`✓ ${l} correcta`);
-  roscCurrentIdx++;
-  roscCheckAllDone() || setTimeout(roscShowCurrent, 800);
-}
-
-function roscWrong() {
-  const l = roscLetters[roscCurrentIdx];
-  roscState[l] = 'wrong';
-  if (roscTimerInterval) { clearInterval(roscTimerInterval); roscTimerInterval = null; }
-  showToast(`✗ ${l} incorrecta — era: ${roscDefs.find(d=>d.l===l)?.ans||'?'}`);
-  roscCurrentIdx++;
-  roscCheckAllDone() || setTimeout(roscShowCurrent, 800);
-}
-
-function roscPass() {
-  const l = roscLetters[roscCurrentIdx];
-  if (roscState[l] === 'pending') roscState[l] = 'passed';
-  if (roscTimerInterval) { clearInterval(roscTimerInterval); roscTimerInterval = null; }
-  roscCurrentIdx++;
-  roscCheckAllDone() || setTimeout(roscShowCurrent, 200);
-}
-
-function roscRevealAnswer() {
-  const l = roscLetters[roscCurrentIdx];
-  const def = roscDefs.find(d => d.l === l);
-  const ansEl = document.getElementById('rosc-org-answer');
-  if (ansEl && def) {
-    ansEl.textContent = '→ ' + def.ans;
-    ansEl.classList.remove('hidden');
-    if (db) {
-      const {doc, setDoc} = fsH;
-      setDoc(doc(db,'rooms',currentRoom), { rosco: { revealedAnswer: def.ans } }, {merge:true});
-    }
-  }
-}
-
-function roscCheckAllDone() {
-  // Check if all done
-  const pending = roscLetters.filter(l => roscState[l] === 'pending' || roscState[l] === 'passed');
-  if (pending.length === 0) {
-    roscEndGame();
-    return true;
-  }
-  // Wrap around to next pending
-  let next = roscCurrentIdx % roscLetters.length;
-  let attempts = 0;
-  while ((roscState[roscLetters[next]] === 'correct' || roscState[roscLetters[next]] === 'wrong') && attempts < roscLetters.length) {
-    next = (next + 1) % roscLetters.length;
-    attempts++;
-  }
-  roscCurrentIdx = next;
-  return false;
-}
-
-function roscGetCounts() {
-  return {
-    correct: Object.values(roscState).filter(s=>s==='correct').length,
-    wrong: Object.values(roscState).filter(s=>s==='wrong').length,
-    passed: Object.values(roscState).filter(s=>s==='passed').length
-  };
-}
-
-function roscUpdateCounts() {
-  const c = roscGetCounts();
-  const el = document.getElementById('rosc-org-counts');
-  if (el) el.textContent = `✓ ${c.correct}  ✗ ${c.wrong}  ⏭ ${c.passed}`;
-}
-
-function roscStartGame() {
-  if (!roscDefs.length) { showToast('⚠️ Cargá las preguntas primero'); return; }
-  roscCurrentIdx = 0;
-  roscLetters.forEach(l => { roscState[l] = 'pending'; });
-  document.getElementById('rosc-start-btn').style.display = 'none';
-  document.getElementById('rosc-game-panel').classList.remove('hidden');
-  roscShowCurrent();
-}
-
-function roscEndGame() {
-  if (roscTimerInterval) { clearInterval(roscTimerInterval); roscTimerInterval = null; }
-  const c = roscGetCounts();
-  if (db) {
-    const {doc, setDoc} = fsH;
-    setDoc(doc(db,'rooms',currentRoom), { rosco: { phase: 'ended', states: roscState, counts: c } }, {merge:true});
-  }
-  showToast(`🌀 Rosco terminado — ✓${c.correct} ✗${c.wrong} ⏭${c.passed}`);
-  confetti();
-  document.getElementById('rosc-game-panel').classList.add('hidden');
-  document.getElementById('rosc-start-btn').style.display = 'block';
-}
-
-// TV: rosco screen
-function bsRenderRosco(rosc) {
-  const bsRoscEl = document.getElementById('bs-rosco');
-  if (!bsRoscEl) return;
-  bsShowScreen('rosco');
-  // Build ring
-  const ringEl = document.getElementById('bs-rosc-ring');
-  if (ringEl) {
-    const states = rosc.states || {};
-    const letters = Object.keys(states);
-    const n = letters.length;
-    const size = ringEl.offsetWidth || 400;
-    const r = size * 0.42;
-    const cx = size/2, cy = size/2;
-    ringEl.innerHTML = '';
-    letters.forEach((l, i) => {
-      const angle = (i/n)*2*Math.PI - Math.PI/2;
-      const x = cx + r*Math.cos(angle);
-      const y = cy + r*Math.sin(angle);
-      const div = document.createElement('div');
-      const s = states[l]||'pending';
-      const isCur = l === rosc.letter;
-      div.style.cssText = `position:absolute;width:clamp(32px,5%,48px);height:clamp(32px,5%,48px);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:clamp(.65rem,1.3vw,.9rem);font-weight:700;background:${isCur?'var(--grif)':s==='correct'?'#2d7a4a':s==='wrong'?'#7a1a1a':'rgba(255,255,255,.1)'};border:2px solid ${isCur?'var(--gold)':'transparent'};color:${s==='correct'?'#a0d4a0':s==='wrong'?'#d4a0a0':'#e8dfc0'};transform:translate(-50%,-50%);left:${x}px;top:${y}px;`;
-      div.textContent = l;
-      ringEl.appendChild(div);
-    });
-  }
-  const letterEl = document.getElementById('bs-rosc-letter');
-  const clueEl = document.getElementById('bs-rosc-clue');
-  const ansEl = document.getElementById('bs-rosc-answer');
-  const countsEl = document.getElementById('bs-rosc-counts');
-  if (letterEl) letterEl.textContent = rosc.letter || '';
-  if (clueEl) clueEl.textContent = rosc.q || '';
-  if (ansEl) {
-    if (rosc.revealedAnswer) { ansEl.textContent = '→ ' + rosc.revealedAnswer; ansEl.style.display = 'block'; }
-    else ansEl.style.display = 'none';
-  }
-  if (countsEl) {
-    const c = rosc.counts || {};
-    countsEl.textContent = `✓ ${c.correct||0}  ✗ ${c.wrong||0}  ⏭ ${c.passed||0}`;
-  }
-}
-
-
 </script>
 
 <style>
@@ -1556,6 +1307,19 @@ header {
       <span class="gc-icon">🏆</span>
       <div class="gc-text">Búsqueda de la Snitch
         <span>Negociación, bluff y apuestas</span>
+      </div>
+    </button>
+
+    <button class="game-card" onclick="showScreen('impostor')" style="background:linear-gradient(135deg,#1a0a2e,#2d1a4a);color:#c8b4e8;box-shadow:0 6px 24px rgba(100,50,150,.3);border:1px solid rgba(150,80,200,.25)">
+      <span class="gc-icon">🕵️</span>
+      <div class="gc-text">El Mortífago Infiltrado
+        <span>Aurores vs Mortífagos — ¿quién miente?</span>
+      </div>
+    </button>
+    <button class="game-card" onclick="showScreen('rosco')" style="background:linear-gradient(135deg,#0a1a2e,#1a2d4a);color:#b4c8e8;box-shadow:0 6px 24px rgba(50,100,180,.3);border:1px solid rgba(80,130,200,.25)">
+      <span class="gc-icon">🌀</span>
+      <div class="gc-text">El Rosco de Dumbledore
+        <span>Pasapalabra mágico de Hogwarts</span>
       </div>
     </button>
 
@@ -6216,6 +5980,255 @@ function rulListenPlayer() {
   });
   screenUnsubs.push(unsub);
 }
+
+// ══ EL ROSCO DE DUMBLEDORE ══
+let roscDefs = []; // [{l, q, ans}]
+let roscTimer = 30;
+let roscCurrentIdx = 0;
+let roscState = {}; // {A: 'pending'|'correct'|'wrong'|'passed'}
+let roscTimerInterval = null;
+let roscTimeLeft = 0;
+let roscLetters = [];
+
+function initRoscoScreen() {
+  document.getElementById('rosc-org').classList.toggle('hidden', !isOrganizer);
+  document.getElementById('rosc-player').classList.toggle('hidden', isOrganizer);
+}
+
+function roscSetTimer(secs, btn) {
+  roscTimer = secs;
+  document.querySelectorAll('#rosc-timer-btns button').forEach(b => {
+    b.style.background = 'rgba(255,255,255,.07)';
+    b.style.color = 'var(--gold2)';
+  });
+  btn.style.background = 'linear-gradient(135deg,var(--grif),#c9a84c)';
+  btn.style.color = 'white';
+}
+
+function roscLoadJson() {
+  const raw = document.getElementById('rosc-json-input').value.trim();
+  const statusEl = document.getElementById('rosc-load-status');
+  try {
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data) || !data.length) throw new Error('Array vacío');
+    roscDefs = data.map(d => ({ l: (d.l||'').toUpperCase(), q: d.q||'', ans: d.ans||'' }));
+    roscLetters = roscDefs.map(d => d.l);
+    roscState = {};
+    roscLetters.forEach(l => { roscState[l] = 'pending'; });
+    statusEl.textContent = `✓ ${roscDefs.length} preguntas cargadas`;
+    statusEl.style.color = '#a0d4a0';
+    roscBuildRing('rosc-ring-org');
+  } catch(e) {
+    statusEl.textContent = '⚠️ JSON inválido: ' + e.message;
+    statusEl.style.color = '#ffa0a0';
+  }
+}
+
+function roscBuildRing(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '';
+  const n = roscLetters.length;
+  if (!n) return;
+  const size = el.offsetWidth || 280;
+  const r = size * 0.42;
+  const cx = size / 2, cy = size / 2;
+  roscLetters.forEach((l, i) => {
+    const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    const div = document.createElement('div');
+    const state = roscState[l] || 'pending';
+    const colors = { pending:'rgba(255,255,255,.15)', correct:'#2d7a4a', wrong:'#7a1a1a', passed:'#4a4a1a', current:'var(--grif)' };
+    const isCurrent = roscLetters[roscCurrentIdx] === l;
+    div.style.cssText = `position:absolute;width:clamp(28px,7%,36px);height:clamp(28px,7%,36px);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:clamp(.55rem,1.3vw,.8rem);font-weight:700;background:${isCurrent ? colors.current : colors[state]};border:2px solid ${isCurrent ? 'var(--gold)' : 'transparent'};color:${state==='correct'?'#a0d4a0':state==='wrong'?'#d4a0a0':'#e8dfc0'};transition:all .3s;transform:translate(-50%,-50%);left:${x}px;top:${y}px;cursor:pointer;`;
+    div.textContent = l;
+    div.onclick = () => roscJumpTo(i);
+    el.appendChild(div);
+  });
+}
+
+function roscJumpTo(idx) {
+  roscCurrentIdx = idx;
+  roscShowCurrent();
+}
+
+function roscShowCurrent() {
+  if (roscCurrentIdx >= roscLetters.length) { roscEndGame(); return; }
+  const l = roscLetters[roscCurrentIdx];
+  const def = roscDefs.find(d => d.l === l);
+  if (!def) return;
+  document.getElementById('rosc-org-letter').textContent = l;
+  document.getElementById('rosc-org-clue').textContent = def.q;
+  document.getElementById('rosc-org-answer').textContent = def.ans;
+  document.getElementById('rosc-org-answer').classList.add('hidden');
+  roscStartTimer();
+  roscBuildRing('rosc-ring-org');
+  roscUpdateCounts();
+  // Publicar en Firebase para TV
+  if (db) {
+    const {doc, setDoc} = fsH;
+    setDoc(doc(db,'rooms',currentRoom), {
+      rosco: { phase: 'playing', letter: l, q: def.q, states: roscState, counts: roscGetCounts() }
+    }, {merge:true});
+  }
+}
+
+function roscStartTimer() {
+  if (roscTimerInterval) clearInterval(roscTimerInterval);
+  roscTimeLeft = roscTimer;
+  const timerEl = document.getElementById('rosc-org-timer');
+  const update = () => {
+    if (timerEl) {
+      timerEl.textContent = roscTimeLeft;
+      timerEl.style.color = roscTimeLeft <= 5 ? '#ff6b6b' : 'var(--gold)';
+    }
+    if (roscTimeLeft <= 0) { clearInterval(roscTimerInterval); roscTimerInterval = null; roscWrong(); }
+    roscTimeLeft--;
+  };
+  update();
+  roscTimerInterval = setInterval(update, 1000);
+}
+
+function roscCorrect() {
+  const l = roscLetters[roscCurrentIdx];
+  roscState[l] = 'correct';
+  if (roscTimerInterval) { clearInterval(roscTimerInterval); roscTimerInterval = null; }
+  // +15 pts para la casa en juego (quien sea el representante)
+  // Por ahora: puntos rápidos al org — en fiesta el org decides quién ganó
+  showToast(`✓ ${l} correcta`);
+  roscCurrentIdx++;
+  roscCheckAllDone() || setTimeout(roscShowCurrent, 800);
+}
+
+function roscWrong() {
+  const l = roscLetters[roscCurrentIdx];
+  roscState[l] = 'wrong';
+  if (roscTimerInterval) { clearInterval(roscTimerInterval); roscTimerInterval = null; }
+  showToast(`✗ ${l} incorrecta — era: ${roscDefs.find(d=>d.l===l)?.ans||'?'}`);
+  roscCurrentIdx++;
+  roscCheckAllDone() || setTimeout(roscShowCurrent, 800);
+}
+
+function roscPass() {
+  const l = roscLetters[roscCurrentIdx];
+  if (roscState[l] === 'pending') roscState[l] = 'passed';
+  if (roscTimerInterval) { clearInterval(roscTimerInterval); roscTimerInterval = null; }
+  roscCurrentIdx++;
+  roscCheckAllDone() || setTimeout(roscShowCurrent, 200);
+}
+
+function roscRevealAnswer() {
+  const l = roscLetters[roscCurrentIdx];
+  const def = roscDefs.find(d => d.l === l);
+  const ansEl = document.getElementById('rosc-org-answer');
+  if (ansEl && def) {
+    ansEl.textContent = '→ ' + def.ans;
+    ansEl.classList.remove('hidden');
+    if (db) {
+      const {doc, setDoc} = fsH;
+      setDoc(doc(db,'rooms',currentRoom), { rosco: { revealedAnswer: def.ans } }, {merge:true});
+    }
+  }
+}
+
+function roscCheckAllDone() {
+  // Check if all done
+  const pending = roscLetters.filter(l => roscState[l] === 'pending' || roscState[l] === 'passed');
+  if (pending.length === 0) {
+    roscEndGame();
+    return true;
+  }
+  // Wrap around to next pending
+  let next = roscCurrentIdx % roscLetters.length;
+  let attempts = 0;
+  while ((roscState[roscLetters[next]] === 'correct' || roscState[roscLetters[next]] === 'wrong') && attempts < roscLetters.length) {
+    next = (next + 1) % roscLetters.length;
+    attempts++;
+  }
+  roscCurrentIdx = next;
+  return false;
+}
+
+function roscGetCounts() {
+  return {
+    correct: Object.values(roscState).filter(s=>s==='correct').length,
+    wrong: Object.values(roscState).filter(s=>s==='wrong').length,
+    passed: Object.values(roscState).filter(s=>s==='passed').length
+  };
+}
+
+function roscUpdateCounts() {
+  const c = roscGetCounts();
+  const el = document.getElementById('rosc-org-counts');
+  if (el) el.textContent = `✓ ${c.correct}  ✗ ${c.wrong}  ⏭ ${c.passed}`;
+}
+
+function roscStartGame() {
+  if (!roscDefs.length) { showToast('⚠️ Cargá las preguntas primero'); return; }
+  roscCurrentIdx = 0;
+  roscLetters.forEach(l => { roscState[l] = 'pending'; });
+  document.getElementById('rosc-start-btn').style.display = 'none';
+  document.getElementById('rosc-game-panel').classList.remove('hidden');
+  roscShowCurrent();
+}
+
+function roscEndGame() {
+  if (roscTimerInterval) { clearInterval(roscTimerInterval); roscTimerInterval = null; }
+  const c = roscGetCounts();
+  if (db) {
+    const {doc, setDoc} = fsH;
+    setDoc(doc(db,'rooms',currentRoom), { rosco: { phase: 'ended', states: roscState, counts: c } }, {merge:true});
+  }
+  showToast(`🌀 Rosco terminado — ✓${c.correct} ✗${c.wrong} ⏭${c.passed}`);
+  confetti();
+  document.getElementById('rosc-game-panel').classList.add('hidden');
+  document.getElementById('rosc-start-btn').style.display = 'block';
+}
+
+// TV: rosco screen
+function bsRenderRosco(rosc) {
+  const bsRoscEl = document.getElementById('bs-rosco');
+  if (!bsRoscEl) return;
+  bsShowScreen('rosco');
+  // Build ring
+  const ringEl = document.getElementById('bs-rosc-ring');
+  if (ringEl) {
+    const states = rosc.states || {};
+    const letters = Object.keys(states);
+    const n = letters.length;
+    const size = ringEl.offsetWidth || 400;
+    const r = size * 0.42;
+    const cx = size/2, cy = size/2;
+    ringEl.innerHTML = '';
+    letters.forEach((l, i) => {
+      const angle = (i/n)*2*Math.PI - Math.PI/2;
+      const x = cx + r*Math.cos(angle);
+      const y = cy + r*Math.sin(angle);
+      const div = document.createElement('div');
+      const s = states[l]||'pending';
+      const isCur = l === rosc.letter;
+      div.style.cssText = `position:absolute;width:clamp(32px,5%,48px);height:clamp(32px,5%,48px);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:clamp(.65rem,1.3vw,.9rem);font-weight:700;background:${isCur?'var(--grif)':s==='correct'?'#2d7a4a':s==='wrong'?'#7a1a1a':'rgba(255,255,255,.1)'};border:2px solid ${isCur?'var(--gold)':'transparent'};color:${s==='correct'?'#a0d4a0':s==='wrong'?'#d4a0a0':'#e8dfc0'};transform:translate(-50%,-50%);left:${x}px;top:${y}px;`;
+      div.textContent = l;
+      ringEl.appendChild(div);
+    });
+  }
+  const letterEl = document.getElementById('bs-rosc-letter');
+  const clueEl = document.getElementById('bs-rosc-clue');
+  const ansEl = document.getElementById('bs-rosc-answer');
+  const countsEl = document.getElementById('bs-rosc-counts');
+  if (letterEl) letterEl.textContent = rosc.letter || '';
+  if (clueEl) clueEl.textContent = rosc.q || '';
+  if (ansEl) {
+    if (rosc.revealedAnswer) { ansEl.textContent = '→ ' + rosc.revealedAnswer; ansEl.style.display = 'block'; }
+    else ansEl.style.display = 'none';
+  }
+  if (countsEl) {
+    const c = rosc.counts || {};
+    countsEl.textContent = `✓ ${c.correct||0}  ✗ ${c.wrong||0}  ⏭ ${c.passed||0}`;
+  }
+}
+
 
 </script>
 </body>
