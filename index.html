@@ -9,7 +9,7 @@
 <!-- Firebase CDN -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, getDocs, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "FIREBASE_API_KEY",
@@ -23,7 +23,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 window._db = db;
-window._fsHelpers = { doc, setDoc, getDoc, onSnapshot, collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, getDocs, updateDoc };
+window._fsHelpers = { doc, setDoc, getDoc, onSnapshot, collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, getDocs, updateDoc, increment };
 window._fbReady = true;
 document.dispatchEvent(new Event('fbready'));
 </script>
@@ -253,30 +253,32 @@ header {
   width: 100%;
   background: rgba(255,255,255,.06);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: .7rem 1rem;
+  border-radius: 12px;
+  padding: .85rem 1rem;
   color: #e8dfc0;
   font-family: 'EB Garamond', serif;
-  font-size: 1rem;
+  font-size: 1.05rem;
   outline: none;
   transition: border-color .2s;
+  -webkit-appearance: none;
 }
 .ifield:focus { border-color: var(--gold); }
 .ifield::placeholder { color: rgba(232,223,192,.35); }
 
 .btn {
   width: 100%;
-  padding: .85rem;
+  padding: .95rem;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   font-family: 'Cinzel', serif;
   font-weight: 600;
-  font-size: .9rem;
+  font-size: .92rem;
   letter-spacing: .08em;
   cursor: pointer;
   margin-top: .75rem;
   transition: transform .15s, box-shadow .2s;
   display: block;
+  -webkit-tap-highlight-color: transparent;
 }
 .btn:hover { transform: translateY(-2px); }
 .btn:active { transform: scale(.97); }
@@ -820,6 +822,107 @@ header {
   z-index: 10;
 }
 
+/* ══ BS HOUSE QUIZ ══ */
+.bs-hq-opt {
+  background: rgba(255,255,255,.07);
+  border: 2px solid rgba(255,255,255,.15);
+  border-radius: 16px;
+  padding: clamp(.6rem,1.5vw,1.1rem) clamp(.8rem,2vw,1.5rem);
+  font-family: 'EB Garamond', serif;
+  font-size: clamp(.9rem,2vw,1.4rem);
+  color: #e8dfc0;
+  text-align: left;
+  line-height: 1.3;
+  transition: background .3s, border-color .3s;
+}
+.bs-hq-opt.correct {
+  background: rgba(26,71,42,.5);
+  border-color: #00c864;
+  color: #a0d4a0;
+}
+.bs-hq-opt.wrong {
+  background: rgba(116,0,1,.4);
+  border-color: rgba(116,0,1,.8);
+  opacity: .7;
+}
+.bs-hq-opt.leading {
+  background: rgba(201,168,76,.15);
+  border-color: var(--gold);
+}
+/* ══ BS MÍMICA TIMER ══ */
+#bs-mim-timer.timer-urgent { color: #ff6b6b; animation: bs-timer-pulse .5s ease-in-out infinite alternate; }
+@keyframes bs-timer-pulse { from { transform: scale(1); } to { transform: scale(1.08); } }
+.pts-preset-btn {
+  background: rgba(255,255,255,.07);
+  border: 1px solid var(--border);
+  color: var(--gold2);
+  border-radius: 10px;
+  padding: .35rem .85rem;
+  font-family: 'Cinzel', serif;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s;
+  letter-spacing: .03em;
+}
+.pts-preset-btn:hover { background: rgba(201,168,76,.15); }
+.pts-preset-btn.selected-preset {
+  background: rgba(201,168,76,.25);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.pts-quick-house-btn {
+  border: none;
+  border-radius: 12px;
+  padding: .55rem .3rem;
+  font-size: clamp(1.1rem,4vw,1.5rem);
+  cursor: pointer;
+  text-align: center;
+  transition: transform .12s, opacity .15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .15rem;
+  line-height: 1;
+}
+.pts-quick-house-btn:hover { transform: scale(1.08); }
+.pts-quick-house-btn:active { transform: scale(.94); }
+.pts-quick-house-btn .pts-q-amount {
+  font-family: 'Cinzel', serif;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  opacity: .9;
+}
+/* ══ BÚSQUEDA DE LA SNITCH ══ */
+.snitch-box-btn {
+  background: rgba(255,255,255,.07);
+  border: 2px solid rgba(255,255,255,.15);
+  border-radius: 14px;
+  padding: .75rem .5rem;
+  color: #e8dfc0;
+  cursor: pointer;
+  font-size: 1.6rem;
+  text-align: center;
+  transition: all .2s;
+  line-height: 1.4;
+  width: 100%;
+}
+.snitch-box-btn:hover { background: rgba(201,168,76,.15); border-color: var(--gold); transform: scale(1.04); }
+.snitch-box-btn.selected-box {
+  background: rgba(201,168,76,.25);
+  border-color: var(--gold);
+  box-shadow: 0 0 16px rgba(201,168,76,.4);
+}
+.snitch-budget-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .35rem .5rem;
+  border-radius: 10px;
+  margin-bottom: .3rem;
+  background: rgba(255,255,255,.04);
+}
 /* ══ SCROLLBAR ══ */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: rgba(255,255,255,.03); }
@@ -1015,6 +1118,10 @@ header {
     <div class="bs-screen active" id="bs-waiting">
       <div style="font-size:clamp(3rem,8vw,6rem);margin-bottom:1rem">🎩</div>
       <div class="bs-waiting">Esperando el próximo juego...</div>
+      <div style="margin-top:1.5rem;display:flex;flex-direction:column;align-items:center;gap:.75rem;opacity:.7">
+        <img id="bs-qr-code" src="" alt="QR" style="width:clamp(80px,12vw,140px);height:clamp(80px,12vw,140px);border-radius:12px;background:white;padding:6px;display:none">
+        <div id="bs-qr-label" style="font-family:'Cinzel',serif;font-size:clamp(.6rem,1.2vw,.8rem);letter-spacing:.15em;color:var(--gold2);display:none">ESCANEÁ PARA UNIRTE</div>
+      </div>
     </div>
     <div class="bs-screen" id="bs-sorting">
       <div id="bs-hat-emoji" class="sorting-hat-emoji">🎩</div>
@@ -1040,6 +1147,48 @@ header {
     <!-- CIERRE -->
     <div class="bs-screen" id="bs-closing">
       <div id="bs-closing-content" style="width:100%"></div>
+    </div>
+
+    <!-- DUELO DE CASAS TV -->
+    <div class="bs-screen" id="bs-house-quiz">
+      <!-- Header: casa activa + turno -->
+      <div id="bs-hq-header" style="margin-bottom:1.2rem">
+        <div id="bs-hq-turn-label" style="font-family:'Cinzel',serif;font-size:clamp(.65rem,1.3vw,.85rem);letter-spacing:.2em;color:var(--gold2);opacity:.7;text-transform:uppercase;margin-bottom:.3rem">Turno de</div>
+        <div id="bs-hq-house" style="font-family:'Cinzel Decorative',cursive;font-size:clamp(1.4rem,3.5vw,2.8rem)"></div>
+        <div id="bs-hq-pts-badge" style="font-family:'Cinzel',serif;font-size:clamp(.7rem,1.5vw,.95rem);color:var(--gold);opacity:.8;margin-top:.2rem"></div>
+      </div>
+      <!-- Pregunta -->
+      <div id="bs-hq-question" style="font-family:'EB Garamond',serif;font-size:clamp(1.1rem,2.8vw,2rem);line-height:1.4;max-width:800px;margin:0 auto 1.2rem;color:#f0e8d0"></div>
+      <!-- Opciones en grid -->
+      <div id="bs-hq-opts" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;max-width:800px;margin:0 auto"></div>
+      <!-- Estado de votación -->
+      <div id="bs-hq-status" style="margin-top:1rem;font-family:'Cinzel',serif;font-size:clamp(.7rem,1.5vw,.9rem);color:var(--gold2);opacity:.7;letter-spacing:.08em"></div>
+      <!-- Resultado reveal -->
+      <div id="bs-hq-result" style="display:none;margin-top:1rem;font-family:'Cinzel Decorative',cursive;font-size:clamp(1.2rem,3vw,2.2rem)"></div>
+    </div>
+
+    <!-- MÍMICA TV -->
+    <div class="bs-screen" id="bs-mimica" style="text-align:center;position:relative">
+      <!-- Casa activa -->
+      <div id="bs-mim-house" style="font-family:'Cinzel Decorative',cursive;font-size:clamp(1.8rem,4.5vw,3.5rem);margin-bottom:.3rem"></div>
+      <div id="bs-mim-pts" style="font-family:'Cinzel',serif;font-size:clamp(.7rem,1.5vw,.95rem);color:var(--gold);letter-spacing:.12em;margin-bottom:1.2rem;opacity:.85"></div>
+      <!-- Timer grande -->
+      <div id="bs-mim-timer-wrap" style="position:relative;display:inline-block;margin-bottom:1rem">
+        <div id="bs-mim-timer" style="font-family:'Cinzel Decorative',cursive;font-size:clamp(5rem,15vw,10rem);line-height:1;transition:color .3s">60</div>
+        <div id="bs-mim-timer-ring" style="position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:clamp(120px,25vw,200px);height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden">
+          <div id="bs-mim-timer-bar" style="height:100%;width:100%;border-radius:4px;transition:width 1s linear;background:linear-gradient(90deg,var(--grif),var(--gold))"></div>
+        </div>
+      </div>
+      <!-- Estado / resultado -->
+      <div id="bs-mim-phase" style="font-family:'Cinzel',serif;font-size:clamp(1rem,2.5vw,1.8rem);letter-spacing:.1em;margin-top:.75rem"></div>
+    </div>
+
+    <!-- RULETA TV -->
+    <div class="bs-screen" id="bs-ruleta" style="text-align:center">
+      <div id="bs-rul-icon" style="font-size:clamp(4rem,12vw,8rem);margin-bottom:.5rem"></div>
+      <div id="bs-rul-name" style="font-family:'Cinzel Decorative',cursive;font-size:clamp(1.5rem,4vw,3rem);margin-bottom:.5rem"></div>
+      <div id="bs-rul-challenge" style="font-family:'EB Garamond',serif;font-style:italic;font-size:clamp(1rem,2.5vw,1.6rem);color:var(--gold2);opacity:.85;margin-bottom:.75rem"></div>
+      <div id="bs-rul-result" style="font-family:'Cinzel',serif;font-size:clamp(1.2rem,3vw,2rem);display:none"></div>
     </div>
 
     <!-- Más pantallas de juego se agregan acá -->
@@ -1112,6 +1261,12 @@ header {
         <span>Sorteo por casas para desafíos</span>
       </div>
     </button>
+    <button class="game-card" onclick="showScreen('snitch')" style="background:linear-gradient(135deg,#3a2800,#6b4a00);color:#ffe8a0;box-shadow:0 6px 24px rgba(201,168,76,.4)">
+      <span class="gc-icon">🏆</span>
+      <div class="gc-text">Búsqueda de la Snitch
+        <span>Negociación, bluff y apuestas</span>
+      </div>
+    </button>
 
     <div id="org-menu-extra" style="display:none;width:100%">
       <button class="game-card gc-dark" onclick="showScreen('ceremony-setup')" style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.3)">
@@ -1130,6 +1285,7 @@ header {
         <button class="btn btn-ghost" onclick="resetPoints()" style="flex:1;font-size:.78rem;padding:.5rem;font-family:'Cinzel',serif;letter-spacing:.05em">🔄 Resetear puntos</button>
         <button class="btn btn-ghost" onclick="resetRoom()" style="flex:1;font-size:.78rem;padding:.5rem;font-family:'Cinzel',serif;letter-spacing:.05em;border-color:rgba(255,100,100,.3);color:rgba(255,150,150,.8)">⚠️ Resetear sala</button>
       </div>
+      <button class="btn btn-ghost" onclick="showScreen('pts-log')" style="width:100%;margin-top:.4rem;font-size:.78rem;padding:.5rem;font-family:'Cinzel',serif;letter-spacing:.05em">📜 Ver historial de puntos</button>
     </div>
     <button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:.5rem;font-size:.8rem;padding:.55rem;font-family:'Cinzel',serif;letter-spacing:.08em">🚪 Salir de Hogwarts</button>
   </div>
@@ -1173,9 +1329,25 @@ header {
       <div class="card card-gold" style="text-align:center">
         <div id="sort-hat" class="sorting-hat-emoji" style="font-size:clamp(4rem,12vw,7rem)">🎩</div>
         <div id="sort-current-name" style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold2);margin:.5rem 0;min-height:1.6rem"></div>
-        <button class="btn btn-gold" onclick="doSort()" id="sort-btn" style="max-width:280px;margin:0 auto;display:none">
-          🎩 ¡Seleccionar!
-        </button>
+        <div style="display:flex;gap:.5rem;max-width:280px;margin:0 auto" id="sort-btns-wrap" style="display:none">
+          <button class="btn btn-gold" onclick="doSort()" id="sort-btn" style="flex:1;display:none;margin-top:0">
+            🎩 Seleccionar
+          </button>
+          <button class="btn btn-ghost" onclick="showManualSortPanel()" id="sort-manual-btn" style="flex:1;display:none;margin-top:0;font-size:.82rem">
+            ✋ Manual
+          </button>
+        </div>
+        <!-- Panel de asignación manual -->
+        <div id="sort-manual-panel" class="hidden" style="margin-top:.75rem">
+          <div style="font-family:'Cinzel',serif;font-size:.75rem;color:var(--gold2);margin-bottom:.5rem;text-align:center">Elegí la casa manualmente</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem">
+            <button class="btn" onclick="doManualSort('gryffindor')" style="background:rgba(116,0,1,.5);color:#ffccc0;border:none;border-radius:12px;font-family:'Cinzel',serif;font-size:.8rem;cursor:pointer;padding:.6rem;margin-top:0">🦁 Gryffindor</button>
+            <button class="btn" onclick="doManualSort('slytherin')" style="background:rgba(26,71,42,.5);color:#c8e8c8;border:none;border-radius:12px;font-family:'Cinzel',serif;font-size:.8rem;cursor:pointer;padding:.6rem;margin-top:0">🐍 Slytherin</button>
+            <button class="btn" onclick="doManualSort('hufflepuff')" style="background:rgba(55,46,41,.7);color:#ffe8a0;border:none;border-radius:12px;font-family:'Cinzel',serif;font-size:.8rem;cursor:pointer;padding:.6rem;margin-top:0">🦡 Hufflepuff</button>
+            <button class="btn" onclick="doManualSort('ravenclaw')" style="background:rgba(14,26,64,.8);color:#b8c8e8;border:none;border-radius:12px;font-family:'Cinzel',serif;font-size:.8rem;cursor:pointer;padding:.6rem;margin-top:0">🦅 Ravenclaw</button>
+          </div>
+          <button class="btn btn-ghost" onclick="hideManualSortPanel()" style="margin-top:.4rem;font-size:.78rem">Cancelar</button>
+        </div>
         <div id="sort-result-card" class="hidden" style="margin-top:1rem"></div>
       </div>
       <!-- Casas y miembros actuales -->
@@ -1187,7 +1359,7 @@ header {
       <div class="card card-gold" style="text-align:center;padding:2rem">
         <div style="font-size:3rem;margin-bottom:.75rem">🎩</div>
         <div id="sort-player-house" style="font-family:'Cinzel',serif;font-size:1rem;color:var(--gold2)">
-          Esperando que el organizador te llame...
+          El organizador te llamará cuando sea tu turno
         </div>
       </div>
     </div>
@@ -1214,21 +1386,159 @@ header {
   <div id="screen-closing" class="screen">
     <button class="back-btn" onclick="goHome()">← Volver</button>
     <div class="stitle">🏆 Ceremonia de Cierre</div>
-    <div class="card card-gold" style="text-align:center;padding:2rem">
+    <div class="card card-gold" style="text-align:center;padding:1.5rem;margin-bottom:.75rem">
       <div style="font-size:.9rem;opacity:.7;margin-bottom:1rem">Al iniciar se mostrará el podio final en la TV y en todos los dispositivos</div>
-      <button class="btn btn-gold" onclick="triggerClosing()" style="max-width:280px;margin:0 auto;display:block">
+      <button class="btn btn-gold" onclick="triggerClosing()" style="max-width:280px;margin:.5rem auto;display:block">
         🏆 ¡Revelar ganadora!
       </button>
+      <button class="btn btn-ghost" onclick="triggerTiebreaker()" style="max-width:280px;margin:.5rem auto;display:block;font-size:.82rem">
+        ⚡ Ronda de desempate
+      </button>
+    </div>
+    <!-- Historial de puntos -->
+    <div class="card card-gold">
+      <div style="font-family:'Cinzel',serif;font-size:.78rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.75rem">📜 Historial de puntos</div>
+      <div id="pts-log-list"><div class="info" style="text-align:center;padding:1rem">Cargando...</div></div>
     </div>
   </div>
 
   <!-- Screens de juegos (se completan después) -->
   <div id="screen-cancion" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">🎵 El Coro Encantado</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
   <div id="screen-impostor" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">🕵️ El Mortífago Infiltrado</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
-  <div id="screen-trivia" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">🧙 ¿Quién es la cumpleañera?</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
+
   <div id="screen-memoria" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">📜 Pergaminos de Memoria</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
   <div id="screen-rosco" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">🌀 El Rosco de Dumbledore</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
+  <!-- ══ HISTORIAL DE PUNTOS ══ -->
+  <div id="screen-pts-log" class="screen">
+    <button class="back-btn" onclick="goHome()">← Volver</button>
+    <div class="stitle">📜 Historial de puntos</div>
+    <div id="pts-log-standalone"><div class="info" style="text-align:center;padding:2rem">Cargando...</div></div>
+  </div>
+
   <div id="screen-guestbook" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">🗺️ El Mapa del Merodeador</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
+
+  <!-- ══ BÚSQUEDA DE LA SNITCH ══ -->
+  <div id="screen-snitch" class="screen">
+    <button class="back-btn" onclick="goHome()">← Volver</button>
+    <div class="stitle">🏆 La Búsqueda de la Snitch</div>
+
+    <!-- ORGANIZADOR -->
+    <div id="snitch-org" class="hidden">
+      <!-- Setup: elegir caja con snitch + líder por casa -->
+      <div id="snitch-setup">
+        <div class="card card-gold" style="margin-bottom:.75rem">
+          <div style="font-family:'Cinzel',serif;font-size:.78rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.75rem">🔒 ¿EN QUÉ CAJA ESTÁ LA SNITCH? (solo vos lo ves)</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem" id="snitch-box-selector">
+            <button class="snitch-box-btn" onclick="snitchSelectBox(1,this)">📦<br><span style="font-family:'Cinzel',serif;font-size:.7rem">Caja 1</span></button>
+            <button class="snitch-box-btn" onclick="snitchSelectBox(2,this)">📦<br><span style="font-family:'Cinzel',serif;font-size:.7rem">Caja 2</span></button>
+            <button class="snitch-box-btn" onclick="snitchSelectBox(3,this)">📦<br><span style="font-family:'Cinzel',serif;font-size:.7rem">Caja 3</span></button>
+            <button class="snitch-box-btn" onclick="snitchSelectBox(4,this)">📦<br><span style="font-family:'Cinzel',serif;font-size:.7rem">Caja 4</span></button>
+          </div>
+          <div id="snitch-box-chosen" style="text-align:center;font-family:'Cinzel',serif;font-size:.85rem;color:var(--gold);margin-top:.5rem;min-height:1.2rem"></div>
+        </div>
+        <div class="card card-gold" style="margin-bottom:.75rem">
+          <div style="font-family:'Cinzel',serif;font-size:.78rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.5rem">🏅 LÍDERES DE CADA CASA</div>
+          <div style="font-size:.82rem;opacity:.6;margin-bottom:.75rem">Los jugadores votan quién lidera su casa</div>
+          <div style="display:flex;gap:.5rem;margin-bottom:.75rem">
+            <button class="btn btn-gold" onclick="snitchOpenLeaderVote()" style="flex:1;margin-top:0;font-size:.8rem">🗳️ Abrir votación</button>
+            <button class="btn btn-ghost" onclick="snitchCloseLeaderVote()" style="flex:1;margin-top:0;font-size:.8rem">✓ Cerrar y asignar</button>
+          </div>
+          <div id="snitch-leaders-display"></div>
+        </div>
+        <div class="card card-gold" style="margin-bottom:.75rem">
+          <div style="font-family:'Cinzel',serif;font-size:.78rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.5rem">⚙️ CONFIGURACIÓN</div>
+          <div class="ilabel">Puntos iniciales por casa</div>
+          <input class="ifield" id="snitch-initial-pts" type="number" value="100" min="50" max="500" style="margin-bottom:.5rem">
+          <div class="ilabel">Bonus por ronda (+)</div>
+          <input class="ifield" id="snitch-bonus-pts" type="number" value="25" min="0" max="100">
+        </div>
+        <button class="btn btn-gold" onclick="snitchStartGame()" id="snitch-start-btn" style="opacity:.5;pointer-events:none">🏆 Iniciar juego</button>
+      </div>
+
+      <!-- En juego -->
+      <div id="snitch-game" class="hidden">
+        <div class="card card-gold" style="margin-bottom:.75rem;text-align:center">
+          <div style="font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.12em;opacity:.6;margin-bottom:.3rem">RONDA</div>
+          <div id="snitch-round-display" style="font-family:'Cinzel Decorative',cursive;font-size:2rem;color:var(--gold)"></div>
+          <div id="snitch-rep-display" style="font-family:'Cinzel',serif;font-size:.85rem;color:var(--gold2);margin-top:.25rem"></div>
+        </div>
+        <!-- Presupuestos -->
+        <div class="card card-gold" style="margin-bottom:.75rem">
+          <div style="font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.1em;color:var(--gold2);opacity:.7;margin-bottom:.5rem">PRESUPUESTOS</div>
+          <div id="snitch-budgets-org"></div>
+        </div>
+        <!-- Caja secreta -->
+        <div class="card card-gold" style="margin-bottom:.75rem;text-align:center">
+          <div style="font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.1em;color:var(--gold);opacity:.7;margin-bottom:.3rem">🔒 SNITCH EN CAJA</div>
+          <div id="snitch-secret-display" style="font-family:'Cinzel Decorative',cursive;font-size:1.5rem;color:var(--gold)"></div>
+        </div>
+        <!-- Timer y controles -->
+        <div style="display:flex;gap:.5rem;margin-bottom:.75rem">
+          <button class="btn" onclick="snitchStartTimer('pistas')" style="flex:1;background:linear-gradient(135deg,var(--slyth),#2d7a4a);color:#c8e8c8;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer">⏱ Timer pistas (60s)</button>
+          <button class="btn" onclick="snitchStartTimer('apuestas')" style="flex:1;background:linear-gradient(135deg,var(--grif),#c9a84c);color:white;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer">⏱ Timer apuestas (45s)</button>
+        </div>
+        <button class="btn btn-gold" onclick="snitchOpenBetting()" id="snitch-open-bet-btn">🎲 Abrir apuestas</button>
+        <button class="btn" onclick="snitchReveal()" id="snitch-reveal-btn" style="display:none;background:linear-gradient(135deg,#3a2800,#c9a84c);color:white;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;margin-top:.5rem">🏆 Revelar snitch</button>
+        <button class="btn btn-ghost" onclick="snitchNextRound()" id="snitch-next-btn" style="display:none;margin-top:.5rem">Siguiente ronda ➡️</button>
+        <div id="snitch-bets-received" style="margin-top:.75rem"></div>
+      </div>
+    </div>
+
+    <!-- JUGADOR: líder -->
+    <div id="snitch-leader-panel" class="hidden">
+      <div class="card card-gold" style="text-align:center;margin-bottom:.75rem">
+        <div style="font-size:1.5rem">🏅</div>
+        <div style="font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold);margin-top:.3rem">Sos el líder de tu casa</div>
+        <div style="font-size:.82rem;opacity:.6;margin-top:.2rem">Vos hacés las apuestas</div>
+      </div>
+      <div id="snitch-leader-budget" class="card card-gold" style="text-align:center;margin-bottom:.75rem">
+        <div style="font-family:'Cinzel',serif;font-size:.72rem;opacity:.6;letter-spacing:.1em">PRESUPUESTO</div>
+        <div id="snitch-leader-pts" style="font-family:'Cinzel Decorative',cursive;font-size:2.5rem;color:var(--gold)">100</div>
+        <div style="font-size:.72rem;opacity:.5">puntos</div>
+      </div>
+      <div id="snitch-betting-panel" class="hidden">
+        <div class="card card-gold" style="margin-bottom:.75rem">
+          <div style="font-family:'Cinzel',serif;font-size:.78rem;color:var(--gold);margin-bottom:.75rem;letter-spacing:.08em">¿A QUÉ CAJA APOSTÁS?</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:.75rem" id="snitch-bet-boxes">
+            <button class="snitch-box-btn" onclick="snitchSelectBetBox(1,this)">📦<br><span style="font-family:'Cinzel',serif;font-size:.7rem">Caja 1</span></button>
+            <button class="snitch-box-btn" onclick="snitchSelectBetBox(2,this)">📦<br><span style="font-family:'Cinzel',serif;font-size:.7rem">Caja 2</span></button>
+            <button class="snitch-box-btn" onclick="snitchSelectBetBox(3,this)">📦<br><span style="font-family:'Cinzel',serif;font-size:.7rem">Caja 3</span></button>
+            <button class="snitch-box-btn" onclick="snitchSelectBetBox(4,this)">📦<br><span style="font-family:'Cinzel',serif;font-size:.7rem">Caja 4</span></button>
+          </div>
+          <div class="ilabel">¿Cuántos puntos apostás? (mín. 10)</div>
+          <input class="ifield" id="snitch-bet-amount" type="number" min="10" placeholder="Ej: 50" style="margin-bottom:.5rem">
+          <button class="btn btn-gold" onclick="snitchSendBet()">⚡ Confirmar apuesta</button>
+          <div id="snitch-bet-sent" class="hidden" style="text-align:center;color:var(--gold);font-family:'Cinzel',serif;margin-top:.5rem">✓ Apuesta enviada</div>
+        </div>
+      </div>
+      <div id="snitch-leader-waiting" style="text-align:center;padding:1.5rem;opacity:.6">
+        <div style="font-size:2rem">⏳</div>
+        <div style="font-family:'Cinzel',serif;font-size:.85rem;margin-top:.5rem">Esperando que el org abra las apuestas...</div>
+      </div>
+    </div>
+
+    <!-- JUGADOR: no líder -->
+    <div id="snitch-player-panel" class="hidden">
+      <div id="snitch-player-waiting" style="text-align:center;padding:2rem;opacity:.7">
+        <div style="font-size:2.5rem">🏆</div>
+        <div style="font-family:'Cinzel',serif;font-weight:700;margin-top:.5rem">Esperando la siguiente fase...</div>
+      </div>
+      <div id="snitch-player-info" class="hidden" style="text-align:center;padding:1.5rem">
+        <div id="snitch-player-round" style="font-family:'Cinzel Decorative',cursive;font-size:1.2rem;color:var(--gold)"></div>
+        <div id="snitch-player-status" style="font-family:'Cinzel',serif;font-size:.85rem;margin-top:.5rem;opacity:.8"></div>
+      </div>
+    </div>
+
+    <!-- Resultado visible para todos -->
+    <div id="snitch-result-panel" class="hidden" style="text-align:center;padding:1.5rem">
+      <div id="snitch-result-icon" style="font-size:3.5rem"></div>
+      <div id="snitch-result-text" style="font-family:'Cinzel Decorative',cursive;font-size:1.2rem;color:var(--gold);margin-top:.5rem"></div>
+      <div id="snitch-result-detail" style="font-family:'EB Garamond',serif;font-size:.9rem;opacity:.8;margin-top:.4rem"></div>
+    </div>
+
+    <!-- Líder selector — contenido generado por snitchRenderLeaderVotePanel -->
+    <div id="snitch-choose-leader" class="hidden" style="text-align:center;padding:1.5rem"></div>
+  </div>
 
   <!-- ══ MÍMICA DE CASAS ══ -->
   <div id="screen-mimica" class="screen">
@@ -1512,26 +1822,36 @@ header {
 
 <!-- Panel de puntos manuales (solo org) -->
 <div id="points-panel">
-  <div style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.12em;color:var(--gold);opacity:.7;margin-bottom:.5rem;text-align:center">OTORGAR PUNTOS</div>
-  <div class="pts-houses-grid">
-    <button class="pts-house-btn phb-grif" onclick="ptsSelectHouse('gryffindor',this)" id="phb-gryffindor">🦁 Gryffindor</button>
-    <button class="pts-house-btn phb-slyth" onclick="ptsSelectHouse('slytherin',this)" id="phb-slytherin">🐍 Slytherin</button>
-    <button class="pts-house-btn phb-huff" onclick="ptsSelectHouse('hufflepuff',this)" id="phb-hufflepuff">🦡 Hufflepuff</button>
-    <button class="pts-house-btn phb-raven" onclick="ptsSelectHouse('ravenclaw',this)" id="phb-ravenclaw">🦅 Ravenclaw</button>
+  <!-- Modo rápido: 4 casas × montos preset en una grilla -->
+  <div style="font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.15em;color:var(--gold);opacity:.6;margin-bottom:.5rem;text-align:center;text-transform:uppercase">Toque rápido · casa + puntos</div>
+  <div id="pts-quick-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:.3rem;margin-bottom:.4rem">
+    <!-- Generado dinámicamente por ptsRenderQuickGrid() -->
   </div>
-  <div class="pts-row">
-    <div class="pts-quick">
-      <button class="pts-q-btn" onclick="ptsGive(10)">+10</button>
-      <button class="pts-q-btn" onclick="ptsGive(20)">+20</button>
-      <button class="pts-q-btn" onclick="ptsGive(50)">+50</button>
-      <button class="pts-q-btn" onclick="ptsGive(-10)">−10</button>
+  <!-- Montos preset seleccionables -->
+  <div style="display:flex;gap:.3rem;justify-content:center;margin-bottom:.4rem" id="pts-preset-row">
+    <button class="pts-preset-btn selected-preset" onclick="ptsSetPreset(10,this)">+10</button>
+    <button class="pts-preset-btn" onclick="ptsSetPreset(20,this)">+20</button>
+    <button class="pts-preset-btn" onclick="ptsSetPreset(50,this)">+50</button>
+    <button class="pts-preset-btn" onclick="ptsSetPreset(-10,this)" style="color:#ffa0a0;border-color:rgba(255,100,100,.4)">−10</button>
+  </div>
+  <!-- Toggle avanzado -->
+  <button onclick="ptsToggleAdvanced()" style="width:100%;background:none;border:none;color:var(--gold2);font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.08em;cursor:pointer;padding:.2rem;opacity:.6">⚙️ Modo avanzado</button>
+  <!-- Panel avanzado (colapsado por defecto) -->
+  <div id="pts-advanced" style="display:none;border-top:1px solid var(--border);margin-top:.4rem;padding-top:.4rem">
+    <div class="pts-houses-grid" style="margin-bottom:.4rem">
+      <button class="pts-house-btn phb-grif" onclick="ptsSelectHouse('gryffindor',this)" id="phb-gryffindor">🦁 Grif</button>
+      <button class="pts-house-btn phb-slyth" onclick="ptsSelectHouse('slytherin',this)" id="phb-slytherin">🐍 Slyth</button>
+      <button class="pts-house-btn phb-huff" onclick="ptsSelectHouse('hufflepuff',this)" id="phb-hufflepuff">🦡 Huff</button>
+      <button class="pts-house-btn phb-raven" onclick="ptsSelectHouse('ravenclaw',this)" id="phb-ravenclaw">🦅 Raven</button>
     </div>
-    <input class="ifield" id="pts-custom" type="number" placeholder="Personalizado"
-      style="flex:1;padding:.4rem .7rem;font-size:.85rem" min="-999" max="999">
-    <button class="btn btn-gold btn-sm" onclick="ptsGiveCustom()" style="flex-shrink:0">✓</button>
+    <div class="pts-row">
+      <input class="ifield" id="pts-custom" type="number" placeholder="Pts custom"
+        style="flex:1;padding:.4rem .6rem;font-size:.85rem" min="-999" max="999">
+      <button class="btn btn-gold btn-sm" onclick="ptsGiveCustom()" style="flex-shrink:0;margin-top:0">✓</button>
+    </div>
+    <input class="ifield" id="pts-note" placeholder="Nota opcional"
+      style="margin-top:.4rem;font-size:.78rem;padding:.35rem .7rem">
   </div>
-  <input class="ifield" id="pts-note" placeholder="Nota (opcional, ej: por el desafío del pasillo)"
-    style="margin-top:.5rem;font-size:.82rem;padding:.4rem .75rem">
 </div>
 <button class="pts-toggle" id="pts-toggle-btn" onclick="togglePtsPanel()">⚡</button>
 
@@ -1843,18 +2163,66 @@ function cancelScreenListeners() {
   screenUnsubs = [];
   if (hqVoteUnsub) { try{hqVoteUnsub();}catch(e){} hqVoteUnsub=null; }
   if (triOrgResUnsub) { try{triOrgResUnsub();}catch(e){} triOrgResUnsub=null; }
+  if (window._mimPlayerInterval) { clearInterval(window._mimPlayerInterval); window._mimPlayerInterval=null; }
 }
 function goHome() {
   cancelScreenListeners();
   // Cancelar timer de mímica si estaba corriendo
   if (mimTimerInterval) { clearInterval(mimTimerInterval); mimTimerInterval = null; }
+  // Limpiar estados de juegos en Firebase para que jugadores no queden trabados
+  if (isOrganizer && db && currentRoom) {
+    const {doc, setDoc} = fsH;
+    setDoc(doc(db,'rooms',currentRoom), {
+      mimica: { phase: 'ended' },
+      ruleta: { phase: 'idle' },
+      snitch: { phase: 'idle' }
+    }, {merge:true});
+  }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('main-menu').style.display = 'flex';
 }
 
 // ══ PUNTOS MANUALES ══
 function togglePtsPanel() {
-  document.getElementById('points-panel').classList.toggle('open');
+  const panel = document.getElementById('points-panel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) ptsRenderQuickGrid();
+}
+
+let _ptsPreset = 10;
+function ptsSetPreset(val, btn) {
+  _ptsPreset = val;
+  document.querySelectorAll('.pts-preset-btn').forEach(b => b.classList.remove('selected-preset'));
+  btn.classList.add('selected-preset');
+  ptsRenderQuickGrid();
+}
+
+function ptsToggleAdvanced() {
+  const adv = document.getElementById('pts-advanced');
+  adv.style.display = adv.style.display === 'none' ? 'block' : 'none';
+}
+
+function ptsRenderQuickGrid() {
+  const el = document.getElementById('pts-quick-grid');
+  if (!el) return;
+  el.innerHTML = '';
+  HOUSE_KEYS.forEach(hk => {
+    const h = HOUSES[hk];
+    const btn = document.createElement('button');
+    btn.className = 'pts-quick-house-btn';
+    btn.style.cssText = `background:${h.color}88;color:${h.accent}`;
+    btn.innerHTML = `<span>${h.crest}</span><span class="pts-q-amount">${_ptsPreset > 0 ? '+' : ''}${_ptsPreset}</span>`;
+    btn.onclick = () => ptsQuickGive(hk, _ptsPreset);
+    el.appendChild(btn);
+  });
+}
+
+async function ptsQuickGive(houseKey, amount) {
+  if (!isOrganizer) return;
+  const btn = document.querySelector(`#pts-quick-grid .pts-quick-house-btn:nth-child(${HOUSE_KEYS.indexOf(houseKey)+1})`);
+  if (btn) { btn.style.opacity = '.5'; btn.disabled = true; }
+  await applyPoints(houseKey, amount, '');
+  if (btn) { btn.style.opacity = '1'; btn.disabled = false; }
 }
 function ptsSelectHouse(hk, btn) {
   ptsSelectedHouse = hk;
@@ -1928,9 +2296,70 @@ function selectPlayerForSorting(name, chipEl) {
   chipEl.style.outline = '2px solid var(--gold)';
   document.getElementById('sort-current-name').textContent = name;
   document.getElementById('sort-btn').style.display = 'block';
+  const manualBtn = document.getElementById('sort-manual-btn');
+  if (manualBtn) manualBtn.style.display = 'block';
   document.getElementById('sort-result-card').classList.add('hidden');
   document.getElementById('sort-hat').style.animation = '';
   document.getElementById('sort-status-msg').textContent = `"${name}" listo/a para ser seleccionado/a`;
+  hideManualSortPanel();
+}
+
+function showManualSortPanel() {
+  document.getElementById('sort-manual-panel')?.classList.remove('hidden');
+}
+
+function hideManualSortPanel() {
+  document.getElementById('sort-manual-panel')?.classList.add('hidden');
+}
+
+async function doManualSort(houseKey) {
+  if (!isOrganizer || !sortSelectedPlayer) return;
+  hideManualSortPanel();
+  // Misma animación que doSort — solo la casa es manual
+  const {doc, getDoc, setDoc} = fsH;
+  const btn = document.getElementById('sort-btn');
+  const manualBtn = document.getElementById('sort-manual-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '🎩 Seleccionando...'; }
+  if (manualBtn) manualBtn.style.display = 'none';
+
+  const hat = document.getElementById('sort-hat');
+  hat.classList.add('sorting-hat-thinking');
+  document.getElementById('sort-status-msg').textContent = 'El sombrero está pensando...';
+
+  await setDoc(doc(db,'rooms',currentRoom), {
+    sorting: { phase:'thinking', currentPlayer: sortSelectedPlayer, revealedHouse: null }
+  }, {merge:true});
+
+  // Espera dramática igual que el automático
+  await new Promise(r => setTimeout(r, 2500));
+
+  hat.classList.remove('sorting-hat-thinking');
+  const h = HOUSES[houseKey];
+
+  const freshSnap = await getDoc(doc(db,'rooms',currentRoom));
+  const freshMembers = [...(freshSnap.data()?.houses?.[houseKey]?.members||[])];
+  if (!freshMembers.includes(sortSelectedPlayer)) freshMembers.push(sortSelectedPlayer);
+
+  await setDoc(doc(db,'rooms',currentRoom), {
+    houses: { [houseKey]: { members: freshMembers } },
+    sorting: { phase:'revealed', currentPlayer: sortSelectedPlayer, revealedHouse: houseKey }
+  }, {merge:true});
+
+  const result = document.getElementById('sort-result-card');
+  result.className = 'house-reveal';
+  result.innerHTML = `
+    <div style="font-size:3rem;margin-bottom:.5rem">${h.crest}</div>
+    <div style="font-family:'Cinzel Decorative',cursive;font-size:1.4rem;color:${h.accent};text-shadow:0 0 20px ${h.accent}66">${h.name}</div>
+  `;
+  result.classList.remove('hidden');
+  hat.textContent = h.crest;
+
+  confetti(h.accent);
+  playSortingAudio(houseKey);
+
+  sortSelectedPlayer = null;
+  if (btn) { btn.disabled = false; btn.textContent = '🎩 Seleccionar'; btn.style.display = 'none'; }
+  await loadUnassignedPlayers();
 }
 
 function renderHousesDisplay(houses) {
@@ -2003,7 +2432,10 @@ async function doSort() {
   // Decidir casa (balanceada)
   const snap = await getDoc(doc(db,'rooms',currentRoom));
   const houses = snap.data()?.houses || {};
-  const chosenHouse = pickBalancedHouse(houses);
+  // Caso especial: Pau siempre va a Gryffindor 🦁
+  const chosenHouse = sortSelectedPlayer.trim().toLowerCase() === 'pau'
+    ? 'gryffindor'
+    : pickBalancedHouse(houses);
 
   // Esperar dramatismo (2.5s)
   await new Promise(r => setTimeout(r, 2500));
@@ -2131,21 +2563,28 @@ function initBigscreen() {
 
 
 function bsGoWaiting() {
+  if (window._bsMimInterval) { clearInterval(window._bsMimInterval); window._bsMimInterval = null; }
   document.querySelectorAll('.bs-screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('bs-waiting').classList.add('active');
 }
 
-// ══ SONIDOS ══
+function bsShowScreen(name) {
+  document.querySelectorAll('.bs-screen').forEach(s=>s.classList.remove('active'));
+  const el = document.getElementById('bs-'+name);
+  if (el) el.classList.add('active');
+}
+
+// ══ SONIDOS — solo en TV para evitar eco ══
 let _audioCtx = null;
 function getAudioCtx() {
   if (!_audioCtx || _audioCtx.state === 'closed') {
     _audioCtx = new(window.AudioContext||window.webkitAudioContext)();
   }
-  // Reanudar si fue suspendido por el browser
   if (_audioCtx.state === 'suspended') _audioCtx.resume();
   return _audioCtx;
 }
 function playSound(type) {
+  if (!IS_BIGSCREEN) return; // Solo suena en la pantalla TV
   try {
     const ctx = getAudioCtx();
     if (type==='ding') {
@@ -2177,6 +2616,607 @@ function confetti(color) {
     document.body.appendChild(el);
     setTimeout(()=>el.remove(),3500);
   }
+}
+
+// ══ FLASH ROJO — incorrecto ══
+function showRedFlash() {
+  let flash = document.getElementById('hq-red-flash');
+  if (!flash) {
+    flash = document.createElement('div');
+    flash.id = 'hq-red-flash';
+    flash.style.cssText = `
+      position:fixed;inset:0;z-index:7000;
+      background:rgba(116,0,1,.55);
+      pointer-events:none;
+      opacity:0;transition:opacity .15s;
+    `;
+    document.body.appendChild(flash);
+  }
+  flash.style.opacity = '1';
+  setTimeout(()=>{ flash.style.opacity='0'; }, 550);
+}
+
+// ══════════════════════════════════════════
+// BÚSQUEDA DE LA SNITCH
+// ══════════════════════════════════════════
+const SNITCH_ROUNDS = 4;
+const SNITCH_REPS = ['gryffindor','slytherin','ravenclaw','hufflepuff']; // orden de representantes
+
+let snitchSecretBox = null;      // caja con la snitch (solo org)
+let snitchCurrentRound = 0;      // ronda actual (1-4)
+let snitchBudgets = {};          // { houseKey: pts }
+let snitchInitialPts = 100;
+let snitchBonusPts = 25;
+let snitchTimerInterval = null;
+let snitchMyBetBox = null;       // caja elegida por el líder
+
+function initSnitchScreen() {
+  const isLeader = window._snitchIsLeader || false;
+  document.getElementById('snitch-org').classList.toggle('hidden', !isOrganizer);
+
+  if (!isOrganizer) {
+    document.getElementById('snitch-org').classList.add('hidden');
+    snitchListenPlayer();
+  } else {
+    snitchLoadLeaders();
+    snitchListenOrg();
+  }
+}
+
+// ── ORG: setup ──
+function snitchSelectBox(box, btn) {
+  snitchSecretBox = box;
+  document.querySelectorAll('.snitch-box-btn').forEach(b => b.classList.remove('selected-box'));
+  btn.classList.add('selected-box');
+  document.getElementById('snitch-box-chosen').textContent = `🏆 Snitch en Caja ${box}`;
+  snitchCheckCanStart();
+}
+
+async function snitchLoadLeaders() {
+  if (!db) return;
+  const {doc, getDoc} = fsH;
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const data = snap.data() || {};
+  renderSnitchLeaders(data.snitchLeaders||{}, data.snitchLeaderVote?.votes||{}, data.houses||{});
+}
+
+function renderSnitchLeaders(leaders, votes, houses) {
+  const el = document.getElementById('snitch-leaders-display');
+  if (!el) return;
+  el.innerHTML = '';
+
+  // Calcular tally de votos por casa
+  const playerHouse = {};
+  HOUSE_KEYS.forEach(hk => {
+    (houses?.[hk]?.members||[]).forEach(m => { playerHouse[m] = hk; });
+  });
+  const tally = {}; // { houseKey: { candidato: count } }
+  HOUSE_KEYS.forEach(hk => { tally[hk] = {}; });
+  Object.entries(votes||{}).forEach(([voter, candidate]) => {
+    const hk = playerHouse[voter];
+    if (!hk) return;
+    tally[hk][candidate] = (tally[hk][candidate]||0) + 1;
+  });
+
+  HOUSE_KEYS.forEach(hk => {
+    const h = HOUSES[hk];
+    const leader = leaders[hk] || null;
+    const houseTally = tally[hk];
+    const topCandidates = Object.entries(houseTally).sort((a,b)=>b[1]-a[1]).slice(0,2);
+
+    const row = document.createElement('div');
+    row.className = 'snitch-budget-row';
+    row.style.flexDirection = 'column';
+    row.style.alignItems = 'flex-start';
+    row.style.gap = '.2rem';
+
+    let inner = `<div style="display:flex;justify-content:space-between;width:100%">
+      <span>${h.crest} ${h.name}</span>
+      <span style="font-family:'Cinzel',serif;font-size:.82rem;color:${leader?'#a0d4a0':'rgba(255,255,255,.4)'}">${leader?'✓ '+leader:'Sin líder'}</span>
+    </div>`;
+
+    if (!leader && topCandidates.length) {
+      inner += `<div style="display:flex;gap:.4rem;flex-wrap:wrap;padding-left:.3rem">
+        ${topCandidates.map(([name,cnt])=>
+          `<span style="font-size:.72rem;background:${h.color}44;border:1px solid ${h.color}88;border-radius:8px;padding:.15rem .5rem;color:${h.accent}">${name} (${cnt})</span>`
+        ).join('')}
+      </div>`;
+    }
+
+    row.innerHTML = inner;
+    el.appendChild(row);
+  });
+  snitchCheckCanStart();
+}
+
+function snitchCheckCanStart() {
+  // Necesita caja elegida
+  const btn = document.getElementById('snitch-start-btn');
+  if (!btn) return;
+  const canStart = snitchSecretBox !== null;
+  btn.style.opacity = canStart ? '1' : '.5';
+  btn.style.pointerEvents = canStart ? 'auto' : 'none';
+}
+
+async function snitchStartGame() {
+  if (!snitchSecretBox || !db) return;
+  snitchInitialPts = parseInt(document.getElementById('snitch-initial-pts').value) || 100;
+  snitchBonusPts = parseInt(document.getElementById('snitch-bonus-pts').value) || 25;
+  // Inicializar presupuestos
+  snitchBudgets = {};
+  HOUSE_KEYS.forEach(hk => { snitchBudgets[hk] = snitchInitialPts; });
+  snitchCurrentRound = 1;
+  const {doc, setDoc} = fsH;
+  await setDoc(doc(db,'rooms',currentRoom), {
+    snitch: {
+      phase: 'hints',
+      round: 1,
+      repHouse: SNITCH_REPS[0],
+      budgets: snitchBudgets,
+      bets: {},
+      result: null,
+      initialPts: snitchInitialPts,
+      bonusPts: snitchBonusPts
+    }
+  }, {merge:true});
+  document.getElementById('snitch-setup').classList.add('hidden');
+  document.getElementById('snitch-game').classList.remove('hidden');
+  snitchUpdateOrgGame(1, snitchBudgets, {});
+}
+
+function snitchUpdateOrgGame(round, budgets, bets) {
+  document.getElementById('snitch-round-display').textContent = `${round} / ${SNITCH_ROUNDS}`;
+  const repHk = SNITCH_REPS[(round-1) % 4];
+  const repH = HOUSES[repHk];
+  document.getElementById('snitch-rep-display').textContent = `Representante: ${repH.crest} ${repH.name}`;
+  document.getElementById('snitch-secret-display').textContent = `Caja ${snitchSecretBox}`;
+  // Presupuestos
+  const el = document.getElementById('snitch-budgets-org');
+  if (el) {
+    el.innerHTML = '';
+    HOUSE_KEYS.forEach(hk => {
+      const h = HOUSES[hk];
+      const pts = budgets[hk] || 0;
+      const bet = bets[hk];
+      const row = document.createElement('div');
+      row.className = 'snitch-budget-row';
+      row.innerHTML = `
+        <span>${h.crest} ${h.name}</span>
+        <span style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:${h.accent}">${pts} pts</span>
+        ${bet ? `<span style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold)">→ Caja ${bet.box} (${bet.amount} pts)</span>` : ''}`;
+      el.appendChild(row);
+    });
+  }
+  // Mostrar apuestas recibidas
+  const betsEl = document.getElementById('snitch-bets-received');
+  if (betsEl) {
+    const count = Object.keys(bets).length;
+    betsEl.innerHTML = count > 0
+      ? `<div class="info" style="text-align:center">${count}/4 apuestas recibidas</div>`
+      : '';
+  }
+}
+
+async function snitchStartTimer(type) {
+  if (!db) return;
+  const secs = type === 'pistas' ? 60 : 45;
+  const {doc, setDoc} = fsH;
+  await setDoc(doc(db,'rooms',currentRoom), {
+    snitch: { timerPhase: type, timerTs: Date.now(), timerSecs: secs }
+  }, {merge:true});
+}
+
+async function snitchOpenBetting() {
+  if (!db) return;
+  const {doc, setDoc} = fsH;
+  await setDoc(doc(db,'rooms',currentRoom), {
+    snitch: { phase: 'betting', bets: {} }
+  }, {merge:true});
+  document.getElementById('snitch-open-bet-btn').style.display = 'none';
+  document.getElementById('snitch-reveal-btn').style.display = 'block';
+}
+
+async function snitchReveal() {
+  if (!db || !snitchSecretBox) return;
+  const {doc, getDoc, setDoc} = fsH;
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const snitchData = snap.data()?.snitch || {};
+  const bets = snitchData.bets || {};
+  const budgets = { ...(snitchData.budgets || {}) };
+
+  // Calcular resultado
+  const winners = [], losers = [];
+  let poolFromLosers = 0;
+  HOUSE_KEYS.forEach(hk => {
+    const bet = bets[hk];
+    if (!bet) return;
+    if (bet.box === snitchSecretBox) {
+      winners.push({ hk, amount: bet.amount });
+    } else {
+      losers.push({ hk, amount: bet.amount });
+      poolFromLosers += bet.amount;
+      budgets[hk] = Math.max(0, (budgets[hk]||0) - bet.amount);
+    }
+  });
+
+  // Repartir pool entre ganadores proporcionalmente
+  const totalWinnerBets = winners.reduce((s,w) => s+w.amount, 0);
+  const pointsGained = {};
+  winners.forEach(w => {
+    const share = totalWinnerBets > 0
+      ? Math.round((w.amount / totalWinnerBets) * poolFromLosers)
+      : 0;
+    budgets[w.hk] = (budgets[w.hk]||0) + share;
+    pointsGained[w.hk] = share;
+  });
+
+  // Si nadie apostó a la caja correcta → todos pierden su apuesta
+  const noWinner = winners.length === 0;
+
+  await setDoc(doc(db,'rooms',currentRoom), {
+    snitch: {
+      phase: 'revealed',
+      correctBox: snitchSecretBox,
+      bets,
+      budgets,
+      winners: winners.map(w=>w.hk),
+      pointsGained,
+      noWinner,
+      round: snitchCurrentRound
+    }
+  }, {merge:true});
+
+  // Sumar puntos ganados a la Copa
+  for (const w of winners) {
+    if (pointsGained[w.hk] > 0) {
+      await applyPoints(w.hk, pointsGained[w.hk], `Snitch Ronda ${snitchCurrentRound}: Caja ${snitchSecretBox}`);
+    }
+  }
+
+  document.getElementById('snitch-reveal-btn').style.display = 'none';
+  document.getElementById('snitch-next-btn').style.display = 'block';
+  snitchUpdateOrgGame(snitchCurrentRound, budgets, bets);
+}
+
+async function snitchNextRound() {
+  if (!db) return;
+  const nextRound = snitchCurrentRound + 1;
+  if (nextRound > SNITCH_ROUNDS) {
+    // Juego terminado
+    const {doc, setDoc} = fsH;
+    await setDoc(doc(db,'rooms',currentRoom), {
+      snitch: { phase: 'ended' }
+    }, {merge:true});
+    showToast('🏆 ¡Búsqueda de la Snitch terminada!');
+    confetti();
+    return;
+  }
+  // Resetear para nueva ronda
+  snitchCurrentRound = nextRound;
+  snitchSecretBox = null;
+  // Limpiar selector de caja en org
+  document.querySelectorAll('#snitch-box-selector .snitch-box-btn').forEach(b=>b.classList.remove('selected-box'));
+  document.getElementById('snitch-box-chosen').textContent = '';
+  // Añadir bonus al presupuesto
+  const {doc, getDoc, setDoc} = fsH;
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const currentBudgets = snap.data()?.snitch?.budgets || {};
+  const newBudgets = {};
+  HOUSE_KEYS.forEach(hk => {
+    newBudgets[hk] = (currentBudgets[hk]||0) + snitchBonusPts;
+  });
+  snitchBudgets = newBudgets;
+  await setDoc(doc(db,'rooms',currentRoom), {
+    snitch: {
+      phase: 'hints',
+      round: nextRound,
+      repHouse: SNITCH_REPS[(nextRound-1) % 4],
+      budgets: newBudgets,
+      bets: {},
+      result: null
+    }
+  }, {merge:true});
+  document.getElementById('snitch-next-btn').style.display = 'none';
+  document.getElementById('snitch-open-bet-btn').style.display = 'block';
+  document.getElementById('snitch-reveal-btn').style.display = 'none';
+  document.getElementById('snitch-bets-received').innerHTML = '';
+  snitchUpdateOrgGame(nextRound, newBudgets, {});
+  showToast(`Ronda ${nextRound} — elegí la nueva caja`);
+}
+
+function snitchListenOrg() {
+  if (!db) return;
+  const {doc, onSnapshot} = fsH;
+  const unsub = onSnapshot(doc(db,'rooms',currentRoom), snap => {
+    const data = snap.data();
+    if (!data) return;
+    const s = data.snitch || {};
+    // Líderes (con conteo de votos si votación abierta)
+    const voteData = data.snitchLeaderVote || {};
+    renderSnitchLeaders(data.snitchLeaders||{}, voteData.votes||{}, data.houses||{});
+    // Presupuestos
+    if (s.budgets) snitchUpdateOrgGame(s.round||1, s.budgets, s.bets||{});
+  });
+  screenUnsubs.push(unsub);
+}
+
+// ── ORG: abrir/cerrar votación de líder ──
+async function snitchOpenLeaderVote() {
+  if (!db) return;
+  const {doc, setDoc} = fsH;
+  await setDoc(doc(db,'rooms',currentRoom), {
+    snitchLeaderVote: { phase: 'open', votes: {} }
+  }, {merge:true});
+  showToast('🗳️ Votación de líderes abierta');
+}
+
+async function snitchCloseLeaderVote() {
+  if (!db) return;
+  const {doc, getDoc, setDoc} = fsH;
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const voteData = snap.data()?.snitchLeaderVote || {};
+  const votes = voteData.votes || {};
+
+  // Contar votos por casa — votes[votante] = candidato
+  const tally = {}; // { houseKey: { candidato: count } }
+  HOUSE_KEYS.forEach(hk => { tally[hk] = {}; });
+
+  // Necesito saber la casa de cada votante — busco en houses
+  const houses = snap.data()?.houses || {};
+  const playerHouse = {};
+  HOUSE_KEYS.forEach(hk => {
+    (houses[hk]?.members||[]).forEach(m => { playerHouse[m] = hk; });
+  });
+
+  Object.entries(votes).forEach(([voter, candidate]) => {
+    const hk = playerHouse[voter];
+    if (!hk || !tally[hk]) return;
+    tally[hk][candidate] = (tally[hk][candidate]||0) + 1;
+  });
+
+  // Elegir ganador por casa (más votos; empate → primero alfabético)
+  const leaders = snap.data()?.snitchLeaders || {};
+  HOUSE_KEYS.forEach(hk => {
+    const houseTally = tally[hk];
+    if (!Object.keys(houseTally).length) return;
+    const winner = Object.entries(houseTally)
+      .sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0]))[0][0];
+    leaders[hk] = winner;
+  });
+
+  await setDoc(doc(db,'rooms',currentRoom), {
+    snitchLeaders: leaders,
+    snitchLeaderVote: { phase: 'closed', votes }
+  }, {merge:true});
+  showToast('✓ Líderes asignados');
+}
+
+// ── PLAYER: votar líder ──
+async function snitchVoteLeader(candidate) {
+  if (!db || !currentHouse) return;
+  const {doc, setDoc} = fsH;
+  await setDoc(doc(db,'rooms',currentRoom), {
+    [`snitchLeaderVote.votes.${currentUser}`]: candidate
+  }, {merge:true});
+  showToast(`✓ Votaste por ${candidate}`);
+  // Actualizar UI
+  document.querySelectorAll('.snitch-leader-vote-btn').forEach(b => {
+    b.style.opacity = b.dataset.candidate === candidate ? '1' : '.4';
+    b.style.borderColor = b.dataset.candidate === candidate ? 'var(--gold)' : '';
+  });
+}
+
+// ── PLAYER: apostar ──
+function snitchSelectBetBox(box, btn) {
+  snitchMyBetBox = box;
+  document.querySelectorAll('#snitch-bet-boxes .snitch-box-btn').forEach(b=>b.classList.remove('selected-box'));
+  btn.classList.add('selected-box');
+}
+
+async function snitchSendBet() {
+  if (!snitchMyBetBox) { showToast('⚠️ Elegí una caja'); return; }
+  const amount = parseInt(document.getElementById('snitch-bet-amount').value);
+  if (!amount || amount < 10) { showToast('⚠️ Mínimo 10 puntos'); return; }
+  if (!db || !currentHouse) return;
+  const {doc, getDoc, setDoc} = fsH;
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const budget = snap.data()?.snitch?.budgets?.[currentHouse] || 0;
+  if (amount > budget) { showToast(`⚠️ Solo tenés ${budget} pts`); return; }
+  // Leer bets actuales para no pisar
+  const currentBets = snap.data()?.snitch?.bets || {};
+  currentBets[currentHouse] = { box: snitchMyBetBox, amount };
+  await setDoc(doc(db,'rooms',currentRoom), {
+    snitch: { bets: currentBets }
+  }, {merge:true});
+  document.getElementById('snitch-bet-sent').classList.remove('hidden');
+  document.getElementById('snitch-bet-amount').disabled = true;
+  document.querySelectorAll('#snitch-bet-boxes .snitch-box-btn').forEach(b=>b.disabled=true);
+  showToast(`✓ Apuesta enviada: Caja ${snitchMyBetBox} (${amount} pts)`);
+}
+
+// ── PLAYER LISTENER ──
+function snitchListenPlayer() {
+  if (!db) return;
+  const {doc, getDoc, onSnapshot} = fsH;
+
+  const unsub = onSnapshot(doc(db,'rooms',currentRoom), snap => {
+    const data = snap.data();
+    if (!data) return;
+    const s = data.snitch || {};
+    const leaders = data.snitchLeaders || {};
+    const voteData = data.snitchLeaderVote || {};
+    window._snitchIsLeader = leaders[currentHouse] === currentUser;
+
+    // Si hay votación abierta, mostrar panel de voto
+    if (voteData.phase === 'open' && !s.phase) {
+      snitchRenderLeaderVotePanel(voteData, leaders, data.houses||{});
+      return;
+    }
+    snitchRenderPlayerPanels(s, leaders);
+    if (s.timerTs && s.timerSecs) snitchRunTimer(s.timerTs, s.timerSecs, s.timerPhase);
+  });
+  screenUnsubs.push(unsub);
+}
+
+function snitchRenderPlayerPanels(s, leaders) {
+  const hasLeader = !!leaders[currentHouse];
+  const isLeader = window._snitchIsLeader;
+
+  // Ocultar todos
+  ['snitch-leader-panel','snitch-player-panel','snitch-choose-leader','snitch-result-panel'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.add('hidden');
+  });
+
+  if (s.phase === 'ended') {
+    const el = document.getElementById('snitch-player-panel');
+    if (el) {
+      el.classList.remove('hidden');
+      el.querySelector('#snitch-player-waiting').classList.remove('hidden');
+      el.querySelector('#snitch-player-waiting').innerHTML='<div style="font-size:2rem">🏆</div><div style="font-family:'Cinzel',serif;font-weight:700;margin-top:.5rem">¡Juego terminado!</div>';
+    }
+    return;
+  }
+
+  if (s.phase === 'revealed') {
+    const resEl = document.getElementById('snitch-result-panel');
+    if (resEl) {
+      resEl.classList.remove('hidden');
+      const won = s.winners?.includes(currentHouse);
+      const noWinner = s.noWinner;
+      document.getElementById('snitch-result-icon').textContent = noWinner ? '😶' : won ? '🏆' : '❌';
+      document.getElementById('snitch-result-text').textContent = noWinner
+        ? 'La snitch escapó — nadie acertó'
+        : won ? `¡${HOUSES[currentHouse].name} acertó!` : 'Incorrecto';
+      const myBet = s.bets?.[currentHouse];
+      const gained = s.pointsGained?.[currentHouse] || 0;
+      document.getElementById('snitch-result-detail').textContent =
+        `La snitch estaba en la Caja ${s.correctBox}${myBet ? ` · Apostaste Caja ${myBet.box}` : ''}${gained > 0 ? ` · +${gained} pts` : ''}`;
+      if (won && !noWinner) confetti(HOUSES[currentHouse]?.accent);
+    }
+    return;
+  }
+
+  // Mostrar elegir líder si no hay
+  if (!hasLeader) {
+    document.getElementById('snitch-choose-leader')?.classList.remove('hidden');
+    return;
+  }
+
+  if (isLeader) {
+    const panel = document.getElementById('snitch-leader-panel');
+    if (panel) {
+      panel.classList.remove('hidden');
+      // Actualizar presupuesto
+      const budget = s.budgets?.[currentHouse] || 0;
+      const ptsEl = document.getElementById('snitch-leader-pts');
+      if (ptsEl) ptsEl.textContent = budget;
+      // Panel de apuesta
+      const bettingEl = document.getElementById('snitch-betting-panel');
+      const waitingEl = document.getElementById('snitch-leader-waiting');
+      if (s.phase === 'betting') {
+        bettingEl?.classList.remove('hidden');
+        waitingEl?.classList.add('hidden');
+        // Si ya aposté, mostrar confirmación
+        if (s.bets?.[currentHouse]) {
+          document.getElementById('snitch-bet-sent')?.classList.remove('hidden');
+          document.getElementById('snitch-bet-amount').disabled = true;
+          document.querySelectorAll('#snitch-bet-boxes .snitch-box-btn').forEach(b=>b.disabled=true);
+        }
+      } else {
+        bettingEl?.classList.add('hidden');
+        waitingEl?.classList.remove('hidden');
+        const roundNum = s.round || 1;
+        const repHk = SNITCH_REPS[(roundNum-1)%4];
+        const repH = HOUSES[repHk] || {};
+        waitingEl.innerHTML = `<div style="font-size:2rem">⏳</div><div style="font-family:'Cinzel',serif;font-size:.85rem;margin-top:.5rem;color:var(--gold2)">Ronda ${roundNum} · Representante: ${repH.crest} ${repH.name}</div>`;
+      }
+    }
+  } else {
+    const panel = document.getElementById('snitch-player-panel');
+    if (panel) {
+      panel.classList.remove('hidden');
+      const waiting = panel.querySelector('#snitch-player-waiting');
+      const info = panel.querySelector('#snitch-player-info');
+      const roundNum = s.round || 1;
+      const repHk = SNITCH_REPS[(roundNum-1)%4];
+      const repH = HOUSES[repHk] || {};
+      const budget = s.budgets?.[currentHouse] || 0;
+      if (s.phase === 'betting') {
+        waiting?.classList.add('hidden');
+        if (info) {
+          info.classList.remove('hidden');
+          document.getElementById('snitch-player-round').textContent = `Ronda ${roundNum} — ¡Apuestas abiertas!`;
+          document.getElementById('snitch-player-status').textContent = `Tu líder está apostando · Presupuesto: ${budget} pts`;
+        }
+      } else {
+        waiting?.classList.remove('hidden');
+        if (waiting) waiting.innerHTML = `<div style="font-size:2rem">⏳</div><div style="font-family:'Cinzel',serif;font-weight:700;margin-top:.5rem">Ronda ${roundNum} · ${repH.crest} ${repH.name} da pistas</div><div style="font-size:.82rem;opacity:.6;margin-top:.3rem">Presupuesto: ${budget} pts</div>`;
+        info?.classList.add('hidden');
+      }
+    }
+  }
+}
+
+// ── PLAYER: render panel de votación de líder ──
+function snitchRenderLeaderVotePanel(voteData, leaders, houses) {
+  // Ocultar todos los paneles
+  ['snitch-leader-panel','snitch-player-panel','snitch-choose-leader','snitch-result-panel'].forEach(id=>{
+    document.getElementById(id)?.classList.add('hidden');
+  });
+
+  // Reutilizar snitch-choose-leader para el panel de voto
+  const el = document.getElementById('snitch-choose-leader');
+  if (!el) return;
+  el.classList.remove('hidden');
+
+  // Ya voté?
+  const myVote = voteData.votes?.[currentUser];
+  const myHouseMembers = (houses[currentHouse]?.members||[]).filter(m => m !== currentUser);
+  const alreadyLeader = leaders[currentHouse];
+
+  if (alreadyLeader) {
+    el.innerHTML = `<div style="font-size:1.5rem">🏅</div>
+      <div style="font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold);margin:.4rem 0">Líder: <strong>${alreadyLeader}</strong></div>`;
+    return;
+  }
+
+  if (!myHouseMembers.length) {
+    el.innerHTML = `<div style="font-size:1.5rem">⏳</div>
+      <div style="font-family:'Cinzel',serif;font-size:.85rem;color:var(--gold2);margin:.4rem 0">Esperando que se unan más magos...</div>`;
+    return;
+  }
+
+  const h = HOUSES[currentHouse] || {};
+  el.innerHTML = `
+    <div style="font-size:1.5rem;margin-bottom:.4rem">🗳️</div>
+    <div style="font-family:'Cinzel',serif;font-size:.88rem;color:${h.accent};margin-bottom:.75rem">¿Quién lidera ${h.name}?</div>
+    <div style="display:flex;flex-direction:column;gap:.4rem;width:100%;max-width:280px;margin:0 auto">
+      ${[currentUser, ...myHouseMembers].map(name => `
+        <button class="snitch-leader-vote-btn"
+          data-candidate="${name}"
+          onclick="snitchVoteLeader('${name}')"
+          style="background:${myVote===name?h.color+'66':'rgba(255,255,255,.07)'};
+            border:2px solid ${myVote===name?h.accent:'rgba(255,255,255,.15)'};
+            border-radius:14px;padding:.75rem;
+            font-family:'EB Garamond',serif;font-size:1rem;
+            color:#e8dfc0;cursor:pointer;
+            opacity:${myVote && myVote!==name?'.45':'1'};
+            transition:all .2s">
+          ${name === currentUser ? name + ' (yo)' : name}
+        </button>`).join('')}
+    </div>
+    ${myVote ? `<div style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold);opacity:.7;margin-top:.75rem">✓ Votaste por ${myVote}</div>` : ''}
+  `;
+}
+
+// ── TIMER ──
+let snitchTimerUnsub = null;
+function snitchRunTimer(timerTs, timerSecs, phase) {
+  // Solo mostrar en TV
+  if (!IS_BIGSCREEN) return;
+  const remaining = Math.max(0, timerSecs - Math.floor((Date.now()-timerTs)/1000));
+  // Podría integrar con la pantalla TV de snitch si la agregamos
 }
 
 // ══ BEFOREUNLOAD ══
@@ -2254,23 +3294,23 @@ function initCeremonySetup() {
 let lastHousePoints = {};
 
 function renderHouseScores(houses) {
-  window._lastHousesData = houses; // cache para vote counter
+  window._lastHousesData = houses;
   const el = document.getElementById('houses-row');
   if (!el) return;
   let maxPts = -1;
   HOUSE_KEYS.forEach(hk => { const pts=(houses[hk]||{}).points||0; if(pts>maxPts)maxPts=pts; });
 
-  // Detectar qué casa cambió para animarla
   const changedHouse = HOUSE_KEYS.find(hk => {
     const newPts = (houses[hk]||{}).points||0;
     return lastHousePoints[hk] !== undefined && lastHousePoints[hk] !== newPts;
   });
-  // Detectar si hay nuevo líder
+
+  // Detectar nuevo líder
   let prevLeader = null, newLeader = null;
   if (Object.keys(lastHousePoints).length) {
     const prevMax = Math.max(...HOUSE_KEYS.map(hk=>lastHousePoints[hk]||0));
-    const candidates = HOUSE_KEYS.filter(hk=>(lastHousePoints[hk]||0)===prevMax);
-    if (candidates.length===1) prevLeader = candidates[0];
+    const prevCandidates = HOUSE_KEYS.filter(hk=>(lastHousePoints[hk]||0)===prevMax && prevMax>0);
+    if (prevCandidates.length===1) prevLeader = prevCandidates[0];
     const newCandidates = HOUSE_KEYS.filter(hk=>(houses[hk]?.points||0)===maxPts && maxPts>0);
     if (newCandidates.length===1) newLeader = newCandidates[0];
   }
@@ -2287,13 +3327,45 @@ function renderHouseScores(houses) {
     el.appendChild(div);
   });
 
-  // Anunciar nuevo líder si cambió
-  if (newLeader && newLeader !== prevLeader && IS_BIGSCREEN === false) {
-    // Solo el modo normal lo detecta; la TV lo muestra vía Firebase
+  // Banner de nuevo líder en clientes (no TV — la TV lo maneja con lastPointsEvent)
+  if (newLeader && newLeader !== prevLeader && !IS_BIGSCREEN) {
+    showLeaderBanner(newLeader);
   }
 
-  // Guardar para comparar la próxima vez
   HOUSE_KEYS.forEach(hk => { lastHousePoints[hk] = (houses[hk]||{}).points||0; });
+}
+
+let _leaderBannerTimeout = null;
+function showLeaderBanner(houseKey) {
+  const h = HOUSES[houseKey];
+  if (!h) return;
+  // Crear o reutilizar banner
+  let banner = document.getElementById('leader-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'leader-banner';
+    banner.style.cssText = `
+      position:fixed;top:0;left:0;right:0;z-index:8000;
+      padding:.75rem 1rem;text-align:center;
+      font-family:'Cinzel Decorative',cursive;font-size:clamp(.85rem,2.5vw,1.3rem);
+      letter-spacing:.08em;
+      transform:translateY(-100%);transition:transform .4s cubic-bezier(.36,2,.6,1);
+      pointer-events:none;
+    `;
+    document.body.appendChild(banner);
+  }
+  banner.style.background = `linear-gradient(135deg,${h.color},${h.color}cc)`;
+  banner.style.color = h.accent;
+  banner.textContent = `${h.crest} ¡${h.name} toma la delantera! ${h.crest}`;
+  // Animate in
+  requestAnimationFrame(() => {
+    banner.style.transform = 'translateY(0)';
+  });
+  if (_leaderBannerTimeout) clearTimeout(_leaderBannerTimeout);
+  _leaderBannerTimeout = setTimeout(() => {
+    banner.style.transform = 'translateY(-100%)';
+    _leaderBannerTimeout = null;
+  }, 3000);
 }
 
 // ══════════════════════════════════════════
@@ -2301,20 +3373,13 @@ function renderHouseScores(houses) {
 // ══════════════════════════════════════════
 async function applyPoints(houseKey, amount, note='') {
   if (!db||!currentRoom) return;
-  const {doc,getDoc,setDoc,addDoc,collection,serverTimestamp} = fsH;
-  const snap = await getDoc(doc(db,'rooms',currentRoom));
-  const current = (snap.data()?.houses?.[houseKey]?.points)||0;
-  const prevMax = Math.max(...HOUSE_KEYS.map(hk=>(snap.data()?.houses?.[hk]?.points)||0));
-  const newPts = current + amount;
+  const {doc, setDoc, addDoc, collection, serverTimestamp, increment} = fsH;
 
-  // Detectar si esta casa toma el liderazgo
-  const otherMax = Math.max(...HOUSE_KEYS.filter(hk=>hk!==houseKey).map(hk=>(snap.data()?.houses?.[hk]?.points)||0));
-  const takesLead = newPts > otherMax && newPts > current;
-
+  // increment() es atómico — no hay race condition ni getDoc necesario
   await setDoc(doc(db,'rooms',currentRoom),{
-    houses:{[houseKey]:{points:newPts}},
+    houses:{ [houseKey]:{ points: increment(amount) } },
     activeEvent:'points-announce',
-    lastPointsEvent:{house:houseKey,amount,note,takesLead,ts:Date.now()}
+    lastPointsEvent:{ house:houseKey, amount, note, ts:Date.now() }
   },{merge:true});
 
   await addDoc(collection(db,'rooms',currentRoom,'pointsLog'),{
@@ -2386,6 +3451,7 @@ function bsRenderSorting(sort, houses) {
     if (membersEl) membersEl.innerHTML = '';
   } else if (sort.phase==='revealed'&&sort.revealedHouse) {
     const h = HOUSES[sort.revealedHouse];
+    const isNewReveal = lastSortingPhase !== 'revealed' || sort.revealedHouse !== window._bsLastRevealedHouse;
     document.querySelectorAll('.bs-screen').forEach(s=>s.classList.remove('active'));
     document.getElementById('bs-sorting').classList.add('active');
     hatEl.textContent = h.crest;
@@ -2399,6 +3465,15 @@ function bsRenderSorting(sort, houses) {
         `<span style="background:${h.color}44;border:1px solid ${h.color}88;color:${h.accent};padding:.25rem .75rem;border-radius:20px;font-family:'Cinzel',serif;font-size:clamp(.65rem,1.5vw,.9rem);letter-spacing:.06em">${m}</span>`
       ).join('');
     }
+    // Reproducir audio en TV cuando es una revelación nueva
+    if (isNewReveal) {
+      window._bsLastRevealedHouse = sort.revealedHouse;
+      const audioUrls = window._bsAudioUrls || {};
+      const url = audioUrls[sort.revealedHouse];
+      if (url) {
+        try { const a = new Audio(url); a.volume=0.9; a.play().catch(()=>{}); } catch(e){}
+      } else { playSound('win'); }
+    }
   } else if (sort.phase==='waiting') {
     bsGoWaiting();
   }
@@ -2407,13 +3482,85 @@ function bsRenderSorting(sort, houses) {
 // ══════════════════════════════════════════
 // CIERRE DEL EVENTO — PODIO
 // ══════════════════════════════════════════
+// ══════════════════════════════════════════
+// HISTORIAL DE PUNTOS
+// ══════════════════════════════════════════
+async function initPtsLogScreen() {
+  await loadPtsLog('pts-log-standalone');
+}
+
+async function initClosingScreen() {
+  await loadPtsLog('pts-log-list');
+}
+
+async function loadPtsLog(targetId) {
+  if (!db||!currentRoom) return;
+  const el = document.getElementById(targetId);
+  if (!el) return;
+  el.innerHTML = '<div class="info" style="text-align:center;padding:1rem">Cargando...</div>';
+  const {collection, getDocs, query, orderBy} = fsH;
+  try {
+    const snap = await getDocs(query(
+      collection(db,'rooms',currentRoom,'pointsLog'),
+      orderBy('ts','desc')
+    ));
+    if (!snap.docs.length) {
+      el.innerHTML = '<div class="info" style="text-align:center;padding:1rem">Sin movimientos todavía</div>';
+      return;
+    }
+    el.innerHTML = '';
+    // Totales por casa para mostrar arriba
+    const totals = {};
+    HOUSE_KEYS.forEach(hk => totals[hk] = 0);
+    snap.docs.forEach(d => {
+      const entry = d.data();
+      totals[entry.house] = (totals[entry.house]||0) + (entry.amount||0);
+    });
+    // Header con totales
+    const header = document.createElement('div');
+    header.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);gap:.3rem;margin-bottom:.75rem';
+    HOUSE_KEYS.forEach(hk => {
+      const h = HOUSES[hk];
+      const d = document.createElement('div');
+      d.style.cssText = `text-align:center;background:${h.color}33;border:1px solid ${h.color}66;border-radius:10px;padding:.4rem .2rem`;
+      d.innerHTML = `<div style="font-size:1.2rem">${h.crest}</div><div style="font-family:'Cinzel',serif;font-size:.65rem;color:${h.accent}">${h.name.substring(0,4)}</div><div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:${h.accent}">${totals[hk]>=0?'+':''}${totals[hk]}</div>`;
+      header.appendChild(d);
+    });
+    el.appendChild(header);
+    // Separador
+    const sep = document.createElement('hr');
+    sep.style.cssText = 'border:none;border-top:1px solid var(--border);margin:.5rem 0';
+    el.appendChild(sep);
+    // Lista de movimientos
+    snap.docs.forEach(d => {
+      const entry = d.data();
+      const h = HOUSES[entry.house];
+      if (!h) return;
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:.5rem;padding:.4rem .5rem;border-radius:10px;margin-bottom:.25rem;background:rgba(255,255,255,.04)';
+      const ts = entry.ts?.toDate ? entry.ts.toDate() : new Date(entry.ts?.seconds*1000||Date.now());
+      const timeStr = ts.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+      row.innerHTML = `
+        <span style="font-size:1.1rem">${h.crest}</span>
+        <span style="font-family:'Cinzel',serif;font-size:.72rem;color:${h.accent};min-width:60px">${h.name.substring(0,4)}</span>
+        <span style="font-family:'Cinzel Decorative',cursive;font-size:.85rem;color:${entry.amount>=0?'#7fffb2':'#ffa0a0'};min-width:40px">${entry.amount>=0?'+':''}${entry.amount}</span>
+        <span style="font-size:.8rem;flex:1;opacity:.75">${entry.note||'—'}</span>
+        <span style="font-size:.68rem;opacity:.5;flex-shrink:0">${timeStr}</span>
+      `;
+      el.appendChild(row);
+    });
+  } catch(e) {
+    el.innerHTML = `<div class="info" style="text-align:center;color:#ffa0a0">Error: ${e.message}</div>`;
+  }
+}
+
 async function triggerClosing() {
   if (!db||!currentRoom) return;
   const {doc,setDoc} = fsH;
   await setDoc(doc(db,'rooms',currentRoom),{activeEvent:'closing',closingTs:Date.now()},{merge:true});
 }
 
-function showClosingTV(houses) {
+function showClosingTV(houses, tiebreakerHouses) {
   document.querySelectorAll('.bs-screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('bs-closing').classList.add('active');
 
@@ -2421,14 +3568,20 @@ function showClosingTV(houses) {
     .map(hk=>({hk,pts:(houses[hk]?.points||0),h:HOUSES[hk]}))
     .sort((a,b)=>b.pts-a.pts);
 
-  // Orden del podio: 2do, 1ro, 3ro (clásico)
+  // Detectar empate en el primer lugar
+  const maxPts = sorted[0].pts;
+  const tied = sorted.filter(x=>x.pts===maxPts);
+  const hasTie = tied.length > 1;
+
+  // Orden del podio: 2do, 1ro, 3ro, 4to (clásico)
   const podiumOrder = [sorted[1],sorted[0],sorted[2],sorted[3]];
   const heights = [160,220,120,80];
   const medals = ['🥈','🥇','🥉','4°'];
 
   const content = document.getElementById('bs-closing-content');
   content.innerHTML = `
-    <div style="font-family:'Cinzel Decorative',cursive;font-size:clamp(1.2rem,3vw,2.2rem);color:var(--gold);text-shadow:0 0 30px rgba(201,168,76,.6);margin-bottom:1.5rem">🏆 Copa de las Casas</div>
+    <div style="font-family:'Cinzel Decorative',cursive;font-size:clamp(1.2rem,3vw,2.2rem);color:var(--gold);text-shadow:0 0 30px rgba(201,168,76,.6);margin-bottom:${hasTie?'.5rem':'1.5rem'}">🏆 Copa de las Casas</div>
+    ${hasTie ? `<div style="font-family:'Cinzel',serif;font-size:clamp(.8rem,2vw,1.2rem);color:#ffd580;margin-bottom:1rem;letter-spacing:.08em">⚡ ¡EMPATE! ${tied.map(x=>x.h.name).join(' y ')} con ${maxPts} pts</div>` : ''}
     <div class="podium-wrap" id="podium-wrap"></div>
     <div style="font-family:'Cinzel',serif;font-size:clamp(.7rem,1.5vw,.95rem);color:var(--gold2);opacity:.6;margin-top:1rem;letter-spacing:.1em">¡GRACIAS POR JUGAR!</div>
   `;
@@ -2436,23 +3589,75 @@ function showClosingTV(houses) {
   const podiumWrap = document.getElementById('podium-wrap');
   podiumOrder.forEach((item,i) => {
     if (!item) return;
+    const isTied = hasTie && tied.some(x=>x.hk===item.hk);
     const div = document.createElement('div');
     div.className = 'podium-house';
     div.style.cssText = `animation:reveal .6s ${i*.2}s cubic-bezier(.36,2,.6,1) both`;
     div.innerHTML = `
       <div class="podium-crest">${item.h.crest}</div>
       <div class="podium-name" style="color:${item.h.accent}">${item.h.name}</div>
-      <div class="podium-pts" style="color:${item.h.accent}">${item.pts} pts</div>
-      <div class="podium-block" style="height:${heights[i]}px;background:${item.h.color};border-top:3px solid ${item.h.accent}">${medals[i]}</div>
+      <div class="podium-pts" style="color:${item.h.accent}">${item.pts} pts${isTied?' ⚡':''}</div>
+      <div class="podium-block" style="height:${heights[i]}px;background:${item.h.color};border-top:3px solid ${item.h.accent}${isTied?';animation:torch-flicker 1s infinite alternate':''}">${isTied?'⚡':medals[i]}</div>
     `;
     podiumWrap.appendChild(div);
   });
 
-  // Fuegos artificiales prolongados
-  const winner = sorted[0];
+  // Fuegos artificiales — para todos los empatados, o solo el ganador
+  const fireworkTargets = hasTie ? tied : [sorted[0]];
   for (let i=0;i<8;i++) {
-    setTimeout(()=>fireHousework(winner.h.accent, winner.h.color), i*600);
+    const target = fireworkTargets[i % fireworkTargets.length];
+    setTimeout(()=>fireHousework(target.h.accent, target.h.color), i*600);
   }
+}
+
+async function triggerTiebreaker() {
+  if (!db||!currentRoom||!isOrganizer) return;
+  // Leer puntos actuales y detectar empate
+  const {doc,getDoc,setDoc} = fsH;
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const houses = snap.data()?.houses || {};
+  const sorted = HOUSE_KEYS.map(hk=>({hk,pts:(houses[hk]?.points||0)})).sort((a,b)=>b.pts-a.pts);
+  const maxPts = sorted[0].pts;
+  const tied = sorted.filter(x=>x.pts===maxPts);
+  if (tied.length < 2) { showToast('No hay empate en el primer lugar'); return; }
+  const names = tied.map(x=>HOUSES[x.hk].name).join(' y ');
+  const ok = await hgModal({ icon:'⚡', title:'Ronda de desempate', msg:`Empate entre ${names}. ¿Iniciamos la ronda de desempate?`, confirmText:'⚡ Sí, empezar', danger:false });
+  if (!ok) return;
+  // Publicar tiebreaker en Firebase
+  await setDoc(doc(db,'rooms',currentRoom),{
+    activeEvent:'tiebreaker',
+    tiebreakerTs:Date.now(),
+    tiebreakerHouses:tied.map(x=>x.hk)
+  },{merge:true});
+}
+
+// ══════════════════════════════════════════
+// TIEBREAKER EN TV
+// ══════════════════════════════════════════
+function bsShowTiebreaker(houseKeys, houses) {
+  document.querySelectorAll('.bs-screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('bs-closing').classList.add('active');
+  const content = document.getElementById('bs-closing-content');
+  const housesList = houseKeys.map(hk=>HOUSES[hk]).filter(Boolean);
+  content.innerHTML = `
+    <div style="font-family:'Cinzel Decorative',cursive;font-size:clamp(1.2rem,3vw,2.2rem);color:var(--gold);text-shadow:0 0 30px rgba(201,168,76,.6);margin-bottom:.75rem">⚡ Ronda de Desempate</div>
+    <div style="font-family:'Cinzel',serif;font-size:clamp(.85rem,2vw,1.2rem);color:var(--gold2);margin-bottom:1.5rem;letter-spacing:.08em">
+      ${housesList.map(h=>`<span style="color:${h.accent}">${h.crest} ${h.name}</span>`).join('<span style="color:var(--gold);margin:0 .5rem">VS</span>')}
+    </div>
+    <div style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap">
+      ${housesList.map(h=>`
+        <div style="text-align:center;animation:torch-flicker 1.5s ease-in-out infinite alternate">
+          <div style="font-size:clamp(3rem,8vw,6rem);filter:drop-shadow(0 0 20px ${h.accent}88)">${h.crest}</div>
+          <div style="font-family:'Cinzel',serif;font-size:clamp(.8rem,2vw,1.2rem);color:${h.accent};margin-top:.5rem">${h.name}</div>
+          <div style="font-family:'Cinzel Decorative',cursive;font-size:clamp(1.2rem,3vw,2rem);color:var(--gold)">${(houses[houseKeys[housesList.indexOf(h)]]?.points||0)} pts</div>
+        </div>`).join('')}
+    </div>
+    <div style="font-family:'Cinzel',serif;font-size:clamp(.8rem,1.8vw,1.1rem);color:var(--gold2);opacity:.7;margin-top:1.5rem;letter-spacing:.1em">El presentador decide el desafío</div>
+  `;
+  // Fuegos con todos los colores empatados
+  housesList.forEach((h,i) => {
+    for(let j=0;j<3;j++) setTimeout(()=>fireHousework(h.accent,h.color), i*400+j*1200);
+  });
 }
 
 // ══════════════════════════════════════════
@@ -2486,9 +3691,22 @@ function bsListen() {
   if (bsUnsub) try{bsUnsub();}catch(e){}
   const {doc,onSnapshot} = fsH;
   let lastEvent = null, lastCeremonyTs = 0, lastClosingTs = 0, lastPointsTs = 0;
+  let lastSortingPhase = null;
+
+  // Mostrar QR code
+  const appUrl = window.location.origin + window.location.pathname;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(appUrl)}&bgcolor=ffffff&color=0a0a0f`;
+  const qrImg = document.getElementById('bs-qr-code');
+  const qrLabel = document.getElementById('bs-qr-label');
+  if (qrImg) { qrImg.src = qrUrl; qrImg.style.display = 'block'; }
+  if (qrLabel) qrLabel.style.display = 'block';
+
   bsUnsub = onSnapshot(doc(db,'rooms',bsRoom), snap => {
     const data = snap.data();
     if (!data) return;
+
+    // Guardar audio URLs en cache global para TV
+    if (data.sortingAudio) window._bsAudioUrls = data.sortingAudio;
 
     // Copa siempre
     bsRenderCup(data.houses||{});
@@ -2508,6 +3726,9 @@ function bsListen() {
     } else if (event==='closing' && closingTs>lastClosingTs) {
       lastClosingTs = closingTs;
       showClosingTV(data.houses||{});
+    } else if (event==='tiebreaker') {
+      const tb = data.tiebreakerHouses||[];
+      if (tb.length) bsShowTiebreaker(tb, data.houses||{});
     }
 
     // Sombrero — solo actuar si no hay otro evento tomando la pantalla
@@ -2516,8 +3737,239 @@ function bsListen() {
     if (!activeEvt || activeEvt === 'sorting' ||
         (sortingPhase === 'thinking' || sortingPhase === 'revealed')) {
       bsRenderSorting(data.sorting||{}, data.houses||{});
-    } else if (sortingPhase === 'waiting') {
-      // No hacer nada — otro evento tiene la pantalla
+    }
+
+    // Mímica en TV
+    const mim = data.mimica || {};
+    if (mim.phase === 'playing' || mim.phase === 'timeout' || mim.phase === 'result') {
+      bsShowScreen('mimica');
+      const h = HOUSES[mim.house] || {};
+
+      // Casa + puntos
+      const bsMimHouse = document.getElementById('bs-mim-house');
+      if (bsMimHouse) {
+        bsMimHouse.textContent = (h.crest||'') + ' ' + (h.name||'');
+        bsMimHouse.style.color = h.accent || 'var(--gold)';
+        // Fondo con color de casa
+        document.getElementById('bs-mimica').style.background =
+          `radial-gradient(ellipse at center, ${h.color}33 0%, transparent 70%)`;
+      }
+      const bsMimPts = document.getElementById('bs-mim-pts');
+      if (bsMimPts) bsMimPts.textContent = `⚡ ${mim.pts||0} PUNTOS EN JUEGO`;
+
+      // Timer
+      const timerEl = document.getElementById('bs-mim-timer');
+      const barEl = document.getElementById('bs-mim-timer-bar');
+      const phaseEl = document.getElementById('bs-mim-phase');
+
+      if (mim.phase === 'playing') {
+        // Arrancar interval de timer en TV
+        if (window._bsMimInterval) clearInterval(window._bsMimInterval);
+        const updateBsTimer = () => {
+          let remaining;
+          if (mim.paused && mim.remainingAtPause != null) {
+            remaining = mim.remainingAtPause;
+          } else {
+            const elapsed = mim.startTs ? Math.floor((Date.now() - mim.startTs) / 1000) : 0;
+            remaining = Math.max(0, (mim.timerSecs||60) - elapsed);
+          }
+          const pct = Math.max(0, remaining / (mim.timerSecs||60) * 100);
+          if (timerEl) {
+            timerEl.textContent = remaining;
+            if (remaining <= 10) {
+              timerEl.classList.add('timer-urgent');
+              if (barEl) barEl.style.background = 'linear-gradient(90deg,#740001,#ff6b6b)';
+            } else {
+              timerEl.classList.remove('timer-urgent');
+              if (barEl) barEl.style.background = `linear-gradient(90deg,${h.color},${h.accent})`;
+            }
+          }
+          if (barEl) barEl.style.width = pct + '%';
+          if (remaining <= 0) { clearInterval(window._bsMimInterval); window._bsMimInterval = null; }
+        };
+        updateBsTimer();
+        window._bsMimInterval = setInterval(updateBsTimer, 1000);
+
+        if (phaseEl) {
+          phaseEl.textContent = mim.paused ? '⏸ PAUSADO' : '🎭 ¡ADIVINÁ LA MÍMICA!';
+          phaseEl.style.color = mim.paused ? 'var(--gold)' : 'var(--gold2)';
+        }
+      } else {
+        if (window._bsMimInterval) { clearInterval(window._bsMimInterval); window._bsMimInterval = null; }
+        if (timerEl) { timerEl.textContent = mim.phase === 'timeout' ? '0' : ''; timerEl.classList.add('timer-urgent'); }
+        if (barEl) barEl.style.width = '0%';
+        if (phaseEl) {
+          if (mim.phase === 'timeout') { phaseEl.textContent = '⏰ ¡TIEMPO!'; phaseEl.style.color = '#ffa0a0'; }
+          else if (mim.phase === 'result') {
+            const won = mim.result === 'won';
+            phaseEl.textContent = won ? '🎉 ¡ADIVINARON!' : '💀 NO ADIVINARON';
+            phaseEl.style.color = won ? '#a0d4a0' : '#ffa0a0';
+            if (won) { confetti(h.accent); }
+          }
+        }
+      }
+    } else if (mim.phase === 'ended') {
+      if (window._bsMimInterval) { clearInterval(window._bsMimInterval); window._bsMimInterval = null; }
+      const bsMimScreen = document.getElementById('bs-mimica');
+      if (bsMimScreen && bsMimScreen.classList.contains('active')) bsGoWaiting();
+    }
+
+    // Ruleta en TV
+    const rul = data.ruleta || {};
+    if (rul.phase === 'picked' || rul.phase === 'result') {
+      bsShowScreen('ruleta');
+      const h = rul.houseKey ? HOUSES[rul.houseKey] : null;
+      const bsRulIcon = document.getElementById('bs-rul-icon');
+      const bsRulName = document.getElementById('bs-rul-name');
+      const bsRulChallenge = document.getElementById('bs-rul-challenge');
+      const bsRulResult = document.getElementById('bs-rul-result');
+      if (bsRulIcon) { bsRulIcon.textContent = rul.icon||'🎯'; bsRulIcon.style.filter = h ? `drop-shadow(0 0 30px ${h.accent}88)` : ''; }
+      if (bsRulName) { bsRulName.textContent = rul.name||''; bsRulName.style.color = h ? h.accent : 'var(--gold)'; }
+      if (bsRulChallenge) bsRulChallenge.textContent = rul.challenge||'';
+      if (bsRulResult) {
+        if (rul.phase === 'result') {
+          bsRulResult.style.display = 'block';
+          bsRulResult.textContent = rul.result === 'won' ? '🏆 ¡Lo cumplió!' : '💀 No lo cumplió';
+          bsRulResult.style.color = rul.result === 'won' ? '#a0d4a0' : '#ffa0a0';
+        } else { bsRulResult.style.display = 'none'; }
+      }
+    } else if (rul.phase === 'idle') {
+      bsGoWaiting();
+    }
+
+    // Duelo de Casas en TV
+    const hq = data.houseQuiz || {};
+    if (hq.phase === 'countdown') {
+      bsShowScreen('house-quiz');
+      const h = HOUSES[hq.activeHouse] || {};
+      // Header con casa
+      const houseEl = document.getElementById('bs-hq-house');
+      if (houseEl) { houseEl.textContent = (h.crest||'')+' '+(h.name||''); houseEl.style.color = h.accent||'var(--gold)'; }
+      const ptsEl = document.getElementById('bs-hq-pts-badge');
+      if (ptsEl) ptsEl.textContent = `Vale ${hq.pts||0} puntos`;
+      // Countdown grande en lugar de la pregunta
+      const qEl = document.getElementById('bs-hq-question');
+      const optsEl = document.getElementById('bs-hq-opts');
+      const statusEl = document.getElementById('bs-hq-status');
+      const resultEl = document.getElementById('bs-hq-result');
+      if (resultEl) resultEl.style.display='none';
+      if (statusEl) statusEl.textContent='';
+      if (optsEl) optsEl.innerHTML='';
+      // Animar countdown 3-2-1
+      if (qEl) {
+        const elapsed = hq.countdownTs ? Math.floor((Date.now()-hq.countdownTs)/1000) : 0;
+        const remaining = Math.max(0, 3-elapsed);
+        if (remaining > 0) {
+          qEl.innerHTML = `<div style="font-family:'Cinzel Decorative',cursive;font-size:clamp(4rem,15vw,10rem);color:${h.accent};text-shadow:0 0 40px ${h.accent}88;animation:reveal .3s cubic-bezier(.36,2,.6,1)">${remaining}</div>`;
+          // Actualizar cada segundo
+          if (!window._hqCdInterval) {
+            window._hqCdInterval = setInterval(()=>{
+              const el2=document.getElementById('bs-hq-question');
+              if(!el2||!hq.countdownTs)return;
+              const e2=Math.floor((Date.now()-hq.countdownTs)/1000);
+              const r2=Math.max(0,3-e2);
+              if(r2>0){
+                el2.innerHTML=`<div style="font-family:'Cinzel Decorative',cursive;font-size:clamp(4rem,15vw,10rem);color:${h.accent};text-shadow:0 0 40px ${h.accent}88;animation:reveal .3s cubic-bezier(.36,2,.6,1)">${r2}</div>`;
+                playSound('ding');
+              } else {
+                clearInterval(window._hqCdInterval);window._hqCdInterval=null;
+              }
+            },1000);
+          }
+        }
+      }
+    } else if (hq.phase === 'voting' || hq.phase === 'revealed') {
+      if (window._hqCdInterval) { clearInterval(window._hqCdInterval); window._hqCdInterval=null; }
+      bsShowScreen('house-quiz');
+      const h = HOUSES[hq.activeHouse] || {};
+
+      // Header
+      const houseEl = document.getElementById('bs-hq-house');
+      if (houseEl) {
+        houseEl.textContent = (h.crest||'') + ' ' + (h.name||'');
+        houseEl.style.color = h.accent || 'var(--gold)';
+      }
+      const ptsEl = document.getElementById('bs-hq-pts-badge');
+      if (ptsEl) ptsEl.textContent = `Vale ${hq.pts||0} puntos`;
+
+      // Pregunta
+      const qEl = document.getElementById('bs-hq-question');
+      if (qEl) qEl.textContent = hq.q || '';
+
+      // Opciones
+      const optsEl = document.getElementById('bs-hq-opts');
+      if (optsEl) {
+        const votes = hq.votes || {};
+        const tally = {};
+        Object.values(votes).forEach(v => { tally[v] = (tally[v]||0)+1; });
+        const maxVotes = Math.max(0, ...Object.values(tally));
+
+        optsEl.innerHTML = '';
+        (hq.opts||[]).forEach((op, i) => {
+          const div = document.createElement('div');
+          div.className = 'bs-hq-opt';
+          const cnt = tally[i] || 0;
+          const isCorrect = hq.phase === 'revealed' && i === hq.correctIdx;
+          const isChosen = hq.phase === 'revealed' && i === hq.chosenIdx;
+          const isLeading = hq.phase === 'voting' && cnt === maxVotes && cnt > 0;
+
+          if (isCorrect) div.classList.add('correct');
+          else if (hq.phase === 'revealed' && isChosen && !isCorrect) div.classList.add('wrong');
+          else if (isLeading) div.classList.add('leading');
+
+          // Barra de votos durante voting
+          const votePct = hq.phase === 'voting' && Object.keys(votes).length > 0
+            ? Math.round(cnt / Object.keys(votes).length * 100) : 0;
+
+          div.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">
+              <span>${op}</span>
+              ${hq.phase === 'voting' && cnt > 0 ? `<span style="font-family:'Cinzel Decorative',cursive;font-size:.85em;opacity:.8">${cnt}</span>` : ''}
+              ${isCorrect ? '<span style="color:#00c864">✓</span>' : ''}
+            </div>
+            ${hq.phase === 'voting' && Object.keys(votes).length > 0 ? `
+              <div style="margin-top:.3rem;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden">
+                <div style="height:100%;width:${votePct}%;background:${h.accent};border-radius:2px;transition:width .5s"></div>
+              </div>` : ''}
+          `;
+          optsEl.appendChild(div);
+        });
+      }
+
+      // Status
+      const statusEl = document.getElementById('bs-hq-status');
+      if (statusEl) {
+        const totalVotes = Object.keys(hq.votes||{}).length;
+        if (hq.phase === 'voting') {
+          statusEl.textContent = totalVotes > 0
+            ? `${totalVotes} voto${totalVotes>1?'s':''} recibido${totalVotes>1?'s':''}`
+            : 'Esperando votos de ' + (h.name||'');
+        } else { statusEl.textContent = ''; }
+      }
+
+      // Resultado
+      const resultEl = document.getElementById('bs-hq-result');
+      if (resultEl) {
+        if (hq.phase === 'revealed') {
+          resultEl.style.display = 'block';
+          if (hq.isCorrect) {
+            resultEl.textContent = '✨ ¡Correcto!';
+            resultEl.style.color = h.accent || '#a0d4a0';
+          } else if (hq.chosenIdx === -1 || hq.chosenIdx === undefined) {
+            resultEl.textContent = '😶 Sin votos';
+            resultEl.style.color = 'var(--gold2)';
+          } else {
+            resultEl.textContent = '💀 Incorrecto';
+            resultEl.style.color = '#ffa0a0';
+          }
+        } else {
+          resultEl.style.display = 'none';
+        }
+      }
+    } else if (hq.phase === 'ended' || hq.phase === 'idle' || !hq.phase) {
+      // Solo volver a waiting si houseQuiz era la pantalla activa
+      const bsHQ = document.getElementById('bs-house-quiz');
+      if (bsHQ && bsHQ.classList.contains('active')) bsGoWaiting();
     }
   });
 }
@@ -2553,12 +4005,13 @@ function bsRenderCup(houses) {
 function showOrgExtras() {
   const el = document.getElementById('org-menu-extra');
   if (el && isOrganizer) el.style.display = 'block';
+  ptsRenderQuickGrid();
 }
 
 // ══ showScreen: agregar ceremony-setup y closing ══
 function showScreen(n) {
   // Proteger pantallas de solo-org
-  const orgOnly = ['ceremony-setup','closing'];
+  const orgOnly = ['ceremony-setup','closing','pts-log'];
   if (orgOnly.includes(n) && !isOrganizer) return;
   cancelScreenListeners();
   document.getElementById('main-menu').style.display='none';
@@ -2570,6 +4023,9 @@ function showScreen(n) {
   if (n==='house-quiz') initHouseQuizScreen();
   if (n==='mimica') initMimicaScreen();
   if (n==='ruleta') initRuletaScreen();
+  if (n==='closing') initClosingScreen();
+  if (n==='pts-log') initPtsLogScreen();
+  if (n==='snitch') initSnitchScreen();
 }
 
 // ══════════════════════════════════════════
@@ -2657,7 +4113,7 @@ function hqAddQuestion() {
   // Limpiar form
   document.getElementById('hq-qtext').value='';
   rows.forEach(row=>{ const inp=row.querySelectorAll('input')[1]; if(inp) inp.value=''; });
-  radios[0].checked=true;
+  if (radios[0]) radios[0].checked = true;
   document.getElementById('hq-pts').value='10';
   hqRenderQList();
   document.getElementById('hq-play-btn').style.display='block';
@@ -2748,25 +4204,30 @@ function hqShowQuestion(idx) {
   document.getElementById('hq-reveal-result').innerHTML='';
   document.getElementById('hq-vote-tally').innerHTML='<div class="info" style="text-align:center">Esperando votos...</div>';
 
-  // Publicar en Firebase
+  // Publicar en Firebase: primero countdown, luego voting
   if (db) {
-    const {doc,setDoc,collection,getDocs,deleteDoc} = fsH;
-    // Limpiar votos del turno anterior
-    getDocs(collection(db,'rooms',currentRoom,'hqVotes')).then(snap=>{
-      snap.docs.forEach(d=>deleteDoc(d.ref));
-    });
+    const {doc, setDoc} = fsH;
+    // 1. Publicar pregunta con phase countdown (TV muestra 3-2-1, jugadores esperan)
     setDoc(doc(db,'rooms',currentRoom),{
       houseQuiz:{
-        phase:'voting',
+        phase:'countdown',
         qIdx:idx,
         q:q.q,
         opts:q.opts,
         pts:q.pts,
         activeHouse:houseKey,
         correctIdx:null,
-        votes:{}
+        votes:{},
+        countdownTs:Date.now()
       }
     },{merge:true});
+    // 2. Tras 3s pasar a voting
+    setTimeout(()=>{
+      if (!db||!currentRoom) return;
+      setDoc(doc(db,'rooms',currentRoom),{
+        houseQuiz:{ phase:'voting' }
+      },{merge:true});
+    }, 3000);
   }
 }
 
@@ -2901,7 +4362,15 @@ function hqListenPlayer() {
     const h = HOUSES[activeHouse]||{};
     const isMyTurn = currentHouse === activeHouse;
 
-    if (hq.phase==='voting') {
+    if (hq.phase==='countdown') {
+      // Todos ven pantalla de preparación — atención a la TV
+      waiting.classList.remove('hidden');
+      const h2 = HOUSES[hq.activeHouse]||{};
+      waiting.innerHTML = `
+        <div style="font-size:3rem;animation:torch-flicker 1s infinite alternate">${h2.crest||'⚡'}</div>
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:${h2.accent||'var(--gold)'};margin-top:.5rem">¡Mirá la pantalla!</div>
+        <div style="font-size:.85rem;opacity:.6;margin-top:.3rem;font-family:'Cinzel',serif">La pregunta aparece en 3...</div>`;
+    } else if (hq.phase==='voting') {
       if (isMyTurn) {
         voting.classList.remove('hidden');
         document.getElementById('hq-vote-house-crest').textContent = h.crest||'';
@@ -2912,12 +4381,13 @@ function hqListenPlayer() {
         // Solo reconstruir si es pregunta nueva
         if (optsEl.dataset.qIdx !== String(hq.qIdx)) {
           optsEl.dataset.qIdx = hq.qIdx;
+          optsEl.dataset.activeHouse = hq.activeHouse || '';
           optsEl.innerHTML='';
           document.getElementById('hq-player-voted-msg').classList.add('hidden');
           const myVote = (hq.votes||{})[currentUser];
           (hq.opts||[]).forEach((op,i)=>{
             const b = document.createElement('button');
-            b.style.cssText=`width:100%;background:${myVote!==undefined&&myVote===i?h.color+'66':'rgba(255,255,255,.06)'};border:2px solid ${myVote!==undefined&&myVote===i?h.accent:'rgba(255,255,255,.12)'};border-radius:12px;padding:.75rem 1rem;font-family:'EB Garamond',serif;font-size:1rem;color:#e8dfc0;cursor:pointer;text-align:left;transition:all .2s;margin-bottom:.1rem`;
+            b.style.cssText=`width:100%;background:${myVote!==undefined&&myVote===i?h.color+'66':'rgba(255,255,255,.06)'};border:2px solid ${myVote!==undefined&&myVote===i?h.accent:'rgba(255,255,255,.12)'};border-radius:16px;padding:1rem 1.2rem;font-family:'EB Garamond',serif;font-size:1.1rem;line-height:1.3;color:#e8dfc0;cursor:pointer;text-align:left;transition:all .2s;margin-bottom:.5rem`;
             b.textContent = op;
             b.onclick = () => hqPlayerVote(i, hq.qIdx);
             optsEl.appendChild(b);
@@ -2944,26 +4414,42 @@ function hqListenPlayer() {
         }
       }
     } else if (hq.phase==='revealed') {
-      // Mostrar resultado a todos
       result.classList.remove('hidden');
       const icon = document.getElementById('hq-player-result-icon');
       const text = document.getElementById('hq-player-result-text');
+
       if (hq.isCorrect) {
-        icon.textContent = '✨';
-        text.innerHTML = `<span style="color:${h.accent};font-family:'Cinzel',serif">¡${h.name} acertó! +${hq.pts||0} puntos</span>`;
-        if (isMyTurn) confetti(h.accent);
+        // CORRECTO — confetti para toda la casa activa
+        icon.innerHTML = '<div style="font-size:4rem;animation:reveal .4s cubic-bezier(.36,2,.6,1)">🎉</div>';
+        text.innerHTML = `<span style="color:${h.accent};font-family:'Cinzel',serif;font-size:1.1rem">¡${h.name} acertó! +${hq.pts||0} pts</span>`;
+        if (isMyTurn) {
+          // Casa ganadora: confetti grande
+          confetti(h.accent);
+          setTimeout(()=>confetti(h.accent), 400);
+        } else {
+          // Observadores: confetti más suave con los colores del ganador
+          confetti(h.accent);
+        }
+        playSound('win');
       } else if (hq.chosenIdx===-1||hq.chosenIdx===undefined) {
-        icon.textContent = '😶'; text.innerHTML = `<span style="font-family:'Cinzel',serif;opacity:.7">Sin respuesta</span>`;
+        icon.innerHTML = '<div style="font-size:4rem;animation:reveal .4s cubic-bezier(.36,2,.6,1)">😶</div>';
+        text.innerHTML = `<span style="font-family:'Cinzel',serif;opacity:.7">Sin respuesta</span>`;
       } else {
-        icon.textContent = '💀';
-        text.innerHTML = `<span style="color:#ffa0a0;font-family:'Cinzel',serif">Incorrecto</span>`;
+        // INCORRECTO — cruz roja grande para todos
+        icon.innerHTML = '<div style="font-size:4rem;animation:reveal .4s cubic-bezier(.36,2,.6,1)">❌</div>';
+        text.innerHTML = `<span style="color:#ffa0a0;font-family:'Cinzel',serif">Era: <strong>${(hq.opts||[])[hq.correctIdx]||''}</strong></span>`;
+        showRedFlash();
+        playSound('buzz');
       }
-      // Mostrar opciones con resultado a los que observaban
+
+      // Resultado también para observadores (en su pantalla de watching)
       if (!isMyTurn) {
         const wres = document.getElementById('hq-watch-result');
-        wres.classList.remove('hidden');
-        wres.style.color = hq.isCorrect ? '#a0d4a0' : '#ffa0a0';
-        wres.textContent = hq.isCorrect ? `✓ ¡Correcto!` : `✗ Era: ${(hq.opts||[])[hq.correctIdx]||''}`;
+        if (wres) {
+          wres.classList.remove('hidden');
+          wres.style.color = hq.isCorrect ? '#a0d4a0' : '#ffa0a0';
+          wres.textContent = hq.isCorrect ? `✓ ¡Correcto!` : `✗ Era: ${(hq.opts||[])[hq.correctIdx]||''}`;
+        }
       }
     }
   });
@@ -3011,9 +4497,9 @@ async function resetRoom() {
     sorting: { phase:'waiting', currentPlayer:null, revealedHouse:null },
     activeEvent: null
   }, {merge:true});
-  // Borrar jugadores
+  // Borrar jugadores en paralelo y esperar que todos terminen
   const playersSnap = await getDocs(collection(db,'rooms',currentRoom,'players'));
-  playersSnap.docs.forEach(d => deleteDoc(d.ref));
+  await Promise.all(playersSnap.docs.map(d => deleteDoc(d.ref)));
   showToast('🧹 Sala reseteada completamente');
   playSound('buzz');
 }
@@ -3039,22 +4525,25 @@ let _hqVoting = false;
 async function hqPlayerVote(optIdx, qIdx) {
   if (!db || _hqVoting) return;
   _hqVoting = true;
-  const {doc,getDoc,setDoc} = fsH;
-  // Leer votos actuales para no pisar otros
-  const snap = await getDoc(doc(db,'rooms',currentRoom));
-  const currentVotes = snap.data()?.houseQuiz?.votes||{};
-  currentVotes[currentUser] = optIdx;
-  await setDoc(doc(db,'rooms',currentRoom),{houseQuiz:{votes:currentVotes}},{merge:true});
-  // Actualizar UI
-  const optsEl = document.getElementById('hq-player-opts');
-  optsEl.querySelectorAll('button').forEach((b,i)=>{
-    const h = HOUSES[HOUSE_KEYS[qIdx%4]]||{};
-    b.style.background = i===optIdx ? h.color+'66' : 'rgba(255,255,255,.06)';
-    b.style.borderColor = i===optIdx ? h.accent : 'rgba(255,255,255,.12)';
-    b.disabled = true;
-  });
-  document.getElementById('hq-player-voted-msg').classList.remove('hidden');
-  _hqVoting = false;
+  try {
+    const {doc, updateDoc} = fsH;
+    await updateDoc(doc(db,'rooms',currentRoom), {
+      [`houseQuiz.votes.${currentUser}`]: optIdx
+    });
+    const optsEl = document.getElementById('hq-player-opts');
+    const activeHouseKey = optsEl.dataset.activeHouse || HOUSE_KEYS[qIdx%4];
+    optsEl.querySelectorAll('button').forEach((b,i)=>{
+      const h = HOUSES[activeHouseKey]||{};
+      b.style.background = i===optIdx ? h.color+'66' : 'rgba(255,255,255,.06)';
+      b.style.borderColor = i===optIdx ? h.accent : 'rgba(255,255,255,.12)';
+      b.disabled = true;
+    });
+    document.getElementById('hq-player-voted-msg').classList.remove('hidden');
+  } catch(e) {
+    showToast('⚠️ Error al votar — intentá de nuevo');
+  } finally {
+    _hqVoting = false;
+  }
 }
 
 // ══════════════════════════════════════════
@@ -3078,6 +4567,7 @@ let mimTimerTotal = 60;
 let mimCurrentWord = '';
 let mimCurrentHouse = '';
 let mimUsedWords = [];
+let mimHouseTurns = { gryffindor:0, slytherin:0, hufflepuff:0, ravenclaw:0 };
 
 function initMimicaScreen() {
   document.getElementById('mim-org').classList.toggle('hidden', !isOrganizer);
@@ -3144,6 +4634,7 @@ function mimSetTimer(secs, btn) {
 
 function mimPickWord() {
   const allWords = [...MIM_DEFAULT_WORDS, ...mimCustomWords];
+  if (!allWords.length) return 'Sin palabras';
   const available = allWords.filter(w => !mimUsedWords.includes(w));
   if (!available.length) { mimUsedWords = []; return mimPickWord(); }
   const w = available[Math.floor(Math.random() * available.length)];
@@ -3152,8 +4643,17 @@ function mimPickWord() {
 }
 
 function mimPickHouse() {
-  // Rotar casas balanceando quién tuvo menos turnos
-  return HOUSE_KEYS[Math.floor(Math.random() * HOUSE_KEYS.length)];
+  // Balancear turnos por casa, con aleatoriedad entre las que tienen menos
+  const minTurns = Math.min(...HOUSE_KEYS.map(hk => mimHouseTurns[hk]||0));
+  const eligible = HOUSE_KEYS.filter(hk => (mimHouseTurns[hk]||0) === minTurns);
+  // Fisher-Yates shuffle entre elegibles
+  for (let i = eligible.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [eligible[i],eligible[j]] = [eligible[j],eligible[i]];
+  }
+  const chosen = eligible[Math.floor(Math.random()*eligible.length)];
+  mimHouseTurns[chosen] = (mimHouseTurns[chosen]||0) + 1;
+  return chosen;
 }
 
 function mimStartGame() {
@@ -3204,6 +4704,12 @@ function mimNextRound() {
   }
 
   // Iniciar timer
+  mimStartTicker();
+}
+
+// Ticker compartido — usado por mimNextRound y mimSkipWord
+function mimStartTicker() {
+  if (mimTimerInterval) { clearInterval(mimTimerInterval); mimTimerInterval = null; }
   mimTimerInterval = setInterval(() => {
     if (mimTimerPaused) return;
     mimTimerRemaining--;
@@ -3211,10 +4717,11 @@ function mimNextRound() {
     document.getElementById('mim-timer-display').textContent = mimTimerRemaining;
     document.getElementById('mim-timer-bar').style.width = pct + '%';
 
-    // Sync timer para jugadores (cada 5s para ahorrar writes)
-    if (mimTimerRemaining % 5 === 0 && db) {
+    // Sync startTs-based: jugadores calculan remaining desde startTs localmente
+    // Solo sincronizar en cambios de estado (urgente)
+    if (mimTimerRemaining === 10 && db) {
       const {doc, setDoc} = fsH;
-      setDoc(doc(db,'rooms',currentRoom), { mimica: { timerRemaining: mimTimerRemaining } }, {merge:true});
+      setDoc(doc(db,'rooms',currentRoom), { mimica: { urgentAt: Date.now() } }, {merge:true});
     }
 
     if (mimTimerRemaining <= 10) {
@@ -3225,10 +4732,9 @@ function mimNextRound() {
       clearInterval(mimTimerInterval); mimTimerInterval = null;
       playSound('buzz');
       showToast('⏰ ¡Se acabó el tiempo!');
-      // Sync final
       if (db) {
         const {doc, setDoc} = fsH;
-        setDoc(doc(db,'rooms',currentRoom), { mimica: { phase: 'timeout', timerRemaining: 0 } }, {merge:true});
+        setDoc(doc(db,'rooms',currentRoom), { mimica: { phase: 'timeout' } }, {merge:true});
       }
     }
   }, 1000);
@@ -3237,42 +4743,43 @@ function mimNextRound() {
 function mimPauseResume() {
   mimTimerPaused = !mimTimerPaused;
   document.getElementById('mim-pause-btn').textContent = mimTimerPaused ? '▶ Reanudar' : '⏸ Pausar';
+  if (db) {
+    const {doc, setDoc} = fsH;
+    if (mimTimerPaused) {
+      // Al pausar: guardar tiempo restante
+      setDoc(doc(db,'rooms',currentRoom), {
+        mimica: { paused: true, remainingAtPause: mimTimerRemaining }
+      }, {merge:true});
+    } else {
+      // Al reanudar: recalcular startTs para que jugadores puedan calcular elapsed correctamente
+      // startTs = ahora - (timerTotal - remaining) * 1000
+      const newStartTs = Date.now() - (mimTimerTotal - mimTimerRemaining) * 1000;
+      setDoc(doc(db,'rooms',currentRoom), {
+        mimica: { paused: false, remainingAtPause: null, startTs: newStartTs }
+      }, {merge:true});
+    }
+  }
 }
 
 function mimSkipWord() {
-  if (mimTimerInterval) { clearInterval(mimTimerInterval); mimTimerInterval = null; }
   mimCurrentWord = mimPickWord();
-  document.getElementById('mim-word-display').textContent = mimCurrentWord;
-  // Reiniciar timer
   mimTimerRemaining = mimTimerTotal;
   mimTimerPaused = false;
+  document.getElementById('mim-word-display').textContent = mimCurrentWord;
   document.getElementById('mim-pause-btn').textContent = '⏸ Pausar';
   document.getElementById('mim-timer-display').textContent = mimTimerRemaining;
   document.getElementById('mim-timer-display').classList.remove('timer-urgent');
   document.getElementById('mim-timer-bar').style.width = '100%';
   document.getElementById('mim-timer-bar').style.background = 'linear-gradient(90deg,var(--grif),var(--gold))';
   showToast('⏭ Nueva palabra: ' + mimCurrentWord);
-  // Re-iniciar intervalo
-  mimTimerInterval = setInterval(() => {
-    if (mimTimerPaused) return;
-    mimTimerRemaining--;
-    const pct = Math.max(0, mimTimerRemaining / mimTimerTotal * 100);
-    document.getElementById('mim-timer-display').textContent = mimTimerRemaining;
-    document.getElementById('mim-timer-bar').style.width = pct + '%';
-    if (mimTimerRemaining <= 10) {
-      document.getElementById('mim-timer-display').classList.add('timer-urgent');
-      document.getElementById('mim-timer-bar').style.background = 'linear-gradient(90deg,#740001,#ffa0a0)';
-    }
-    if (mimTimerRemaining <= 0) {
-      clearInterval(mimTimerInterval); mimTimerInterval = null;
-      playSound('buzz');
-      showToast('⏰ ¡Se acabó el tiempo!');
-      if (db) {
-        const {doc, setDoc} = fsH;
-        setDoc(doc(db,'rooms',currentRoom), { mimica: { phase: 'timeout', timerRemaining: 0 } }, {merge:true});
-      }
-    }
-  }, 1000);
+  // Actualizar Firebase: nuevo startTs, limpiar pausa
+  if (db) {
+    const {doc, setDoc} = fsH;
+    setDoc(doc(db,'rooms',currentRoom), {
+      mimica: { startTs: Date.now(), timerSecs: mimTimerTotal, paused: false, remainingAtPause: null }
+    }, {merge:true});
+  }
+  mimStartTicker();
 }
 
 async function mimResult(won) {
@@ -3289,7 +4796,6 @@ async function mimResult(won) {
 
   if (won) {
     await applyPoints(mimCurrentHouse, pts, `Mímica: "${mimCurrentWord}"`);
-    confetti(h.accent);
     showToast(`${h.crest} ¡${h.name} adivinó! +${pts} pts`);
   } else {
     playSound('buzz');
@@ -3306,6 +4812,7 @@ function mimEndGame() {
   document.getElementById('mim-setup').classList.remove('hidden');
   document.getElementById('mim-game').classList.add('hidden');
   mimUsedWords = [];
+  mimHouseTurns = { gryffindor:0, slytherin:0, hufflepuff:0, ravenclaw:0 };
   showToast('🎭 Mímica terminada');
 }
 
@@ -3327,19 +4834,35 @@ function mimListenPlayer() {
 
     waiting.classList.add('hidden'); active.classList.remove('hidden');
     const h = HOUSES[m.house] || {};
-    document.getElementById('mim-p-card').style.borderColor = (h.color||'') + '88';
+    document.getElementById('mim-p-house-card').style.borderColor = (h.color||'') + '88';
     document.getElementById('mim-p-crest').textContent = h.crest || '';
     document.getElementById('mim-p-name').textContent = h.name || '';
     document.getElementById('mim-p-name').style.color = h.accent || '';
 
     if (m.phase === 'playing') {
       resultEl.classList.add('hidden');
-      const remaining = m.timerRemaining !== undefined ? m.timerRemaining : m.timerSecs;
-      const pct = Math.max(0, remaining / (m.timerSecs||60) * 100);
-      document.getElementById('mim-p-timer').textContent = remaining;
-      document.getElementById('mim-p-timer-bar').style.width = pct + '%';
-      if (remaining <= 10) document.getElementById('mim-p-timer').classList.add('timer-urgent');
-      else document.getElementById('mim-p-timer').classList.remove('timer-urgent');
+      // Arrancar timer local para que el jugador vea el countdown en tiempo real
+      if (window._mimPlayerInterval) clearInterval(window._mimPlayerInterval);
+      const updatePlayerTimer = () => {
+        let remaining;
+        if (m.paused && m.remainingAtPause !== null && m.remainingAtPause !== undefined) {
+          remaining = m.remainingAtPause; // congelado en el valor al pausar
+        } else {
+          const elapsed = m.startTs ? Math.floor((Date.now() - m.startTs) / 1000) : 0;
+          remaining = Math.max(0, (m.timerSecs||60) - elapsed);
+        }
+        const pct = Math.max(0, remaining / (m.timerSecs||60) * 100);
+        const timerEl = document.getElementById('mim-p-timer');
+        const barEl = document.getElementById('mim-p-timer-bar');
+        if (!timerEl) { clearInterval(window._mimPlayerInterval); return; }
+        timerEl.textContent = remaining;
+        if (barEl) barEl.style.width = pct + '%';
+        if (remaining <= 10) timerEl.classList.add('timer-urgent');
+        else timerEl.classList.remove('timer-urgent');
+        if (remaining <= 0) clearInterval(window._mimPlayerInterval);
+      };
+      updatePlayerTimer();
+      window._mimPlayerInterval = setInterval(updatePlayerTimer, 1000);
     } else if (m.phase === 'timeout') {
       document.getElementById('mim-p-timer').textContent = '0';
       document.getElementById('mim-p-timer').classList.add('timer-urgent');
@@ -3365,6 +4888,11 @@ function initRuletaScreen() {
   document.getElementById('rul-org').classList.toggle('hidden', !isOrganizer);
   document.getElementById('rul-player').classList.toggle('hidden', isOrganizer);
   document.getElementById('rul-result').classList.add('hidden');
+  // Resetear phase al entrar para que jugadores no vean estado viejo
+  if (isOrganizer && db && currentRoom) {
+    const {doc, setDoc} = fsH;
+    setDoc(doc(db,'rooms',currentRoom), { ruleta: { phase: 'idle' } }, {merge:true});
+  }
   if (!isOrganizer) rulListenPlayer();
 }
 
@@ -3393,13 +4921,13 @@ async function rulSpin() {
   } else {
     // Jugador: traer lista de jugadores de Firebase
     if (db) {
-      const {collection, getDocs} = fsH;
+      const {doc, getDoc, collection, getDocs} = fsH;
       const snap = await getDocs(collection(db,'rooms',currentRoom,'players'));
       const players = snap.docs.map(d => d.data().name);
       if (!players.length) { showToast('⚠️ No hay jugadores registrados'); btn.disabled=false; btn.textContent='🎲 ¡Sortear!'; return; }
       const picked = players[Math.floor(Math.random() * players.length)];
       // Encontrar casa del jugador
-      const roomSnap = await (fsH.getDoc)(fsH.doc(db,'rooms',currentRoom));
+      const roomSnap = await getDoc(doc(db,'rooms',currentRoom));
       const houses = roomSnap.data()?.houses || {};
       houseKey = null;
       for (const [hk, hv] of Object.entries(houses)) {
