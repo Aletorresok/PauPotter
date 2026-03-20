@@ -1152,6 +1152,13 @@ header {
       <div id="bs-snitch-round-label" style="font-family:'Cinzel',serif;font-size:clamp(.8rem,1.8vw,1.2rem);color:var(--gold2);opacity:.6;margin-top:1rem;letter-spacing:.1em"></div>
     </div>
 
+    <!-- IMPOSTOR TV -->
+    <div class="bs-screen" id="bs-impostor" style="text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center">
+      <div id="bs-imp-icon" style="font-size:clamp(5rem,15vw,9rem);margin-bottom:1rem">🕵️</div>
+      <div id="bs-imp-main" style="font-family:'Cinzel Decorative',cursive;font-size:clamp(1.5rem,5vw,3rem);color:var(--gold);margin-bottom:.75rem"></div>
+      <div id="bs-imp-sub" style="font-family:'Cinzel',serif;font-size:clamp(.9rem,2.5vw,1.5rem);color:var(--gold2);opacity:.8"></div>
+    </div>
+
     <!-- CIERRE -->
     <div class="bs-screen" id="bs-closing">
       <div id="bs-closing-content" style="width:100%"></div>
@@ -1413,7 +1420,100 @@ header {
 
   <!-- Screens de juegos (se completan después) -->
   <div id="screen-cancion" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">🎵 El Coro Encantado</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
-  <div id="screen-impostor" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">🕵️ El Mortífago Infiltrado</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
+  <div id="screen-impostor" class="screen">
+    <button class="back-btn" onclick="goHome()">← Volver</button>
+    <div class="stitle">🕵️ El Mortífago Infiltrado</div>
+
+    <!-- ORG PANEL -->
+    <div id="imp-org" class="hidden">
+
+      <!-- SETUP -->
+      <div id="imp-setup">
+        <div class="card card-gold">
+          <div style="font-family:'Cinzel',serif;font-size:.78rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.75rem">⚙️ CONFIGURACIÓN</div>
+          <div class="ilabel">Palabra para los Aurores</div>
+          <input class="ifield" id="imp-word-input" placeholder="Ej: Hipogrifo" style="margin-bottom:.5rem">
+          <div class="ilabel">Categoría para los Mortífagos</div>
+          <input class="ifield" id="imp-category-input" placeholder="Ej: Criaturas mágicas" style="margin-bottom:.5rem">
+          <div class="ilabel">Cantidad de Mortífagos</div>
+          <div style="display:flex;gap:.5rem;margin-bottom:.75rem" id="imp-count-btns">
+            <button class="btn btn-ghost" onclick="impSetCount(1,this)" style="flex:1;padding:.5rem;margin-top:0">1</button>
+            <button class="btn btn-ghost" onclick="impSetCount(2,this)" style="flex:1;padding:.5rem;margin-top:0">2</button>
+            <button class="btn btn-ghost" onclick="impSetCount(3,this)" style="flex:1;padding:.5rem;margin-top:0">3</button>
+          </div>
+          <button class="btn btn-gold" onclick="impStartGame()" id="imp-start-btn">🎲 Sortear roles</button>
+        </div>
+      </div>
+
+      <!-- GAME -->
+      <div id="imp-game" class="hidden">
+        <!-- Estado actual -->
+        <div class="card card-gold" style="text-align:center;margin-bottom:.75rem">
+          <div id="imp-org-status" style="font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold2)"></div>
+          <div id="imp-org-counts" style="font-size:.78rem;opacity:.6;margin-top:.3rem;font-family:'Cinzel',serif"></div>
+        </div>
+        <!-- Jugadores activos -->
+        <div class="card" style="margin-bottom:.75rem">
+          <div style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.5rem">👥 JUGADORES ACTIVOS</div>
+          <div id="imp-players-display" style="display:flex;flex-wrap:wrap;gap:.35rem"></div>
+        </div>
+        <!-- Eliminados -->
+        <div class="card hidden" id="imp-eliminated-card" style="margin-bottom:.75rem">
+          <div style="font-family:'Cinzel',serif;font-size:.72rem;color:#ffa0a0;letter-spacing:.1em;margin-bottom:.5rem">💀 ELIMINADOS</div>
+          <div id="imp-eliminated-display" style="display:flex;flex-wrap:wrap;gap:.35rem"></div>
+        </div>
+        <!-- Votos en tiempo real -->
+        <div class="card hidden" id="imp-votes-card" style="margin-bottom:.75rem">
+          <div style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.5rem">🗳️ VOTOS EN TIEMPO REAL</div>
+          <div id="imp-votes-tally"></div>
+        </div>
+        <!-- Botones -->
+        <button class="btn btn-gold" onclick="impOpenVoting()" id="imp-open-vote-btn">🗳️ Abrir votación</button>
+        <button class="btn hidden" onclick="impEliminate()" id="imp-eliminate-btn" style="background:linear-gradient(135deg,#740001,#c9a84c);color:white;border:none;border-radius:16px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer">💀 Eliminar al más votado</button>
+        <button class="btn btn-ghost hidden" onclick="impReset()" id="imp-reset-btn" style="margin-top:.5rem;font-size:.8rem">🔄 Nueva partida</button>
+      </div>
+    </div>
+
+    <!-- PLAYER PANEL -->
+    <div id="imp-player" class="hidden">
+      <!-- Rol secreto -->
+      <div id="imp-role-panel" class="hidden">
+        <div class="card card-gold" style="text-align:center;padding:2rem" id="imp-role-card">
+          <div id="imp-role-icon" style="font-size:3rem;margin-bottom:.5rem"></div>
+          <div id="imp-role-title" style="font-family:'Cinzel Decorative',cursive;font-size:1.2rem;margin-bottom:.4rem"></div>
+          <div id="imp-role-word" style="font-family:'EB Garamond',serif;font-size:1.5rem;color:var(--gold);margin-bottom:.3rem"></div>
+          <div id="imp-role-hint" style="font-size:.78rem;opacity:.6;font-style:italic"></div>
+        </div>
+        <div class="info" style="text-align:center;margin-top:.5rem;font-size:.82rem">🤫 No muestres tu pantalla</div>
+      </div>
+      <!-- Votación -->
+      <div id="imp-vote-panel" class="hidden">
+        <div class="card card-gold" style="margin-bottom:.75rem;text-align:center">
+          <div style="font-size:1.5rem;margin-bottom:.3rem">🗳️</div>
+          <div style="font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold)">¿Quién es el Mortífago?</div>
+        </div>
+        <div id="imp-vote-buttons" style="display:flex;flex-direction:column;gap:.4rem"></div>
+        <div id="imp-vote-sent" class="hidden" style="text-align:center;padding:1.5rem;font-family:'Cinzel',serif;color:var(--gold)">
+          <div style="font-size:2rem">✓</div>
+          <div style="margin-top:.3rem">Voto enviado</div>
+        </div>
+      </div>
+      <!-- Resultado ronda -->
+      <div id="imp-round-result-panel" class="hidden">
+        <div class="card" style="text-align:center;padding:2rem" id="imp-result-card">
+          <div id="imp-result-icon" style="font-size:3.5rem;margin-bottom:.5rem"></div>
+          <div id="imp-result-name" style="font-family:'Cinzel Decorative',cursive;font-size:1.1rem;margin-bottom:.3rem"></div>
+          <div id="imp-result-verdict" style="font-family:'Cinzel',serif;font-size:.9rem"></div>
+          <div id="imp-result-pts" style="font-family:'Cinzel Decorative',cursive;font-size:1.2rem;color:var(--gold);margin-top:.75rem"></div>
+        </div>
+      </div>
+      <!-- Waiting -->
+      <div id="imp-player-waiting" style="text-align:center;padding:2.5rem">
+        <div style="font-size:3rem;margin-bottom:.75rem">🕵️</div>
+        <div style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--gold2)">Esperando al organizador...</div>
+      </div>
+    </div>
+  </div>
 
   <div id="screen-memoria" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">📜 Pergaminos de Memoria</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
   <div id="screen-rosco" class="screen"><button class="back-btn" onclick="goHome()">← Volver</button><div class="stitle">🌀 El Rosco de Dumbledore</div><div class="info" style="text-align:center;padding:2rem">Próximamente...</div></div>
@@ -2245,7 +2345,8 @@ function goHome() {
       mimica: { phase: 'ended' },
       ruleta: { phase: 'idle' },
       snitch: { phase: 'idle' },
-      houseQuiz: { phase: 'idle' }
+      houseQuiz: { phase: 'idle' },
+      impostor: { phase: 'idle' }
     }, {merge:true});
   }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -3941,11 +4042,13 @@ function bsListen() {
     const rul = data.ruleta || {};
     const hq = data.houseQuiz || {};
     const sn = data.snitch || {};
+    const imp = data.impostor || {};
     const hasActiveGame = 
       (mim.phase === 'playing' || mim.phase === 'timeout' || mim.phase === 'result') ||
       (rul.phase === 'picked' || rul.phase === 'result') ||
       (hq.phase === 'countdown' || hq.phase === 'voting' || hq.phase === 'revealed') ||
-      (sn.phase === 'hints' || sn.phase === 'betting' || sn.phase === 'revealed');
+      (sn.phase === 'hints' || sn.phase === 'betting' || sn.phase === 'revealed') ||
+      (imp.phase === 'playing' || imp.phase === 'voting' || imp.phase === 'round-result' || imp.phase === 'ended');
 
     // Sombrero REVEALED: solo toma pantalla si no hay juego activo
     if (sortingPhase === 'revealed' && !hasActiveGame) {
@@ -4227,6 +4330,28 @@ function bsListen() {
       if (bsSnitchEl && bsSnitchEl.classList.contains('active')) bsGoWaiting();
     }
 
+    // Impostor en TV
+    if (imp.phase === 'voting') {
+      bsShowScreen('impostor');
+      document.getElementById('bs-imp-icon').textContent = '🗳️';
+      document.getElementById('bs-imp-main').textContent = 'Votá en tu celular';
+      document.getElementById('bs-imp-sub').textContent = '¿Quién es el Mortífago?';
+    } else if (imp.phase === 'round-result' || imp.phase === 'ended') {
+      bsShowScreen('impostor');
+      const wasMort = imp.lastWasMort;
+      document.getElementById('bs-imp-icon').textContent = wasMort ? '🐍' : '😅';
+      document.getElementById('bs-imp-main').textContent = imp.lastEliminated || '';
+      if (imp.phase === 'ended') {
+        document.getElementById('bs-imp-sub').textContent = imp.winnerSide === 'aurores' ? '⚡ ¡Ganaron los Aurores! +15 pts a cada casa' : '🐍 ¡Ganaron los Mortífagos!';
+        if (imp.winnerSide === 'aurores') confetti();
+      } else {
+        document.getElementById('bs-imp-sub').textContent = wasMort ? '¡Era un Mortífago!' : 'No era Mortífago...';
+      }
+    } else if (imp.phase === 'idle' || !imp.phase) {
+      const bsImpEl = document.getElementById('bs-impostor');
+      if (bsImpEl && bsImpEl.classList.contains('active')) bsGoWaiting();
+    }
+
     // Fallback — si ningún juego activo y no hay evento, mostrar waiting
     if (sortingPhase === 'waiting') {
       const anyGameActive = ['bs-mimica','bs-house-quiz','bs-ruleta','bs-snitch'].some(id => {
@@ -4236,6 +4361,379 @@ function bsListen() {
       if (!anyGameActive) bsGoWaiting();
     }
   });
+}
+
+
+// ══════════════════════════════════════════════════════
+// 🕵️ EL MORTÍFAGO INFILTRADO
+// ══════════════════════════════════════════════════════
+let impMortCount = 1;
+
+function initImpostorScreen() {
+  document.getElementById('imp-org').classList.toggle('hidden', !isOrganizer);
+  document.getElementById('imp-player').classList.toggle('hidden', isOrganizer);
+  if (isOrganizer) {
+    // Seleccionar 1 por defecto
+    const btns = document.querySelectorAll('#imp-count-btns button');
+    btns[0].style.background = 'linear-gradient(135deg,var(--grif),#c9a84c)';
+    btns[0].style.color = 'white';
+    impListenOrg();
+  } else {
+    impListenPlayer();
+  }
+}
+
+function impSetCount(n, btn) {
+  impMortCount = n;
+  document.querySelectorAll('#imp-count-btns button').forEach(b => {
+    b.style.background = 'rgba(255,255,255,.07)';
+    b.style.color = 'var(--gold2)';
+  });
+  btn.style.background = 'linear-gradient(135deg,var(--grif),#c9a84c)';
+  btn.style.color = 'white';
+}
+
+async function impStartGame() {
+  const word = document.getElementById('imp-word-input').value.trim();
+  const category = document.getElementById('imp-category-input').value.trim();
+  if (!word || !category) { showToast('⚠️ Completá la palabra y la categoría'); return; }
+  if (!db) return;
+
+  // Obtener jugadores (sin org ni TV)
+  const {doc, getDocs, collection, setDoc} = fsH;
+  const snap = await getDocs(collection(db,'rooms',currentRoom,'players'));
+  const allPlayers = snap.docs.map(d=>d.data().name)
+    .filter(n => !n.endsWith('-TV') && n !== currentUser);
+
+  if (allPlayers.length < 3) { showToast('⚠️ Se necesitan al menos 3 jugadores'); return; }
+  if (impMortCount >= allPlayers.length) { showToast('⚠️ Demasiados mortífagos para los jugadores'); return; }
+
+  // Sortear roles — Fisher-Yates
+  const shuffled = [...allPlayers].sort(() => Math.random() - .5);
+  const mortifagos = shuffled.slice(0, impMortCount);
+  const roles = {};
+  allPlayers.forEach(p => {
+    roles[p] = mortifagos.includes(p) ? 'mortifago' : 'auror';
+  });
+
+  await setDoc(doc(db,'rooms',currentRoom), {
+    impostor: {
+      phase: 'playing',
+      word,
+      category,
+      roles,
+      activePlayers: allPlayers,
+      eliminated: [],
+      votes: {},
+      voteOpen: false,
+      mortifagos,
+      lastEliminated: null,
+      lastWasMort: null,
+      gameOver: false,
+      winnerSide: null
+    }
+  }, {merge:true});
+}
+
+async function impOpenVoting() {
+  if (!db) return;
+  const {doc, setDoc} = fsH;
+  await setDoc(doc(db,'rooms',currentRoom), {
+    impostor: { voteOpen: true, votes: {}, phase: 'voting' }
+  }, {merge:true});
+  document.getElementById('imp-open-vote-btn').classList.add('hidden');
+  document.getElementById('imp-eliminate-btn').classList.remove('hidden');
+}
+
+async function impEliminate() {
+  if (!db) return;
+  const {doc, getDoc, setDoc} = fsH;
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const imp = snap.data()?.impostor || {};
+  const votes = imp.votes || {};
+  const activePlayers = imp.activePlayers || [];
+
+  // Contar votos
+  const tally = {};
+  Object.values(votes).forEach(v => { tally[v] = (tally[v]||0)+1; });
+  if (!Object.keys(tally).length) { showToast('⚠️ Aún no hay votos'); return; }
+
+  // Más votado — empate → primero alfabéticamente
+  const topPlayer = Object.entries(tally).sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0]))[0][0];
+  const wasMort = (imp.mortifagos||[]).includes(topPlayer);
+  const newEliminated = [...(imp.eliminated||[]), topPlayer];
+  const newActive = activePlayers.filter(p => p !== topPlayer);
+  const remainingMorts = (imp.mortifagos||[]).filter(p => newActive.includes(p));
+  const remainingInnocents = newActive.filter(p => !(imp.mortifagos||[]).includes(p));
+
+  // Condición de fin
+  let gameOver = false, winnerSide = null;
+  if (remainingMorts.length === 0) {
+    gameOver = true; winnerSide = 'aurores';
+  } else if (remainingMorts.length >= remainingInnocents.length) {
+    gameOver = true; winnerSide = 'mortifagos';
+  }
+
+  const update = {
+    impostor: {
+      phase: gameOver ? 'ended' : 'round-result',
+      activePlayers: newActive,
+      eliminated: newEliminated,
+      votes: {},
+      voteOpen: false,
+      lastEliminated: topPlayer,
+      lastWasMort: wasMort,
+      gameOver,
+      winnerSide
+    }
+  };
+
+  await setDoc(doc(db,'rooms',currentRoom), update, {merge:true});
+
+  // Aplicar puntos si terminó
+  if (gameOver) {
+    const houses = snap.data()?.houses || {};
+    const allHouseKeys = Object.keys(houses);
+
+    if (winnerSide === 'aurores') {
+      // +15 a cada casa con jugadores activos (excluye org y TV)
+      const casasParticipantes = new Set();
+      activePlayers.forEach(p => { // activePlayers = todos los que jugaron
+        for (const [hk, hv] of Object.entries(houses)) {
+          if ((hv.members||[]).includes(p)) { casasParticipantes.add(hk); break; }
+        }
+      });
+      for (const hk of casasParticipantes) {
+        await applyPoints(hk, 15, 'Mortífago: Aurores ganaron');
+      }
+      showToast('⚡ ¡Los Aurores ganaron! +15 pts a cada casa');
+    } else {
+      // +50 a la casa de cada mortífago
+      for (const mort of (imp.mortifagos||[])) {
+        for (const [hk, hv] of Object.entries(houses)) {
+          if ((hv.members||[]).includes(mort)) {
+            await applyPoints(hk, 50, `Mortífago: ${mort} infiltrado`);
+            break;
+          }
+        }
+      }
+      showToast('🐍 ¡Los Mortífagos ganaron! +50 pts por casa');
+    }
+  }
+}
+
+async function impNextRound() {
+  if (!db) return;
+  const {doc, setDoc} = fsH;
+  await setDoc(doc(db,'rooms',currentRoom), {
+    impostor: { phase: 'playing', voteOpen: false, votes: {} }
+  }, {merge:true});
+}
+
+async function impReset() {
+  if (!db) return;
+  const {doc, setDoc} = fsH;
+  await setDoc(doc(db,'rooms',currentRoom), {
+    impostor: { phase: 'idle' }
+  }, {merge:true});
+  // Volver a setup
+  document.getElementById('imp-game').classList.add('hidden');
+  document.getElementById('imp-setup').classList.remove('hidden');
+  document.getElementById('imp-word-input').value = '';
+  document.getElementById('imp-category-input').value = '';
+}
+
+function impListenOrg() {
+  if (!db) return;
+  const {doc, onSnapshot} = fsH;
+  const unsub = onSnapshot(doc(db,'rooms',currentRoom), snap => {
+    const data = snap.data();
+    if (!data) return;
+    const imp = data.impostor || {};
+    if (!imp.phase || imp.phase === 'idle') return;
+
+    // Mostrar panel de juego
+    document.getElementById('imp-setup').classList.add('hidden');
+    document.getElementById('imp-game').classList.remove('hidden');
+
+    const active = imp.activePlayers || [];
+    const eliminated = imp.eliminated || [];
+    const morts = imp.mortifagos || [];
+    const remainingMorts = morts.filter(p => active.includes(p));
+
+    // Status
+    const statusEl = document.getElementById('imp-org-status');
+    const countsEl = document.getElementById('imp-org-counts');
+    if (imp.phase === 'ended') {
+      statusEl.textContent = imp.winnerSide === 'aurores' ? '⚡ ¡Ganaron los Aurores!' : '🐍 ¡Ganaron los Mortífagos!';
+      countsEl.textContent = `Mortífagos: ${morts.join(', ')} · Palabra: ${imp.word}`;
+    } else {
+      statusEl.textContent = imp.voteOpen ? '🗳️ Votación abierta' : '🕵️ Discusión en curso';
+      countsEl.textContent = `${active.length} activos · ${remainingMorts.length} mortífago(s) oculto(s)`;
+    }
+
+    // Jugadores activos
+    const pdEl = document.getElementById('imp-players-display');
+    pdEl.innerHTML = '';
+    active.forEach(p => {
+      const chip = document.createElement('span');
+      chip.style.cssText = `padding:.3rem .7rem;border-radius:20px;font-family:'Cinzel',serif;font-size:.75rem;background:${morts.includes(p)?'rgba(116,0,1,.4)':'rgba(255,255,255,.08)'};border:1px solid ${morts.includes(p)?'#c9a84c':'rgba(255,255,255,.15)'};color:${morts.includes(p)?'#ffccc0':'#e8dfc0'}`;
+      chip.textContent = (morts.includes(p) ? '🐍 ' : '⚡ ') + p;
+      pdEl.appendChild(chip);
+    });
+
+    // Eliminados
+    const elimCard = document.getElementById('imp-eliminated-card');
+    if (eliminated.length) {
+      elimCard.classList.remove('hidden');
+      const edEl = document.getElementById('imp-eliminated-display');
+      edEl.innerHTML = '';
+      eliminated.forEach(p => {
+        const chip = document.createElement('span');
+        chip.style.cssText = `padding:.3rem .7rem;border-radius:20px;font-family:'Cinzel',serif;font-size:.75rem;background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);color:#ffa0a0;text-decoration:line-through`;
+        chip.textContent = p;
+        edEl.appendChild(chip);
+      });
+    } else {
+      elimCard.classList.add('hidden');
+    }
+
+    // Votos en tiempo real
+    const votesCard = document.getElementById('imp-votes-card');
+    const votes = imp.votes || {};
+    if (imp.voteOpen && Object.keys(votes).length) {
+      votesCard.classList.remove('hidden');
+      const tally = {};
+      Object.values(votes).forEach(v => { tally[v] = (tally[v]||0)+1; });
+      const tallyEl = document.getElementById('imp-votes-tally');
+      tallyEl.innerHTML = Object.entries(tally).sort((a,b)=>b[1]-a[1]).map(([name,cnt])=>
+        `<div style="display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.06);font-family:'Cinzel',serif;font-size:.82rem">
+          <span>${name}</span><span style="color:var(--gold)">${cnt} voto${cnt>1?'s':''}</span>
+        </div>`
+      ).join('');
+    } else {
+      votesCard.classList.add('hidden');
+    }
+
+    // Botones
+    const openBtn = document.getElementById('imp-open-vote-btn');
+    const elimBtn = document.getElementById('imp-eliminate-btn');
+    const resetBtn = document.getElementById('imp-reset-btn');
+    if (imp.phase === 'ended') {
+      openBtn.classList.add('hidden');
+      elimBtn.classList.add('hidden');
+      resetBtn.classList.remove('hidden');
+    } else if (imp.phase === 'voting') {
+      openBtn.classList.add('hidden');
+      elimBtn.classList.remove('hidden');
+      resetBtn.classList.add('hidden');
+    } else {
+      // playing o round-result
+      openBtn.classList.remove('hidden');
+      elimBtn.classList.add('hidden');
+      resetBtn.classList.add('hidden');
+    }
+  });
+  screenUnsubs.push(unsub);
+}
+
+async function impPlayerVote(target) {
+  if (!db) return;
+  const {doc, getDoc, updateDoc} = fsH;
+  // Usar dot notation para no pisar votos de otros
+  await updateDoc(doc(db,'rooms',currentRoom), {
+    [`impostor.votes.${currentUser}`]: target
+  });
+  document.getElementById('imp-vote-buttons').innerHTML = '';
+  document.getElementById('imp-vote-sent').classList.remove('hidden');
+}
+
+function impListenPlayer() {
+  if (!db) return;
+  const {doc, onSnapshot} = fsH;
+  const unsub = onSnapshot(doc(db,'rooms',currentRoom), snap => {
+    const data = snap.data();
+    if (!data) return;
+    const imp = data.impostor || {};
+
+    const rolePanel = document.getElementById('imp-role-panel');
+    const votePanel = document.getElementById('imp-vote-panel');
+    const resultPanel = document.getElementById('imp-round-result-panel');
+    const waiting = document.getElementById('imp-player-waiting');
+    [rolePanel, votePanel, resultPanel].forEach(el => el.classList.add('hidden'));
+    waiting.style.display = 'none';
+
+    if (!imp.phase || imp.phase === 'idle') {
+      waiting.style.display = 'block'; return;
+    }
+
+    const myRole = (imp.roles||{})[currentUser];
+    const isMort = myRole === 'mortifago';
+
+    // Mostrar rol siempre que esté asignado
+    if (myRole) {
+      rolePanel.classList.remove('hidden');
+      const card = document.getElementById('imp-role-card');
+      card.style.borderColor = isMort ? '#c9a84c' : 'rgba(201,168,76,.3)';
+      document.getElementById('imp-role-icon').textContent = isMort ? '🐍' : '⚡';
+      document.getElementById('imp-role-title').textContent = isMort ? 'Mortífago' : 'Auror';
+      document.getElementById('imp-role-title').style.color = isMort ? '#c9a84c' : 'var(--gold)';
+      document.getElementById('imp-role-word').textContent = isMort ? imp.category : imp.word;
+      document.getElementById('imp-role-hint').textContent = isMort ? 'Esta es tu categoría — ¡no te descubras!' : 'Esta es tu palabra — discutí naturalmente';
+    }
+
+    // Fase votación
+    if (imp.phase === 'voting') {
+      votePanel.classList.remove('hidden');
+      const alreadyVoted = !!(imp.votes||{})[currentUser];
+      const btnsEl = document.getElementById('imp-vote-buttons');
+      const sentEl = document.getElementById('imp-vote-sent');
+      if (alreadyVoted) {
+        btnsEl.innerHTML = '';
+        sentEl.classList.remove('hidden');
+      } else {
+        sentEl.classList.add('hidden');
+        const active = imp.activePlayers || [];
+        btnsEl.innerHTML = '';
+        active.filter(p => p !== currentUser).forEach(p => {
+          const b = document.createElement('button');
+          b.className = 'btn btn-ghost';
+          b.style.cssText = 'width:100%;margin-top:0;font-family:'Cinzel',serif';
+          b.textContent = '🕵️ ' + p;
+          b.onclick = () => impPlayerVote(p);
+          btnsEl.appendChild(b);
+        });
+      }
+    }
+
+    // Resultado de ronda o fin
+    if (imp.phase === 'round-result' || imp.phase === 'ended') {
+      resultPanel.classList.remove('hidden');
+      const eliminated = imp.lastEliminated || '?';
+      const wasMort = imp.lastWasMort;
+      const card = document.getElementById('imp-result-card');
+      document.getElementById('imp-result-icon').textContent = wasMort ? '🐍' : '😅';
+      document.getElementById('imp-result-name').textContent = eliminated;
+      document.getElementById('imp-result-name').style.color = wasMort ? '#c9a84c' : 'var(--gold)';
+      document.getElementById('imp-result-verdict').textContent = wasMort ? '¡Era un Mortífago!' : 'No era Mortífago...';
+      document.getElementById('imp-result-verdict').style.color = wasMort ? '#a0d4a0' : '#ffa0a0';
+      card.style.borderColor = wasMort ? '#c9a84c88' : '#ff6b6b44';
+
+      const ptsEl = document.getElementById('imp-result-pts');
+      if (imp.phase === 'ended') {
+        if (imp.winnerSide === 'aurores') {
+          ptsEl.textContent = '⚡ +15 pts para tu casa';
+          ptsEl.style.color = 'var(--gold)';
+        } else {
+          ptsEl.textContent = isMort ? '🐍 +50 pts para tu casa' : 'Los Mortífagos ganaron...';
+          ptsEl.style.color = isMort ? '#c9a84c' : '#ffa0a0';
+        }
+      } else {
+        ptsEl.textContent = '';
+      }
+    }
+  });
+  screenUnsubs.push(unsub);
 }
 
 // ══ TV marcador: flash cuando cambian puntos ══
@@ -4290,6 +4788,7 @@ function showScreen(n) {
   if (n==='closing') initClosingScreen();
   if (n==='pts-log') initPtsLogScreen();
   if (n==='snitch') initSnitchScreen();
+  if (n==='impostor') initImpostorScreen();
 }
 
 // ══════════════════════════════════════════
@@ -4777,7 +5276,8 @@ async function resetRoom() {
     houseQuiz: { phase: 'idle', votes: {}, qIdx: null, activeHouse: null },
     snitch: { phase: 'idle' },
     snitchLeaders: {},
-    snitchLeaderVote: { phase: 'idle', votes: {} }
+    snitchLeaderVote: { phase: 'idle', votes: {} },
+    impostor: { phase: 'idle' }
   }, {merge:true});
   // Borrar jugadores y pointsLog en paralelo
   const [playersSnap, logsSnap] = await Promise.all([
