@@ -1145,6 +1145,13 @@ header {
       <div id="bs-pa-note" style="font-family:'EB Garamond',serif;font-size:clamp(.9rem,2vw,1.3rem);color:var(--gold2);opacity:.8;margin-top:.75rem;font-style:italic"></div>
     </div>
 
+    <!-- SNITCH TV -->
+    <div class="bs-screen" id="bs-snitch" style="text-align:center">
+      <div id="bs-snitch-timer-label" style="font-family:'Cinzel',serif;font-size:clamp(.7rem,1.5vw,1rem);letter-spacing:.2em;color:var(--gold2);opacity:.7;text-transform:uppercase;margin-bottom:.5rem"></div>
+      <div id="bs-snitch-timer" style="font-family:'Cinzel Decorative',cursive;font-size:clamp(6rem,18vw,12rem);line-height:1;color:var(--gold);transition:color .3s"></div>
+      <div id="bs-snitch-round-label" style="font-family:'Cinzel',serif;font-size:clamp(.8rem,1.8vw,1.2rem);color:var(--gold2);opacity:.6;margin-top:1rem;letter-spacing:.1em"></div>
+    </div>
+
     <!-- CIERRE -->
     <div class="bs-screen" id="bs-closing">
       <div id="bs-closing-content" style="width:100%"></div>
@@ -1475,10 +1482,11 @@ header {
           <div id="snitch-secret-display" style="font-family:'Cinzel Decorative',cursive;font-size:1.5rem;color:var(--gold)"></div>
         </div>
         <!-- Timer y controles -->
-        <div style="display:flex;gap:.5rem;margin-bottom:.75rem">
-          <button class="btn" onclick="snitchStartTimer('pistas')" style="flex:1;background:linear-gradient(135deg,var(--slyth),#2d7a4a);color:#c8e8c8;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer">⏱ Timer pistas (60s)</button>
-          <button class="btn" onclick="snitchStartTimer('apuestas')" style="flex:1;background:linear-gradient(135deg,var(--grif),#c9a84c);color:white;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer">⏱ Timer apuestas (45s)</button>
+        <div style="display:flex;gap:.5rem;margin-bottom:.4rem">
+          <button class="btn" onclick="snitchStartTimer('pistas')" style="flex:1;background:linear-gradient(135deg,var(--slyth),#2d7a4a);color:#c8e8c8;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;margin-top:0">⏱ Pistas (60s)</button>
+          <button class="btn" onclick="snitchStartTimer('apuestas')" style="flex:1;background:linear-gradient(135deg,var(--grif),#c9a84c);color:white;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;margin-top:0">⏱ Apuestas (45s)</button>
         </div>
+        <div id="snitch-org-timer" style="text-align:center;font-family:'Cinzel Decorative',cursive;font-size:1.4rem;color:var(--gold2);min-height:2rem;margin-bottom:.5rem"></div>
         <button class="btn btn-gold" onclick="snitchOpenBetting()" id="snitch-open-bet-btn">🎲 Abrir apuestas</button>
         <button class="btn" onclick="snitchReveal()" id="snitch-reveal-btn" style="display:none;background:linear-gradient(135deg,#3a2800,#c9a84c);color:white;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;margin-top:.5rem">🏆 Revelar snitch</button>
         <button class="btn btn-ghost" onclick="snitchNextRound()" id="snitch-next-btn" style="display:none;margin-top:.5rem">Siguiente ronda ➡️</button>
@@ -2169,6 +2177,7 @@ function cancelScreenListeners() {
   if (hqVoteUnsub) { try{hqVoteUnsub();}catch(e){} hqVoteUnsub=null; }
   if (triOrgResUnsub) { try{triOrgResUnsub();}catch(e){} triOrgResUnsub=null; }
   if (window._mimPlayerInterval) { clearInterval(window._mimPlayerInterval); window._mimPlayerInterval=null; }
+  if (_snitchTimerInterval) { clearInterval(_snitchTimerInterval); _snitchTimerInterval=null; }
 }
 function goHome() {
   cancelScreenListeners();
@@ -2959,6 +2968,17 @@ function snitchListenOrg() {
     renderSnitchLeaders(data.snitchLeaders||{}, voteData.votes||{}, data.houses||{});
     // Presupuestos
     if (s.budgets) snitchUpdateOrgGame(s.round||1, s.budgets, s.bets||{});
+    // Timer — corre en org Y en TV
+    if (s.timerTs && s.timerSecs) snitchRunTimer(s.timerTs, s.timerSecs, s.timerPhase);
+    // Round label en TV
+    if (IS_BIGSCREEN) {
+      const lblEl = document.getElementById('bs-snitch-round-label');
+      if (lblEl && s.round) {
+        const repHk = s.repHouse || '';
+        const repH = HOUSES[repHk] || {};
+        lblEl.textContent = `Ronda ${s.round} / 4 · ${repH.crest||''} ${repH.name||''}`;
+      }
+    }
   });
   screenUnsubs.push(unsub);
 }
@@ -3234,12 +3254,43 @@ function snitchRenderLeaderVotePanel(voteData, leaders, houses) {
 }
 
 // ── TIMER ──
-let snitchTimerUnsub = null;
-function snitchRunTimer(timerTs, timerSecs, phase) {
-  // Solo mostrar en TV
-  if (!IS_BIGSCREEN) return;
-  const remaining = Math.max(0, timerSecs - Math.floor((Date.now()-timerTs)/1000));
-  // Podría integrar con la pantalla TV de snitch si la agregamos
+let _snitchTimerInterval = null;
+
+function snitchRunTimer(timerTs, timerSecs, timerPhase) {
+  // Limpiar interval anterior
+  if (_snitchTimerInterval) { clearInterval(_snitchTimerInterval); _snitchTimerInterval = null; }
+  if (!timerTs || !timerSecs) return;
+
+  const label = timerPhase === 'pistas' ? '🗣️ Pistas' : '🎲 Apuestas';
+  const update = () => {
+    const remaining = Math.max(0, timerSecs - Math.floor((Date.now() - timerTs) / 1000));
+    // Actualizar org
+    const orgTimerEl = document.getElementById('snitch-org-timer');
+    if (orgTimerEl) {
+      orgTimerEl.textContent = remaining > 0 ? `${label}: ${remaining}s` : `${label}: ¡Tiempo!`;
+      orgTimerEl.style.color = remaining <= 10 ? '#ffa0a0' : 'var(--gold2)';
+    }
+    // Actualizar TV
+    if (IS_BIGSCREEN) {
+      const bsTimerEl = document.getElementById('bs-snitch-timer');
+      const bsLabelEl = document.getElementById('bs-snitch-timer-label');
+      if (bsTimerEl) {
+        bsTimerEl.textContent = remaining;
+        bsTimerEl.style.color = remaining <= 10 ? '#ff6b6b' : 'var(--gold)';
+        if (remaining <= 10) bsTimerEl.classList.add('timer-urgent');
+        else bsTimerEl.classList.remove('timer-urgent');
+      }
+      if (bsLabelEl) bsLabelEl.textContent = label;
+      const bsScreen = document.getElementById('bs-snitch');
+      if (bsScreen && !bsScreen.classList.contains('active')) bsShowScreen('snitch');
+    }
+    if (remaining <= 0) {
+      clearInterval(_snitchTimerInterval); _snitchTimerInterval = null;
+      if (IS_BIGSCREEN) playSound('buzz');
+    }
+  };
+  update();
+  _snitchTimerInterval = setInterval(update, 1000);
 }
 
 // ══ BEFOREUNLOAD ══
