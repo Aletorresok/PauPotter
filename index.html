@@ -1970,6 +1970,8 @@ async function createRoom() {
       },
       sorting: { phase: 'waiting', currentPlayer: null, revealedHouse: null },
       sortingAudio: {},
+      activeEvent: null,
+      lastPointsEvent: null,
       activeGame: null,
     });
     currentRoom = ROOM_CODE; currentUser = name; isOrganizer = true;
@@ -3424,10 +3426,16 @@ function showPointsAnnounceTV(event) {
     }, 800);
   }
 
-  // Volver a waiting después de 4.5s
+  // Volver a la pantalla activa del juego después de 4.5s
   _ptsAnnounceTimeout = setTimeout(() => {
     _ptsAnnounceTimeout = null;
-    bsGoWaiting();
+    // Solo ir a waiting si ningún juego está en pantalla
+    const gameScreens = ['bs-sorting','bs-mimica','bs-house-quiz','bs-ruleta','bs-snitch'];
+    const gameActive = gameScreens.some(id => {
+      const el = document.getElementById(id);
+      return el && el.classList.contains('active');
+    });
+    if (!gameActive) bsGoWaiting();
   }, 4500);
 }
 
@@ -3690,7 +3698,9 @@ function bsListen() {
   if (!db||!bsRoom) return;
   if (bsUnsub) try{bsUnsub();}catch(e){}
   const {doc,onSnapshot} = fsH;
-  let lastEvent = null, lastCeremonyTs = 0, lastClosingTs = 0, lastPointsTs = 0;
+  let lastEvent = null, lastCeremonyTs = 0, lastClosingTs = 0;
+  // Inicializar lastPointsTs con Date.now() para ignorar eventos anteriores al conectarse
+  let lastPointsTs = Date.now();
   let lastSortingPhase = null;
 
   // Mostrar QR code
@@ -4514,7 +4524,12 @@ async function resetRoom() {
   await setDoc(doc(db,'rooms',currentRoom), {
     houses,
     sorting: { phase:'waiting', currentPlayer:null, revealedHouse:null },
-    activeEvent: null
+    activeEvent: null,
+    lastPointsEvent: null,
+    mimica: { phase: 'idle' },
+    ruleta: { phase: 'idle' },
+    houseQuiz: { phase: 'idle' },
+    snitch: { phase: 'idle' }
   }, {merge:true});
   // Borrar jugadores en paralelo y esperar que todos terminen
   const playersSnap = await getDocs(collection(db,'rooms',currentRoom,'players'));
