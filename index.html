@@ -2150,6 +2150,7 @@ function listenHouses() {
   if (!db || !currentRoom) return;
   const {doc, onSnapshot} = fsH;
   let lastHousesJson = '';
+  let lastPointsTs = Date.now(); // ignorar eventos anteriores al conectarse
   const unsub = onSnapshot(doc(db,'rooms',currentRoom), snap => {
     const data = snap.data();
     if (!data) return;
@@ -2170,8 +2171,49 @@ function listenHouses() {
         }
       }
     }
+    // Notificación personal de puntos para jugadores
+    if (!isOrganizer && !IS_BIGSCREEN && currentHouse) {
+      const ev = data.lastPointsEvent;
+      if (ev && ev.ts && ev.ts > lastPointsTs && ev.house === currentHouse) {
+        lastPointsTs = ev.ts;
+        showPointsNotification(ev.amount, ev.takesLead);
+      }
+    }
   });
   unsubscribers.push(unsub);
+}
+
+function showPointsNotification(amount, takesLead) {
+  const h = HOUSES[currentHouse] || {};
+  const isPositive = amount > 0;
+  const el = document.createElement('div');
+  el.style.cssText = `
+    position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);
+    z-index:9999;text-align:center;pointer-events:none;
+    background:${h.color}ee;border:2px solid ${h.accent};
+    border-radius:24px;padding:1.5rem 2rem;
+    font-family:'Cinzel Decorative',cursive;
+    box-shadow:0 0 40px ${h.accent}88;
+    transition:transform .3s cubic-bezier(.36,2,.6,1), opacity .4s ease;
+    opacity:0;
+  `;
+  el.innerHTML = `
+    <div style="font-size:2.5rem;margin-bottom:.3rem">${isPositive ? h.crest : '💀'}</div>
+    <div style="font-size:2rem;color:${h.accent};font-weight:700">${isPositive ? '+' : ''}${amount} pts</div>
+    ${takesLead ? `<div style="font-size:.75rem;color:var(--gold);margin-top:.4rem;letter-spacing:.1em">¡LIDERANDO!</div>` : ''}
+  `;
+  document.body.appendChild(el);
+  // Animar entrada
+  requestAnimationFrame(() => {
+    el.style.transform = 'translate(-50%,-50%) scale(1)';
+    el.style.opacity = '1';
+  });
+  // Animar salida
+  setTimeout(() => {
+    el.style.transform = 'translate(-50%,-50%) scale(0.8)';
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 400);
+  }, 2000);
 }
 
 function listenPlayerCount() {
