@@ -1476,10 +1476,16 @@ header {
           <div style="font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.1em;color:var(--gold2);opacity:.7;margin-bottom:.5rem">PRESUPUESTOS</div>
           <div id="snitch-budgets-org"></div>
         </div>
-        <!-- Caja secreta -->
-        <div class="card card-gold" style="margin-bottom:.75rem;text-align:center">
-          <div style="font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.1em;color:var(--gold);opacity:.7;margin-bottom:.3rem">🔒 SNITCH EN CAJA</div>
-          <div id="snitch-secret-display" style="font-family:'Cinzel Decorative',cursive;font-size:1.5rem;color:var(--gold)"></div>
+        <!-- Caja secreta — selector por ronda -->
+        <div class="card card-gold" style="margin-bottom:.75rem">
+          <div style="font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.1em;color:var(--gold);opacity:.7;margin-bottom:.5rem;text-align:center">🔒 ¿EN QUÉ CAJA ESTÁ LA SNITCH?</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.35rem;margin-bottom:.4rem" id="snitch-box-selector-game">
+            <button class="snitch-box-btn" onclick="snitchSelectBoxGame(1,this)">📦<br><span style="font-family:'Cinzel',serif;font-size:.65rem">Caja 1</span></button>
+            <button class="snitch-box-btn" onclick="snitchSelectBoxGame(2,this)">📦<br><span style="font-family:'Cinzel',serif;font-size:.65rem">Caja 2</span></button>
+            <button class="snitch-box-btn" onclick="snitchSelectBoxGame(3,this)">📦<br><span style="font-family:'Cinzel',serif;font-size:.65rem">Caja 3</span></button>
+            <button class="snitch-box-btn" onclick="snitchSelectBoxGame(4,this)">📦<br><span style="font-family:'Cinzel',serif;font-size:.65rem">Caja 4</span></button>
+          </div>
+          <div id="snitch-secret-display" style="font-family:'Cinzel Decorative',cursive;font-size:1rem;color:var(--gold);text-align:center;min-height:1.2rem">— Sin elegir —</div>
         </div>
         <!-- Timer y controles -->
         <div style="display:flex;gap:.5rem;margin-bottom:.4rem">
@@ -1983,6 +1989,10 @@ async function createRoom() {
       sortingAudio: {},
       activeEvent: null,
       lastPointsEvent: null,
+      houseQuiz: { phase: 'idle', votes: {}, qIdx: null, activeHouse: null },
+      mimica: { phase: 'idle' },
+      ruleta: { phase: 'idle' },
+      snitch: { phase: 'idle' },
       activeGame: null,
     });
     currentRoom = ROOM_CODE; currentUser = name; isOrganizer = true;
@@ -2698,10 +2708,17 @@ function initSnitchScreen() {
 // ── ORG: setup ──
 function snitchSelectBox(box, btn) {
   snitchSecretBox = box;
-  document.querySelectorAll('.snitch-box-btn').forEach(b => b.classList.remove('selected-box'));
+  document.querySelectorAll('#snitch-box-selector .snitch-box-btn').forEach(b => b.classList.remove('selected-box'));
   btn.classList.add('selected-box');
   document.getElementById('snitch-box-chosen').textContent = `🏆 Snitch en Caja ${box}`;
   snitchCheckCanStart();
+}
+
+function snitchSelectBoxGame(box, btn) {
+  snitchSecretBox = box;
+  document.querySelectorAll('#snitch-box-selector-game .snitch-box-btn').forEach(b => b.classList.remove('selected-box'));
+  btn.classList.add('selected-box');
+  document.getElementById('snitch-secret-display').textContent = `🔒 Caja ${box}`;
 }
 
 async function snitchLoadLeaders() {
@@ -2801,7 +2818,7 @@ function snitchUpdateOrgGame(round, budgets, bets) {
   const repHk = SNITCH_REPS[(round-1) % 4];
   const repH = HOUSES[repHk];
   document.getElementById('snitch-rep-display').textContent = `Representante: ${repH.crest} ${repH.name}`;
-  document.getElementById('snitch-secret-display').textContent = `Caja ${snitchSecretBox}`;
+  document.getElementById('snitch-secret-display').textContent = snitchSecretBox ? `Caja ${snitchSecretBox}` : '— Sin elegir —';
   // Presupuestos
   const el = document.getElementById('snitch-budgets-org');
   if (el) {
@@ -2952,6 +2969,10 @@ async function snitchNextRound() {
   document.getElementById('snitch-open-bet-btn').style.display = 'block';
   document.getElementById('snitch-reveal-btn').style.display = 'none';
   document.getElementById('snitch-bets-received').innerHTML = '';
+  // Resetear selector de caja para la nueva ronda
+  document.querySelectorAll('#snitch-box-selector-game .snitch-box-btn').forEach(b=>b.classList.remove('selected-box'));
+  const secEl = document.getElementById('snitch-secret-display');
+  if (secEl) secEl.textContent = '— Sin elegir —';
   snitchUpdateOrgGame(nextRound, newBudgets, {});
   showToast(`Ronda ${nextRound} — elegí la nueva caja`);
 }
@@ -3090,8 +3111,8 @@ function snitchListenPlayer() {
     const voteData = data.snitchLeaderVote || {};
     window._snitchIsLeader = leaders[currentHouse] === currentUser;
 
-    // Si hay votación abierta, mostrar panel de voto
-    if (voteData.phase === 'open' && !s.phase) {
+    // Si hay votación abierta y el juego no empezó, mostrar panel de voto
+    if (voteData.phase === 'open' && (!s.phase || s.phase === 'idle')) {
       snitchRenderLeaderVotePanel(voteData, leaders, data.houses||{});
       return;
     }
@@ -4065,13 +4086,45 @@ function bsListen() {
       if (bsHQ && bsHQ.classList.contains('active')) bsGoWaiting();
     }
 
-    // Sombrero en waiting — si no hay juego activo, mostrar waiting
+    // Snitch en TV
+    const sn = data.snitch || {};
+    if (sn.phase === 'hints' || sn.phase === 'betting' || sn.phase === 'revealed') {
+      // El timer de snitch ya maneja bsShowScreen('snitch') cuando corre
+      // Si no hay timer activo pero el juego está en curso, mostrar pantalla de snitch
+      const bsSnitchEl = document.getElementById('bs-snitch');
+      if (bsSnitchEl && !bsSnitchEl.classList.contains('active')) {
+        if (sn.phase === 'betting') {
+          bsShowScreen('snitch');
+          const bsLabelEl = document.getElementById('bs-snitch-timer-label');
+          const bsTimerEl = document.getElementById('bs-snitch-timer');
+          const bsRoundEl = document.getElementById('bs-snitch-round-label');
+          if (bsLabelEl) bsLabelEl.textContent = '🎲 APUESTAS ABIERTAS';
+          if (bsTimerEl) bsTimerEl.textContent = '⚡';
+          if (bsRoundEl) {
+            const repH = HOUSES[sn.repHouse] || {};
+            bsRoundEl.textContent = `Ronda ${sn.round||1} / 4 · ${repH.crest||''} ${repH.name||''}`;
+          }
+        } else if (sn.phase === 'revealed') {
+          bsShowScreen('snitch');
+          const bsLabelEl = document.getElementById('bs-snitch-timer-label');
+          const bsTimerEl = document.getElementById('bs-snitch-timer');
+          if (bsLabelEl) bsLabelEl.textContent = '🏆 RESULTADO';
+          const winners = sn.winners || [];
+          if (bsTimerEl) bsTimerEl.textContent = winners.length ? winners.map(hk=>HOUSES[hk]?.crest||'').join(' ') : '❌';
+        }
+      }
+    } else if (sn.phase === 'ended' || sn.phase === 'idle') {
+      const bsSnitchEl = document.getElementById('bs-snitch');
+      if (bsSnitchEl && bsSnitchEl.classList.contains('active')) bsGoWaiting();
+    }
+
+    // Fallback — si ningún juego activo y no hay evento, mostrar waiting
     if (sortingPhase === 'waiting') {
-      const anyActive = ['bs-mimica','bs-house-quiz','bs-ruleta','bs-snitch'].some(id => {
+      const anyGameActive = ['bs-mimica','bs-house-quiz','bs-ruleta','bs-snitch'].some(id => {
         const el = document.getElementById(id);
         return el && el.classList.contains('active');
       });
-      if (!anyActive) bsGoWaiting();
+      if (!anyGameActive) bsGoWaiting();
     }
   });
 }
@@ -4612,8 +4665,10 @@ async function resetRoom() {
     lastPointsEvent: null,
     mimica: { phase: 'idle' },
     ruleta: { phase: 'idle' },
-    houseQuiz: { phase: 'idle' },
-    snitch: { phase: 'idle' }
+    houseQuiz: { phase: 'idle', votes: {}, qIdx: null, activeHouse: null },
+    snitch: { phase: 'idle' },
+    snitchLeaders: {},
+    snitchLeaderVote: { phase: 'idle', votes: {} }
   }, {merge:true});
   // Borrar jugadores en paralelo y esperar que todos terminen
   const playersSnap = await getDocs(collection(db,'rooms',currentRoom,'players'));
