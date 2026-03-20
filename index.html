@@ -1356,11 +1356,12 @@ header {
 
     <!-- Vista jugador: espera -->
     <div id="sort-player-panel" class="hidden">
-      <div class="card card-gold" style="text-align:center;padding:2rem">
-        <div style="font-size:3rem;margin-bottom:.75rem">🎩</div>
-        <div id="sort-player-house" style="font-family:'Cinzel',serif;font-size:1rem;color:var(--gold2)">
-          El organizador te llamará cuando sea tu turno
+      <div class="card card-gold" style="text-align:center;padding:2rem 1.5rem">
+        <div id="sort-player-hat" style="font-size:clamp(4rem,15vw,7rem);animation:float 3s ease-in-out infinite;filter:drop-shadow(0 0 20px rgba(201,168,76,.4))">🎩</div>
+        <div id="sort-player-house" style="font-family:'Cinzel',serif;font-size:1rem;color:var(--gold2);margin-top:.75rem">
+          Mirá la pantalla — el sombrero está eligiendo casas
         </div>
+        <div id="sort-player-tv-hint" style="font-size:.78rem;opacity:.5;margin-top:.5rem;font-family:'Cinzel',serif;letter-spacing:.05em">📺 Todo se ve en la TV</div>
       </div>
     </div>
   </div>
@@ -1886,6 +1887,7 @@ let currentHouse = null;
 let unsubscribers = [], screenUnsubs = [];
 let ptsSelectedHouse = null;
 let IS_BIGSCREEN = false, bsRoom = null, bsUnsub = null;
+let lastSortingPhase = null; // tracking para TV
 
 // ══ MODAL PROPIO ══
 let _modalResolve = null;
@@ -2535,21 +2537,39 @@ function listenSortingPlayer() {
     if (!data) return;
     const sort = data.sorting || {};
     const el = document.getElementById('sort-player-house');
-    // Verificar si este jugador ya tiene casa
+    const hatEl = document.getElementById('sort-player-hat');
+    const hintEl = document.getElementById('sort-player-tv-hint');
+    if (!el) return;
+
+    // ¿Ya tengo casa?
     const houses = data.houses || {};
     let myHouse = null;
     for (const [hk, hv] of Object.entries(houses)) {
       if ((hv.members||[]).includes(currentUser)) { myHouse = hk; break; }
     }
+
     if (myHouse) {
       const h = HOUSES[myHouse];
       currentHouse = myHouse;
       updateMenuInfo();
-      el.innerHTML = `<div class="house-reveal"><div style="font-size:3rem;margin-bottom:.5rem">${h.crest}</div><div style="font-family:'Cinzel Decorative',cursive;font-size:1.3rem;color:${h.accent}">${h.name}</div><div style="margin-top:.5rem;font-size:.85rem;opacity:.7">¡Esa es tu casa!</div></div>`;
+      if (hatEl) { hatEl.textContent = h.crest; hatEl.style.animation = 'house-reveal .6s cubic-bezier(.36,2,.6,1)'; }
+      if (hintEl) hintEl.style.display = 'none';
+      el.innerHTML = `<div style="font-family:'Cinzel Decorative',cursive;font-size:1.4rem;color:${h.accent};text-shadow:0 0 20px ${h.accent}66">${h.name}</div><div style="margin-top:.4rem;font-size:.85rem;opacity:.7">¡Esa es tu casa!</div>`;
     } else if (sort.phase === 'thinking' && sort.currentPlayer === currentUser) {
-      el.innerHTML = '<div style="font-size:2.5rem;animation:float 1s infinite">🎩</div><div style="margin-top:.5rem;font-family:\'Cinzel\',serif;font-size:.9rem">El sombrero te está seleccionando...</div>';
+      // Es mi turno
+      if (hatEl) { hatEl.textContent = '🎩'; hatEl.style.animation = 'torch-flicker .3s infinite alternate'; }
+      if (hintEl) hintEl.style.display = 'none';
+      el.innerHTML = `<div style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold)">¡Es tu turno!</div><div style="font-size:.85rem;opacity:.7;margin-top:.3rem">El sombrero te está eligiendo...</div>`;
+    } else if (sort.phase === 'thinking') {
+      // Sorteo de otro jugador
+      if (hatEl) { hatEl.textContent = '🎩'; hatEl.style.animation = 'float 3s ease-in-out infinite'; }
+      if (hintEl) hintEl.style.display = 'block';
+      el.innerHTML = `<div style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--gold2)">Eligiendo a <strong>${sort.currentPlayer||'alguien'}</strong>...</div><div style="font-size:.78rem;opacity:.5;margin-top:.3rem">📺 Mirá la pantalla</div>`;
     } else {
-      el.textContent = 'Esperando que el organizador te llame...';
+      // Waiting
+      if (hatEl) { hatEl.textContent = '🎩'; hatEl.style.animation = 'float 3s ease-in-out infinite'; }
+      if (hintEl) hintEl.style.display = 'block';
+      el.innerHTML = `<div style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--gold2)">Mirá la pantalla — el sombrero está eligiendo casas</div>`;
     }
   });
   screenUnsubs.push(unsub);
@@ -3457,6 +3477,7 @@ function bsRenderSorting(sort, houses) {
     nameEl.textContent = sort.currentPlayer||'';
     resultEl.innerHTML = '';
     if (membersEl) membersEl.innerHTML = '';
+    lastSortingPhase = 'thinking';
   } else if (sort.phase==='revealed'&&sort.revealedHouse) {
     const h = HOUSES[sort.revealedHouse];
     const isNewReveal = lastSortingPhase !== 'revealed' || sort.revealedHouse !== window._bsLastRevealedHouse;
@@ -3473,6 +3494,7 @@ function bsRenderSorting(sort, houses) {
         `<span style="background:${h.color}44;border:1px solid ${h.color}88;color:${h.accent};padding:.25rem .75rem;border-radius:20px;font-family:'Cinzel',serif;font-size:clamp(.65rem,1.5vw,.9rem);letter-spacing:.06em">${m}</span>`
       ).join('');
     }
+    lastSortingPhase = 'revealed';
     // Reproducir audio en TV cuando es una revelación nueva
     if (isNewReveal) {
       window._bsLastRevealedHouse = sort.revealedHouse;
@@ -3701,7 +3723,6 @@ function bsListen() {
   let lastEvent = null, lastCeremonyTs = 0, lastClosingTs = 0;
   // Inicializar lastPointsTs con Date.now() para ignorar eventos anteriores al conectarse
   let lastPointsTs = Date.now();
-  let lastSortingPhase = null;
 
   // Mostrar QR code
   const appUrl = window.location.origin + window.location.pathname;
