@@ -3302,8 +3302,8 @@ function snitchRunTimer(timerTs, timerSecs, timerPhase) {
         else bsTimerEl.classList.remove('timer-urgent');
       }
       if (bsLabelEl) bsLabelEl.textContent = label;
-      const bsScreen = document.getElementById('bs-snitch');
-      if (bsScreen && !bsScreen.classList.contains('active')) bsShowScreen('snitch');
+      // Siempre mostrar la pantalla de snitch cuando hay timer corriendo
+      bsShowScreen('snitch');
     }
     if (remaining <= 0) {
       clearInterval(_snitchTimerInterval); _snitchTimerInterval = null;
@@ -3846,16 +3846,32 @@ function bsListen() {
     }
 
     // ── Juegos — cada uno evalúa su propio estado ──
-
-    // Sombrero
     const sortingPhase = (data.sorting||{}).phase;
-    if (sortingPhase === 'thinking' || sortingPhase === 'revealed') {
+
+    // Sombrero THINKING: siempre toma pantalla (animación en curso)
+    if (sortingPhase === 'thinking') {
+      bsRenderSorting(data.sorting||{}, data.houses||{});
+      return;
+    }
+
+    // Verificar si hay un juego activo — tiene prioridad sobre sombrero revealed
+    const mim = data.mimica || {};
+    const rul = data.ruleta || {};
+    const hq = data.houseQuiz || {};
+    const sn = data.snitch || {};
+    const hasActiveGame = 
+      (mim.phase === 'playing' || mim.phase === 'timeout' || mim.phase === 'result') ||
+      (rul.phase === 'picked' || rul.phase === 'result') ||
+      (hq.phase === 'countdown' || hq.phase === 'voting' || hq.phase === 'revealed') ||
+      (sn.phase === 'hints' || sn.phase === 'betting' || sn.phase === 'revealed');
+
+    // Sombrero REVEALED: solo toma pantalla si no hay juego activo
+    if (sortingPhase === 'revealed' && !hasActiveGame) {
       bsRenderSorting(data.sorting||{}, data.houses||{});
       return;
     }
 
     // Mímica en TV
-    const mim = data.mimica || {};
     if (mim.phase === 'playing' || mim.phase === 'timeout' || mim.phase === 'result') {
       bsShowScreen('mimica');
       const h = HOUSES[mim.house] || {};
@@ -3930,7 +3946,6 @@ function bsListen() {
     }
 
     // Ruleta en TV
-    const rul = data.ruleta || {};
     if (rul.phase === 'picked' || rul.phase === 'result') {
       bsShowScreen('ruleta');
       const h = rul.houseKey ? HOUSES[rul.houseKey] : null;
@@ -3953,7 +3968,6 @@ function bsListen() {
     }
 
     // Duelo de Casas en TV
-    const hq = data.houseQuiz || {};
     if (hq.phase === 'countdown') {
       bsShowScreen('house-quiz');
       const h = HOUSES[hq.activeHouse] || {};
@@ -4089,28 +4103,26 @@ function bsListen() {
     // Snitch en TV
     const sn = data.snitch || {};
     if (sn.phase === 'hints' || sn.phase === 'betting' || sn.phase === 'revealed') {
-      // El timer de snitch ya maneja bsShowScreen('snitch') cuando corre
-      // Si no hay timer activo pero el juego está en curso, mostrar pantalla de snitch
-      const bsSnitchEl = document.getElementById('bs-snitch');
-      if (bsSnitchEl && !bsSnitchEl.classList.contains('active')) {
-        if (sn.phase === 'betting') {
-          bsShowScreen('snitch');
-          const bsLabelEl = document.getElementById('bs-snitch-timer-label');
-          const bsTimerEl = document.getElementById('bs-snitch-timer');
-          const bsRoundEl = document.getElementById('bs-snitch-round-label');
-          if (bsLabelEl) bsLabelEl.textContent = '🎲 APUESTAS ABIERTAS';
-          if (bsTimerEl) bsTimerEl.textContent = '⚡';
-          if (bsRoundEl) {
-            const repH = HOUSES[sn.repHouse] || {};
-            bsRoundEl.textContent = `Ronda ${sn.round||1} / 4 · ${repH.crest||''} ${repH.name||''}`;
-          }
-        } else if (sn.phase === 'revealed') {
-          bsShowScreen('snitch');
-          const bsLabelEl = document.getElementById('bs-snitch-timer-label');
-          const bsTimerEl = document.getElementById('bs-snitch-timer');
-          if (bsLabelEl) bsLabelEl.textContent = '🏆 RESULTADO';
-          const winners = sn.winners || [];
-          if (bsTimerEl) bsTimerEl.textContent = winners.length ? winners.map(hk=>HOUSES[hk]?.crest||'').join(' ') : '❌';
+      // Snitch activo — siempre mostrar y actualizar
+      bsShowScreen('snitch');
+      const bsLabelEl = document.getElementById('bs-snitch-timer-label');
+      const bsTimerEl = document.getElementById('bs-snitch-timer');
+      const bsRoundEl = document.getElementById('bs-snitch-round-label');
+      const repH = HOUSES[sn.repHouse] || {};
+      if (bsRoundEl) bsRoundEl.textContent = `Ronda ${sn.round||1} / 4 · ${repH.crest||''} ${repH.name||''}`;
+      if (sn.phase === 'hints') {
+        if (bsLabelEl) bsLabelEl.textContent = '🗣️ FASE DE PISTAS';
+        if (bsTimerEl && !_snitchTimerInterval) bsTimerEl.textContent = '⏳';
+      } else if (sn.phase === 'betting') {
+        if (bsLabelEl) bsLabelEl.textContent = '🎲 APUESTAS ABIERTAS';
+        if (bsTimerEl && !_snitchTimerInterval) bsTimerEl.textContent = '⚡';
+      } else if (sn.phase === 'revealed') {
+        if (_snitchTimerInterval) { clearInterval(_snitchTimerInterval); _snitchTimerInterval = null; }
+        if (bsLabelEl) bsLabelEl.textContent = '🏆 RESULTADO';
+        const winners = sn.winners || [];
+        if (bsTimerEl) {
+          bsTimerEl.textContent = winners.length ? winners.map(hk=>HOUSES[hk]?.crest||'').join(' ') : '❌';
+          bsTimerEl.classList.remove('timer-urgent');
         }
       }
     } else if (sn.phase === 'ended' || sn.phase === 'idle') {
