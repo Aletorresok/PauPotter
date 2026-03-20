@@ -1984,7 +1984,12 @@ async function createRoom() {
         ravenclaw:  { points: 0, members: [] }
       },
       sorting: { phase: 'waiting', currentPlayer: null, revealedHouse: null },
-      sortingAudio: {},
+      sortingAudio: {
+        gryffindor: 'https://raw.githubusercontent.com/Aletorresok/PauPotter/main/Audio/Gryffindor.mp3',
+        hufflepuff:  'https://raw.githubusercontent.com/Aletorresok/PauPotter/main/Audio/Hufflepuff.mp3',
+        ravenclaw:   'https://raw.githubusercontent.com/Aletorresok/PauPotter/main/Audio/Ravenclaw.mp3',
+        slytherin:   'https://raw.githubusercontent.com/Aletorresok/PauPotter/main/Audio/Slytherin.mp3'
+      },
       activeEvent: null,
       lastPointsEvent: null,
       houseQuiz: { phase: 'idle', votes: {}, qIdx: null, activeHouse: null },
@@ -3974,7 +3979,7 @@ function bsListen() {
           }
         }
       }
-    } else if (mim.phase === 'ended') {
+    } else if (mim.phase === 'ended' || mim.phase === 'idle') {
       if (window._bsMimInterval) { clearInterval(window._bsMimInterval); window._bsMimInterval = null; }
       const bsMimScreen = document.getElementById('bs-mimica');
       if (bsMimScreen && bsMimScreen.classList.contains('active')) bsGoWaiting();
@@ -3999,7 +4004,9 @@ function bsListen() {
         } else { bsRulResult.style.display = 'none'; }
       }
     } else if (rul.phase === 'idle') {
-      bsGoWaiting();
+      // Solo ir a waiting si la ruleta ERA la pantalla activa
+      const bsRulEl = document.getElementById('bs-ruleta');
+      if (bsRulEl && bsRulEl.classList.contains('active')) bsGoWaiting();
     }
 
     // Duelo de Casas en TV
@@ -4046,6 +4053,12 @@ function bsListen() {
       if (window._hqCdInterval) { clearInterval(window._hqCdInterval); window._hqCdInterval=null; }
       bsShowScreen('house-quiz');
       const h = HOUSES[hq.activeHouse] || {};
+
+      // Resetear dataset si es pregunta nueva
+      const bsHqResult = document.getElementById('bs-hq-result');
+      if (bsHqResult && hq.phase === 'voting') {
+        bsHqResult.dataset.revealedIdx = '';
+      }
 
       // Header
       const houseEl = document.getElementById('bs-hq-house');
@@ -4135,7 +4148,10 @@ function bsListen() {
           resultEl.dataset.revealedIdx = '';
         }
       }
-    } else if (hq.phase === 'ended' || hq.phase === 'idle' || !hq.phase) {
+    } else if (hq.phase === 'ended') {
+      if (window._hqCdInterval) { clearInterval(window._hqCdInterval); window._hqCdInterval=null; }
+      bsGoWaiting(); // siempre ir a waiting al terminar el duelo
+    } else if (hq.phase === 'idle' || !hq.phase) {
       const bsHQ = document.getElementById('bs-house-quiz');
       if (bsHQ && bsHQ.classList.contains('active')) bsGoWaiting();
     }
