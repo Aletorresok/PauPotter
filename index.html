@@ -4402,8 +4402,19 @@ function hqListenPlayer() {
 
     if (hq.phase==='ended') { waiting.classList.remove('hidden'); waiting.innerHTML=`<div style="font-size:2rem">⚡</div><div style="font-family:'Cinzel',serif;font-weight:700;margin-top:.5rem">¡Duelo terminado!</div>`; return; }
     if (!hq.phase||hq.phase==='idle') { waiting.classList.remove('hidden'); return; }
-    // Jugador sin casa
-    if (!currentHouse) {
+
+    // Leer casa del jugador directo del snapshot — evita race condition con listenHouses
+    const houses = data.houses || {};
+    let myHouseFromSnap = currentHouse; // fallback al global
+    for (const [hk, hv] of Object.entries(houses)) {
+      if ((hv.members||[]).includes(currentUser)) {
+        myHouseFromSnap = hk;
+        if (!currentHouse) { currentHouse = hk; updateMenuInfo(); } // actualizar global si no estaba
+        break;
+      }
+    }
+
+    if (!myHouseFromSnap) {
       waiting.classList.remove('hidden');
       waiting.innerHTML = `<div style="font-size:2rem">🎩</div><div style="font-family:'Cinzel',serif;font-weight:700;margin-top:.5rem">Primero pasá por el Sombrero Seleccionador</div>`;
       return;
@@ -4411,7 +4422,7 @@ function hqListenPlayer() {
 
     const activeHouse = hq.activeHouse;
     const h = HOUSES[activeHouse]||{};
-    const isMyTurn = currentHouse === activeHouse;
+    const isMyTurn = myHouseFromSnap === activeHouse;
 
     if (hq.phase==='countdown') {
       // Todos ven pantalla de preparación — atención a la TV
@@ -4939,12 +4950,14 @@ function mimListenPlayer() {
 // ══════════════════════════════════════════
 let rulMode = 'casa'; // 'casa' | 'jugador'
 let rulLastResult = null;
+let rulHousePool = []; // pool de casas restantes para sortear
 
 function initRuletaScreen() {
   document.getElementById('rul-org').classList.toggle('hidden', !isOrganizer);
   document.getElementById('rul-player').classList.toggle('hidden', isOrganizer);
   document.getElementById('rul-result').classList.add('hidden');
-  // Resetear phase al entrar para que jugadores no vean estado viejo
+  rulHousePool = [...HOUSE_KEYS]; // resetear pool al entrar
+  rulRenderPool();
   if (isOrganizer && db && currentRoom) {
     const {doc, setDoc} = fsH;
     setDoc(doc(db,'rooms',currentRoom), { ruleta: { phase: 'idle' } }, {merge:true});
@@ -4952,10 +4965,31 @@ function initRuletaScreen() {
   if (!isOrganizer) rulListenPlayer();
 }
 
+function rulRenderPool() {
+  const el = document.getElementById('rul-pool-display');
+  if (!el) return;
+  if (rulMode !== 'casa') { el.style.display = 'none'; return; }
+  el.style.display = 'flex';
+  el.innerHTML = '';
+  HOUSE_KEYS.forEach(hk => {
+    const h = HOUSES[hk];
+    const inPool = rulHousePool.includes(hk);
+    const chip = document.createElement('span');
+    chip.style.cssText = `padding:.25rem .6rem;border-radius:20px;font-family:'Cinzel',serif;font-size:.72rem;
+      border:1px solid ${inPool ? h.color+'aa' : 'rgba(255,255,255,.12)'};
+      background:${inPool ? h.color+'33' : 'transparent'};
+      color:${inPool ? h.accent : 'rgba(255,255,255,.3)'};
+      transition:all .3s;`;
+    chip.textContent = h.crest + ' ' + h.name;
+    el.appendChild(chip);
+  });
+}
+
 function rulSetMode(mode, btn) {
   rulMode = mode;
   document.querySelectorAll('.rul-mode-btn').forEach(b => b.classList.remove('selected-rul'));
   btn.classList.add('selected-rul');
+  rulRenderPool();
 }
 
 async function rulSpin() {
@@ -4970,7 +5004,16 @@ async function rulSpin() {
   // Elegir resultado
   let icon, name, houseKey;
   if (rulMode === 'casa') {
-    houseKey = HOUSE_KEYS[Math.floor(Math.random() * HOUSE_KEYS.length)];
+    // Usar pool — si se agotó, reiniciarlo
+    if (!rulHousePool.length) {
+      rulHousePool = [...HOUSE_KEYS];
+      showToast('🔄 Pool reiniciado — todas las casas disponibles');
+    }
+    // Shuffle y sacar del pool
+    const idx = Math.floor(Math.random() * rulHousePool.length);
+    houseKey = rulHousePool[idx];
+    rulHousePool.splice(idx, 1);
+    rulRenderPool();
     const h = HOUSES[houseKey];
     icon = h.crest;
     name = h.name;
