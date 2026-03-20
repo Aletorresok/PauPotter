@@ -1159,6 +1159,13 @@ header {
       <div id="bs-imp-sub" style="font-family:'Cinzel',serif;font-size:clamp(.9rem,2.5vw,1.5rem);color:var(--gold2);opacity:.8"></div>
     </div>
 
+    <!-- IMPOSTOR TV -->
+    <div class="bs-screen" id="bs-impostor" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+      <div style="font-size:clamp(4rem,12vw,8rem);margin-bottom:1rem">🕵️</div>
+      <div id="bs-imp-label" style="font-family:'Cinzel Decorative',cursive;font-size:clamp(1.5rem,4vw,3rem);color:var(--gold);margin-bottom:.75rem"></div>
+      <div id="bs-imp-sub" style="font-family:'Cinzel',serif;font-size:clamp(.9rem,2.5vw,1.5rem);color:var(--gold2);opacity:.85"></div>
+    </div>
+
     <!-- CIERRE -->
     <div class="bs-screen" id="bs-closing">
       <div id="bs-closing-content" style="width:100%"></div>
@@ -4352,9 +4359,32 @@ function bsListen() {
       if (bsImpEl && bsImpEl.classList.contains('active')) bsGoWaiting();
     }
 
+    // Impostor en TV
+    const imp = data.impostor || {};
+    if (imp.phase === 'voting') {
+      bsShowScreen('impostor');
+      document.getElementById('bs-imp-label').textContent = '🗳️ VOTÁ EN TU CELULAR';
+      document.getElementById('bs-imp-label').style.color = 'var(--gold)';
+      document.getElementById('bs-imp-sub').textContent = '';
+    } else if (imp.phase === 'round-result' || imp.phase === 'ended') {
+      bsShowScreen('impostor');
+      const wasMort = imp.lastWasMort;
+      const name = imp.lastEliminated || '?';
+      document.getElementById('bs-imp-label').textContent = name;
+      document.getElementById('bs-imp-label').style.color = wasMort ? '#c9a84c' : 'var(--gold2)';
+      document.getElementById('bs-imp-sub').textContent = wasMort ? '🐍 ¡Era un Mortífago!' : '😅 No era Mortífago...';
+      if (imp.phase === 'ended') {
+        const winLine = imp.winnerSide === 'aurores' ? '⚡ ¡Los Aurores ganaron! +15 pts' : '🐍 ¡Los Mortífagos ganaron! +50 pts';
+        document.getElementById('bs-imp-sub').textContent += '  ·  ' + winLine;
+      }
+    } else if (imp.phase === 'idle' || !imp.phase) {
+      const bsImpEl = document.getElementById('bs-impostor');
+      if (bsImpEl && bsImpEl.classList.contains('active')) bsGoWaiting();
+    }
+
     // Fallback — si ningún juego activo y no hay evento, mostrar waiting
     if (sortingPhase === 'waiting') {
-      const anyGameActive = ['bs-mimica','bs-house-quiz','bs-ruleta','bs-snitch'].some(id => {
+      const anyGameActive = ['bs-mimica','bs-house-quiz','bs-ruleta','bs-snitch','bs-impostor'].some(id => {
         const el = document.getElementById(id);
         return el && el.classList.contains('active');
       });
@@ -4698,7 +4728,7 @@ function impListenPlayer() {
         active.filter(p => p !== currentUser).forEach(p => {
           const b = document.createElement('button');
           b.className = 'btn btn-ghost';
-          b.style.cssText = 'width:100%;margin-top:0;font-family:'Cinzel',serif';
+          b.style.cssText = "width:100%;margin-top:0;font-family:'Cinzel',serif";
           b.textContent = '🕵️ ' + p;
           b.onclick = () => impPlayerVote(p);
           btnsEl.appendChild(b);
