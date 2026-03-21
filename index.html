@@ -1561,48 +1561,182 @@ header {
     <button class="back-btn" onclick="goHome()">← Volver</button>
     <div class="stitle">🌀 El Rosco de Dumbledore</div>
 
-    <!-- ORG: Setup -->
+    <!-- ORG -->
     <div id="rosc-org" class="hidden">
-      <div class="card card-gold" style="margin-bottom:.75rem">
-        <div style="font-family:'Cinzel',serif;font-size:.78rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.75rem">⚙️ CONFIGURACIÓN</div>
-        <div class="ilabel">Tiempo por letra (segundos)</div>
-        <div style="display:flex;gap:.5rem;margin-bottom:.75rem" id="rosc-timer-btns">
-          <button class="btn btn-ghost" onclick="roscSetTimer(20,this)" style="flex:1;padding:.5rem;margin-top:0">20s</button>
-          <button class="btn btn-ghost" onclick="roscSetTimer(30,this)" style="flex:1;padding:.5rem;margin-top:0;background:linear-gradient(135deg,var(--grif),#c9a84c);color:white">30s</button>
-          <button class="btn btn-ghost" onclick="roscSetTimer(45,this)" style="flex:1;padding:.5rem;margin-top:0">45s</button>
-          <button class="btn btn-ghost" onclick="roscSetTimer(60,this)" style="flex:1;padding:.5rem;margin-top:0">60s</button>
+
+      <!-- Setup: cargar preguntas -->
+      <div id="rosc-setup">
+        <div class="card card-gold" style="margin-bottom:.75rem">
+          <div style="font-family:'Cinzel',serif;font-size:.78rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.5rem">⚙️ CONFIGURACIÓN</div>
+          <div class="ilabel">Tiempo por letra (segundos)</div>
+          <div style="display:flex;gap:.5rem;margin-bottom:.75rem" id="rosc-timer-btns">
+            <button class="btn btn-ghost" onclick="roscSetTimer(20,this)" style="flex:1;padding:.5rem;margin-top:0">20s</button>
+            <button class="btn btn-ghost" onclick="roscSetTimer(30,this)" style="flex:1;padding:.5rem;margin-top:0;background:linear-gradient(135deg,var(--grif),#c9a84c);color:white">30s</button>
+            <button class="btn btn-ghost" onclick="roscSetTimer(45,this)" style="flex:1;padding:.5rem;margin-top:0">45s</button>
+            <button class="btn btn-ghost" onclick="roscSetTimer(60,this)" style="flex:1;padding:.5rem;margin-top:0">60s</button>
+          </div>
         </div>
-        <div class="ilabel">Cargar preguntas (JSON)</div>
-        <textarea class="ifield" id="rosc-json-input" rows="4" placeholder='[{"l":"A","q":"Con esta letra empieza el apellido del director de Hogwarts","ans":"Albus"}]' style="font-size:.75rem;font-family:monospace;resize:vertical"></textarea>
-        <button class="btn btn-gold" onclick="roscLoadJson()" style="margin-top:.5rem">📥 Cargar preguntas</button>
-        <div id="rosc-load-status" style="font-size:.78rem;margin-top:.35rem;opacity:.7"></div>
+        <div class="card card-gold" style="margin-bottom:.75rem">
+          <div style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold2);letter-spacing:.08em;margin-bottom:.5rem">📝 PREGUNTAS POR LETRA</div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;margin-bottom:.4rem">
+            <div></div>
+            <div style="font-size:.65rem;opacity:.5;font-family:'Cinzel',serif;text-align:center">Pista</div>
+            <div style="font-size:.65rem;opacity:.5;font-family:'Cinzel',serif;text-align:center">Respuesta</div>
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">A</div>
+            <input class="ifield" id="rosc-q-A" placeholder="Pista para A..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-A" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">B</div>
+            <input class="ifield" id="rosc-q-B" placeholder="Pista para B..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-B" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">C</div>
+            <input class="ifield" id="rosc-q-C" placeholder="Pista para C..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-C" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">D</div>
+            <input class="ifield" id="rosc-q-D" placeholder="Pista para D..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-D" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">E</div>
+            <input class="ifield" id="rosc-q-E" placeholder="Pista para E..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-E" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">F</div>
+            <input class="ifield" id="rosc-q-F" placeholder="Pista para F..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-F" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">G</div>
+            <input class="ifield" id="rosc-q-G" placeholder="Pista para G..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-G" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">H</div>
+            <input class="ifield" id="rosc-q-H" placeholder="Pista para H..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-H" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">I</div>
+            <input class="ifield" id="rosc-q-I" placeholder="Pista para I..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-I" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">J</div>
+            <input class="ifield" id="rosc-q-J" placeholder="Pista para J..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-J" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">K</div>
+            <input class="ifield" id="rosc-q-K" placeholder="Pista para K..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-K" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">L</div>
+            <input class="ifield" id="rosc-q-L" placeholder="Pista para L..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-L" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">M</div>
+            <input class="ifield" id="rosc-q-M" placeholder="Pista para M..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-M" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">N</div>
+            <input class="ifield" id="rosc-q-N" placeholder="Pista para N..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-N" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">O</div>
+            <input class="ifield" id="rosc-q-O" placeholder="Pista para O..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-O" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">P</div>
+            <input class="ifield" id="rosc-q-P" placeholder="Pista para P..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-P" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">Q</div>
+            <input class="ifield" id="rosc-q-Q" placeholder="Pista para Q..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-Q" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">R</div>
+            <input class="ifield" id="rosc-q-R" placeholder="Pista para R..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-R" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">S</div>
+            <input class="ifield" id="rosc-q-S" placeholder="Pista para S..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-S" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">T</div>
+            <input class="ifield" id="rosc-q-T" placeholder="Pista para T..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-T" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">U</div>
+            <input class="ifield" id="rosc-q-U" placeholder="Pista para U..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-U" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">V</div>
+            <input class="ifield" id="rosc-q-V" placeholder="Pista para V..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-V" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">W</div>
+            <input class="ifield" id="rosc-q-W" placeholder="Pista para W..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-W" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">X</div>
+            <input class="ifield" id="rosc-q-X" placeholder="Pista para X..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-X" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">Y</div>
+            <input class="ifield" id="rosc-q-Y" placeholder="Pista para Y..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-Y" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+            <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">Z</div>
+            <input class="ifield" id="rosc-q-Z" placeholder="Pista para Z..." style="font-size:.72rem;padding:.35rem .6rem">
+            <input class="ifield" id="rosc-a-Z" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+          </div>
+          <div id="rosc-load-status" style="font-size:.78rem;margin-top:.35rem;opacity:.7;text-align:center"></div>
+        </div>
+        <button class="btn btn-gold" onclick="roscStartGame()" id="rosc-start-btn">🌀 Iniciar Rosco</button>
       </div>
 
-      <!-- Ring preview + controls -->
+      <!-- Game panel -->
       <div id="rosc-game-panel" class="hidden">
         <div class="card card-gold" style="margin-bottom:.75rem;text-align:center">
-          <!-- Rosco ring -->
           <div id="rosc-ring-org" style="position:relative;width:min(280px,80vw);height:min(280px,80vw);margin:0 auto .75rem"></div>
-          <!-- Current letter -->
-          <div id="rosc-org-letter" style="font-family:'Cinzel Decorative',cursive;font-size:2rem;color:var(--gold);margin-bottom:.25rem"></div>
-          <div id="rosc-org-clue" style="font-family:'EB Garamond',serif;font-size:1rem;line-height:1.5;margin-bottom:.5rem;min-height:2.5rem"></div>
-          <div id="rosc-org-answer" class="hidden" style="font-family:'Cinzel Decorative',cursive;font-size:1.3rem;color:#a0d4a0;margin-bottom:.5rem"></div>
-          <!-- Timer -->
+          <div style="display:flex;align-items:center;gap:.5rem;justify-content:center;margin-bottom:.5rem">
+            <div id="rosc-org-letter" style="font-family:'Cinzel Decorative',cursive;font-size:2.5rem;color:var(--gold)"></div>
+          </div>
+          <div id="rosc-org-clue" style="font-family:'EB Garamond',serif;font-size:1rem;line-height:1.5;margin-bottom:.35rem;min-height:2rem"></div>
+          <div id="rosc-org-answer" style="font-family:'Cinzel',serif;font-size:.82rem;color:var(--gold);background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:.3rem .7rem;margin-bottom:.5rem;display:inline-block"></div>
           <div id="rosc-org-timer" style="font-family:'Cinzel Decorative',cursive;font-size:2.5rem;color:var(--gold);margin-bottom:.5rem"></div>
-          <!-- Counts -->
           <div id="rosc-org-counts" style="font-family:'Cinzel',serif;font-size:.78rem;opacity:.7;margin-bottom:.75rem"></div>
-          <!-- Buttons -->
-          <div style="display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center">
+          <div style="display:flex;gap:.4rem;justify-content:center">
             <button class="btn" onclick="roscCorrect()" style="background:linear-gradient(135deg,#1a4a2a,#2d7a4a);color:#a0d4a0;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;padding:.5rem 1rem;margin-top:0">✓ Correcto</button>
             <button class="btn" onclick="roscWrong()" style="background:linear-gradient(135deg,#4a1a1a,#7a2d2d);color:#d4a0a0;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;padding:.5rem 1rem;margin-top:0">✗ Incorrecto</button>
             <button class="btn btn-ghost" onclick="roscPass()" style="padding:.5rem 1rem;margin-top:0;font-size:.82rem">⏭ Pasar</button>
           </div>
-          <button class="btn btn-ghost" onclick="roscRevealAnswer()" style="margin-top:.4rem;font-size:.78rem">👁 Revelar respuesta</button>
         </div>
         <button class="btn btn-ghost" onclick="roscEndGame()" style="font-size:.78rem;margin-top:0">✕ Terminar rosco</button>
       </div>
-
-      <button class="btn btn-gold" onclick="roscStartGame()" id="rosc-start-btn" style="margin-top:0">🌀 Iniciar Rosco</button>
     </div>
 
     <!-- PLAYER view -->
@@ -1614,6 +1748,7 @@ header {
       </div>
     </div>
   </div>
+
   <!-- ══ HISTORIAL DE PUNTOS ══ -->
   <div id="screen-pts-log" class="screen">
     <button class="back-btn" onclick="goHome()">← Volver</button>
@@ -4821,6 +4956,13 @@ function impListenPlayer() {
         btnsEl.innerHTML = '';
         sentEl.classList.remove('hidden');
       } else {
+        // Verificar si el jugador fue eliminado
+        const isEliminated = (imp.eliminated || []).includes(currentUser);
+        if (isEliminated) {
+          btnsEl.innerHTML = '<div style="text-align:center;padding:1rem;opacity:.6;font-family:'Cinzel',serif;font-size:.85rem">Fuiste eliminado — no podés votar</div>';
+          sentEl.classList.add('hidden');
+          return;
+        }
         sentEl.classList.add('hidden');
         const active = imp.activePlayers || [];
         btnsEl.innerHTML = '';
@@ -6166,25 +6308,39 @@ function roscUpdateCounts() {
 }
 
 function roscStartGame() {
-  if (!roscDefs.length) { showToast('⚠️ Cargá las preguntas primero'); return; }
-  roscCurrentIdx = 0;
+  // Leer preguntas desde los inputs por letra
+  roscDefs = [];
+  roscLetters = [];
+  for (const l of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') {
+    const qEl = document.getElementById('rosc-q-' + l);
+    const aEl = document.getElementById('rosc-a-' + l);
+    if (qEl && aEl && qEl.value.trim() && aEl.value.trim()) {
+      roscDefs.push({ l, q: qEl.value.trim(), ans: aEl.value.trim() });
+      roscLetters.push(l);
+    }
+  }
+  if (roscDefs.length < 2) { showToast('⚠️ Cargá al menos 2 preguntas'); return; }
+  roscState = {};
   roscLetters.forEach(l => { roscState[l] = 'pending'; });
-  document.getElementById('rosc-start-btn').style.display = 'none';
+  roscCurrentIdx = 0;
+  document.getElementById('rosc-setup').classList.add('hidden');
   document.getElementById('rosc-game-panel').classList.remove('hidden');
   roscShowCurrent();
+  const statusEl = document.getElementById('rosc-load-status');
+  if (statusEl) { statusEl.textContent = `✓ ${roscDefs.length} letras cargadas`; statusEl.style.color = '#a0d4a0'; }
 }
 
 function roscEndGame() {
   if (roscTimerInterval) { clearInterval(roscTimerInterval); roscTimerInterval = null; }
-  const c = roscGetCounts();
+  const counts = roscGetCounts();
   if (db) {
     const {doc, setDoc} = fsH;
-    setDoc(doc(db,'rooms',currentRoom), { rosco: { phase: 'ended', states: roscState, counts: c } }, {merge:true});
+    setDoc(doc(db,'rooms',currentRoom), { rosco: { phase: 'ended', states: roscState, counts } }, {merge:true});
   }
-  showToast(`🌀 Rosco terminado — ✓${c.correct} ✗${c.wrong} ⏭${c.passed}`);
+  showToast(`🌀 Rosco terminado — ✓${counts.correct} ✗${counts.wrong} ⏭${counts.passed}`);
   confetti();
   document.getElementById('rosc-game-panel').classList.add('hidden');
-  document.getElementById('rosc-start-btn').style.display = 'block';
+  document.getElementById('rosc-setup').classList.remove('hidden');
 }
 
 // TV: rosco screen
