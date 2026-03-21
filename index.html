@@ -1156,10 +1156,12 @@ header {
 
     <!-- ROSCO TV -->
     <div class="bs-screen" id="bs-rosco" style="text-align:center">
-      <div id="bs-rosc-ring" style="position:relative;width:min(400px,80vw);height:min(400px,80vw);margin:0 auto 1rem"></div>
-      <div id="bs-rosc-letter" style="font-family:'Cinzel Decorative',cursive;font-size:clamp(2rem,6vw,4rem);color:var(--gold);margin-bottom:.5rem"></div>
-      <div id="bs-rosc-clue" style="font-family:'EB Garamond',serif;font-size:clamp(1rem,2.5vw,1.5rem);line-height:1.5;max-width:600px;margin:0 auto .75rem"></div>
-      <div id="bs-rosc-answer" style="display:none;font-family:'Cinzel Decorative',cursive;font-size:clamp(1.2rem,3vw,2rem);color:#a0d4a0;margin-bottom:.5rem"></div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:2rem;margin-bottom:.5rem">
+        <div id="bs-rosc-letter" style="font-family:'Cinzel Decorative',cursive;font-size:clamp(3rem,8vw,6rem);color:var(--gold)"></div>
+        <div id="bs-rosc-timer" style="font-family:'Cinzel Decorative',cursive;font-size:clamp(2.5rem,7vw,5rem);color:var(--gold);min-width:2ch;text-align:center"></div>
+      </div>
+      <div id="bs-rosc-clue" style="font-family:'EB Garamond',serif;font-size:clamp(1rem,2.5vw,1.6rem);line-height:1.5;max-width:700px;margin:0 auto .75rem"></div>
+      <div id="bs-rosc-ring" style="position:relative;width:min(360px,75vw);height:min(360px,75vw);margin:0 auto .75rem"></div>
       <div id="bs-rosc-counts" style="font-family:'Cinzel',serif;font-size:clamp(.8rem,1.8vw,1.1rem);opacity:.7"></div>
     </div>
 
@@ -1172,10 +1174,12 @@ header {
 
     <!-- ROSCO TV -->
     <div class="bs-screen" id="bs-rosco" style="text-align:center">
-      <div id="bs-rosc-ring" style="position:relative;width:min(400px,80vw);height:min(400px,80vw);margin:0 auto 1rem"></div>
-      <div id="bs-rosc-letter" style="font-family:'Cinzel Decorative',cursive;font-size:clamp(2rem,6vw,4rem);color:var(--gold);margin-bottom:.5rem"></div>
-      <div id="bs-rosc-clue" style="font-family:'EB Garamond',serif;font-size:clamp(1rem,2.5vw,1.5rem);line-height:1.5;max-width:600px;margin:0 auto .75rem"></div>
-      <div id="bs-rosc-answer" style="display:none;font-family:'Cinzel Decorative',cursive;font-size:clamp(1.2rem,3vw,2rem);color:#a0d4a0;margin-bottom:.5rem"></div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:2rem;margin-bottom:.5rem">
+        <div id="bs-rosc-letter" style="font-family:'Cinzel Decorative',cursive;font-size:clamp(3rem,8vw,6rem);color:var(--gold)"></div>
+        <div id="bs-rosc-timer" style="font-family:'Cinzel Decorative',cursive;font-size:clamp(2.5rem,7vw,5rem);color:var(--gold);min-width:2ch;text-align:center"></div>
+      </div>
+      <div id="bs-rosc-clue" style="font-family:'EB Garamond',serif;font-size:clamp(1rem,2.5vw,1.6rem);line-height:1.5;max-width:700px;margin:0 auto .75rem"></div>
+      <div id="bs-rosc-ring" style="position:relative;width:min(360px,75vw);height:min(360px,75vw);margin:0 auto .75rem"></div>
       <div id="bs-rosc-counts" style="font-family:'Cinzel',serif;font-size:clamp(.8rem,1.8vw,1.1rem);opacity:.7"></div>
     </div>
 
@@ -1721,19 +1725,14 @@ header {
       <!-- Game panel -->
       <div id="rosc-game-panel" class="hidden">
         <div class="card card-gold" style="margin-bottom:.75rem;text-align:center">
-          <div id="rosc-ring-org" style="position:relative;width:min(280px,80vw);height:min(280px,80vw);margin:0 auto .75rem"></div>
-          <div style="display:flex;align-items:center;gap:.5rem;justify-content:center;margin-bottom:.5rem">
+          <div id="rosc-ring-org" style="position:relative;width:min(260px,75vw);height:min(260px,75vw);margin:0 auto .5rem"></div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-bottom:.5rem">
             <div id="rosc-org-letter" style="font-family:'Cinzel Decorative',cursive;font-size:2.5rem;color:var(--gold)"></div>
+            <div id="rosc-org-timer" style="font-family:'Cinzel Decorative',cursive;font-size:2.5rem;color:var(--gold);min-width:2ch"></div>
           </div>
-          <div id="rosc-org-clue" style="font-family:'EB Garamond',serif;font-size:1rem;line-height:1.5;margin-bottom:.35rem;min-height:2rem"></div>
-          <div id="rosc-org-answer" style="font-family:'Cinzel',serif;font-size:.82rem;color:var(--gold);background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:.3rem .7rem;margin-bottom:.5rem;display:inline-block"></div>
-          <div id="rosc-org-timer" style="font-family:'Cinzel Decorative',cursive;font-size:2.5rem;color:var(--gold);margin-bottom:.5rem"></div>
-          <div id="rosc-org-counts" style="font-family:'Cinzel',serif;font-size:.78rem;opacity:.7;margin-bottom:.75rem"></div>
-          <div style="display:flex;gap:.4rem;justify-content:center">
-            <button class="btn" onclick="roscCorrect()" style="background:linear-gradient(135deg,#1a4a2a,#2d7a4a);color:#a0d4a0;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;padding:.5rem 1rem;margin-top:0">✓ Correcto</button>
-            <button class="btn" onclick="roscWrong()" style="background:linear-gradient(135deg,#4a1a1a,#7a2d2d);color:#d4a0a0;border:none;border-radius:12px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;padding:.5rem 1rem;margin-top:0">✗ Incorrecto</button>
-            <button class="btn btn-ghost" onclick="roscPass()" style="padding:.5rem 1rem;margin-top:0;font-size:.82rem">⏭ Pasar</button>
-          </div>
+          <div id="rosc-org-clue" style="font-family:'EB Garamond',serif;font-size:1rem;line-height:1.5;margin-bottom:.35rem"></div>
+          <div id="rosc-org-answer" style="font-family:'Cinzel',serif;font-size:.82rem;color:var(--gold);background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:.3rem .7rem;display:inline-block"></div>
+          <div id="rosc-org-counts" style="font-family:'Cinzel',serif;font-size:.75rem;opacity:.6;margin-top:.5rem"></div>
         </div>
         <button class="btn btn-ghost" onclick="roscEndGame()" style="font-size:.78rem;margin-top:0">✕ Terminar rosco</button>
       </div>
@@ -1741,10 +1740,31 @@ header {
 
     <!-- PLAYER view -->
     <div id="rosc-player" class="hidden">
-      <div class="card card-gold" style="text-align:center;padding:2rem">
+      <!-- Waiting -->
+      <div id="rosc-player-waiting" style="text-align:center;padding:2.5rem">
         <div style="font-size:3rem;margin-bottom:.75rem">🌀</div>
-        <div style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--gold2)">El organizador está conduciendo el Rosco</div>
-        <div style="font-size:.82rem;opacity:.5;margin-top:.5rem">📺 Mirá la pantalla</div>
+        <div style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--gold2)">Esperando que arranque el Rosco...</div>
+      </div>
+      <!-- Playing -->
+      <div id="rosc-player-game" class="hidden">
+        <div class="card card-gold" style="text-align:center;padding:1.5rem 1rem">
+          <div style="display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-bottom:.5rem">
+            <div id="rosc-player-letter" style="font-family:'Cinzel Decorative',cursive;font-size:4rem;color:var(--gold);line-height:1;text-shadow:0 0 30px rgba(201,168,76,.5)"></div>
+            <div id="rosc-player-timer" style="font-family:'Cinzel Decorative',cursive;font-size:3rem;color:var(--gold);line-height:1;min-width:2ch"></div>
+          </div>
+          <div id="rosc-player-progress" style="font-family:'Cinzel',serif;font-size:.72rem;opacity:.5;margin-bottom:.75rem"></div>
+          <input id="rosc-player-input" class="ifield" placeholder="Tu respuesta..." style="font-size:1.2rem;text-align:center;padding:.75rem;letter-spacing:.05em" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter')roscPlayerSubmit()">
+          <button class="btn btn-gold" onclick="roscPlayerSubmit()" style="margin-top:.5rem;width:100%">✓ Responder</button>
+          <div id="rosc-player-sent" class="hidden" style="font-family:'Cinzel',serif;font-size:.85rem;color:var(--gold);margin-top:.5rem">✓ Respuesta enviada</div>
+        </div>
+      </div>
+      <!-- Ended -->
+      <div id="rosc-player-end" class="hidden">
+        <div class="card card-gold" style="text-align:center;padding:2rem">
+          <div style="font-size:3rem;margin-bottom:.5rem">🌀</div>
+          <div style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--gold2);margin-bottom:.5rem">¡Rosco terminado!</div>
+          <div id="rosc-player-final-pts" style="font-family:'Cinzel Decorative',cursive;font-size:2rem;color:var(--gold)"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -6125,17 +6145,20 @@ function rulListenPlayer() {
 }
 
 // ══ EL ROSCO DE DUMBLEDORE ══
-let roscDefs = []; // [{l, q, ans}]
+let roscDefs = [];
 let roscTimer = 30;
 let roscCurrentIdx = 0;
-let roscState = {}; // {A: 'pending'|'correct'|'wrong'|'passed'}
+let roscState = {};
 let roscTimerInterval = null;
-let roscTimeLeft = 0;
 let roscLetters = [];
+
+const ROSC_PTS_CORRECT = 5;
+const ROSC_PTS_WRONG = -2;
 
 function initRoscoScreen() {
   document.getElementById('rosc-org').classList.toggle('hidden', !isOrganizer);
   document.getElementById('rosc-player').classList.toggle('hidden', isOrganizer);
+  if (!isOrganizer) roscListenPlayer();
 }
 
 function roscSetTimer(secs, btn) {
@@ -6148,23 +6171,121 @@ function roscSetTimer(secs, btn) {
   btn.style.color = 'white';
 }
 
-function roscLoadJson() {
-  const raw = document.getElementById('rosc-json-input').value.trim();
-  const statusEl = document.getElementById('rosc-load-status');
-  try {
-    const data = JSON.parse(raw);
-    if (!Array.isArray(data) || !data.length) throw new Error('Array vacío');
-    roscDefs = data.map(d => ({ l: (d.l||'').toUpperCase(), q: d.q||'', ans: d.ans||'' }));
-    roscLetters = roscDefs.map(d => d.l);
-    roscState = {};
-    roscLetters.forEach(l => { roscState[l] = 'pending'; });
-    statusEl.textContent = `✓ ${roscDefs.length} preguntas cargadas`;
-    statusEl.style.color = '#a0d4a0';
-    roscBuildRing('rosc-ring-org');
-  } catch(e) {
-    statusEl.textContent = '⚠️ JSON inválido: ' + e.message;
-    statusEl.style.color = '#ffa0a0';
+function roscStartGame() {
+  roscDefs = [];
+  roscLetters = [];
+  for (const l of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') {
+    const qEl = document.getElementById('rosc-q-' + l);
+    const aEl = document.getElementById('rosc-a-' + l);
+    if (qEl && aEl && qEl.value.trim() && aEl.value.trim()) {
+      roscDefs.push({ l, q: qEl.value.trim(), ans: aEl.value.trim().toUpperCase() });
+      roscLetters.push(l);
+    }
   }
+  if (roscDefs.length < 2) { showToast('⚠️ Cargá al menos 2 preguntas'); return; }
+  roscState = {};
+  roscLetters.forEach(l => { roscState[l] = 'pending'; });
+  roscCurrentIdx = 0;
+  document.getElementById('rosc-setup').classList.add('hidden');
+  document.getElementById('rosc-game-panel').classList.remove('hidden');
+  roscShowCurrent();
+}
+
+async function roscShowCurrent() {
+  if (roscCurrentIdx >= roscLetters.length) { roscEndGame(); return; }
+  const l = roscLetters[roscCurrentIdx];
+  const def = roscDefs.find(d => d.l === l);
+  if (!def) return;
+  const timerTs = Date.now();
+
+  // Update org display
+  document.getElementById('rosc-org-letter').textContent = l;
+  document.getElementById('rosc-org-clue').textContent = def.q;
+  document.getElementById('rosc-org-answer').textContent = '🔑 ' + def.ans;
+  roscBuildRing('rosc-ring-org');
+  roscUpdateCounts();
+
+  // Publish to Firebase
+  if (db) {
+    const {doc, setDoc} = fsH;
+    await setDoc(doc(db,'rooms',currentRoom), {
+      rosco: {
+        phase: 'playing',
+        letter: l,
+        q: def.q,
+        timerSecs: roscTimer,
+        timerTs,
+        states: roscState,
+        counts: roscGetCounts(),
+        playerAnswers: {}
+      }
+    }, {merge:true});
+  }
+
+  // Start org timer display
+  if (roscTimerInterval) clearInterval(roscTimerInterval);
+  let timeLeft = roscTimer;
+  const timerEl = document.getElementById('rosc-org-timer');
+  const tick = async () => {
+    if (timerEl) {
+      timerEl.textContent = timeLeft;
+      timerEl.style.color = timeLeft <= 5 ? '#ff6b6b' : 'var(--gold)';
+    }
+    if (timeLeft <= 0) {
+      clearInterval(roscTimerInterval);
+      roscTimerInterval = null;
+      // Score players and move on
+      await roscScoreLetter(l);
+      roscState[l] = 'done';
+      roscCurrentIdx++;
+      roscShowCurrent();
+    }
+    timeLeft--;
+  };
+  tick();
+  roscTimerInterval = setInterval(tick, 1000);
+}
+
+async function roscScoreLetter(letter) {
+  if (!db) return;
+  const {doc, getDoc, updateDoc} = fsH;
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const data = snap.data() || {};
+  const playerAnswers = data.rosco?.playerAnswers || {};
+  const def = roscDefs.find(d => d.l === letter);
+  if (!def) return;
+
+  // Get all active players
+  const {collection, getDocs} = fsH;
+  const playersSnap = await getDocs(collection(db,'rooms',currentRoom,'players'));
+  const allPlayers = playersSnap.docs.map(d=>d.data().name)
+    .filter(n => !n.endsWith('-TV') && n !== currentUser);
+
+  const updates = {};
+  for (const player of allPlayers) {
+    const answer = (playerAnswers[player] || '').toUpperCase().trim();
+    const correct = answer === def.ans.toUpperCase().trim();
+    const pts = correct ? ROSC_PTS_CORRECT : ROSC_PTS_WRONG;
+    const existing = data.rosco?.playerScores?.[player] || 0;
+    updates[`rosco.playerScores.${player}`] = existing + pts;
+  }
+  if (Object.keys(updates).length) {
+    await updateDoc(doc(db,'rooms',currentRoom), updates);
+  }
+}
+
+function roscGetCounts() {
+  return {
+    correct: Object.values(roscState).filter(s=>s==='correct').length,
+    wrong: Object.values(roscState).filter(s=>s==='wrong').length,
+    passed: Object.values(roscState).filter(s=>s==='done').length
+  };
+}
+
+function roscUpdateCounts() {
+  const ct = roscGetCounts();
+  const el = document.getElementById('rosc-org-counts');
+  if (el) el.textContent = `Letras: ${roscCurrentIdx} / ${roscLetters.length}`;
 }
 
 function roscBuildRing(containerId) {
@@ -6181,177 +6302,149 @@ function roscBuildRing(containerId) {
     const x = cx + r * Math.cos(angle);
     const y = cy + r * Math.sin(angle);
     const div = document.createElement('div');
-    const state = roscState[l] || 'pending';
-    const colors = { pending:'rgba(255,255,255,.15)', correct:'#2d7a4a', wrong:'#7a1a1a', passed:'#4a4a1a', current:'var(--grif)' };
+    const isDone = roscState[l] === 'done';
     const isCurrent = roscLetters[roscCurrentIdx] === l;
-    div.style.cssText = `position:absolute;width:clamp(28px,7%,36px);height:clamp(28px,7%,36px);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:clamp(.55rem,1.3vw,.8rem);font-weight:700;background:${isCurrent ? colors.current : colors[state]};border:2px solid ${isCurrent ? 'var(--gold)' : 'transparent'};color:${state==='correct'?'#a0d4a0':state==='wrong'?'#d4a0a0':'#e8dfc0'};transition:all .3s;transform:translate(-50%,-50%);left:${x}px;top:${y}px;cursor:pointer;`;
+    const bg = isCurrent ? 'var(--grif)' : isDone ? '#2d4a2a' : 'rgba(255,255,255,.1)';
+    div.style.cssText = `position:absolute;width:clamp(26px,7%,34px);height:clamp(26px,7%,34px);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:clamp(.5rem,1.2vw,.75rem);font-weight:700;background:${bg};border:2px solid ${isCurrent?'var(--gold)':'transparent'};color:#e8dfc0;transition:all .3s;transform:translate(-50%,-50%);left:${x}px;top:${y}px;`;
     div.textContent = l;
-    div.onclick = () => roscJumpTo(i);
     el.appendChild(div);
   });
 }
 
-function roscJumpTo(idx) {
-  roscCurrentIdx = idx;
-  roscShowCurrent();
-}
-
-function roscShowCurrent() {
-  if (roscCurrentIdx >= roscLetters.length) { roscEndGame(); return; }
-  const l = roscLetters[roscCurrentIdx];
-  const def = roscDefs.find(d => d.l === l);
-  if (!def) return;
-  document.getElementById('rosc-org-letter').textContent = l;
-  document.getElementById('rosc-org-clue').textContent = def.q;
-  document.getElementById('rosc-org-answer').textContent = def.ans;
-  document.getElementById('rosc-org-answer').classList.add('hidden');
-  roscStartTimer();
-  roscBuildRing('rosc-ring-org');
-  roscUpdateCounts();
-  // Publicar en Firebase para TV
+async function roscEndGame() {
+  if (roscTimerInterval) { clearInterval(roscTimerInterval); roscTimerInterval = null; }
   if (db) {
-    const {doc, setDoc} = fsH;
-    setDoc(doc(db,'rooms',currentRoom), {
-      rosco: { phase: 'playing', letter: l, q: def.q, states: roscState, counts: roscGetCounts() }
+    const {doc, getDoc, setDoc} = fsH;
+    const snap = await getDoc(doc(db,'rooms',currentRoom));
+    const data = snap.data() || {};
+    const playerScores = data.rosco?.playerScores || {};
+    const houses = data.houses || {};
+
+    // Promedio por casa redondeado para arriba
+    const houseGroups = {};
+    HOUSE_KEYS.forEach(hk => { houseGroups[hk] = []; });
+    for (const [player, pts] of Object.entries(playerScores)) {
+      for (const [hk, hv] of Object.entries(houses)) {
+        if ((hv.members||[]).includes(player)) {
+          houseGroups[hk].push(pts);
+          break;
+        }
+      }
+    }
+    for (const hk of HOUSE_KEYS) {
+      const scores = houseGroups[hk];
+      if (!scores.length) continue;
+      const avg = Math.ceil(scores.reduce((a,b)=>a+b,0) / scores.length);
+      if (avg !== 0) await applyPoints(hk, avg, `Rosco: promedio ${scores.length} jugador${scores.length>1?'es':''}`);
+    }
+
+    await setDoc(doc(db,'rooms',currentRoom), {
+      rosco: { phase: 'ended', states: roscState, playerScores }
     }, {merge:true});
   }
-}
-
-function roscStartTimer() {
-  if (roscTimerInterval) clearInterval(roscTimerInterval);
-  roscTimeLeft = roscTimer;
-  const timerEl = document.getElementById('rosc-org-timer');
-  const update = () => {
-    if (timerEl) {
-      timerEl.textContent = roscTimeLeft;
-      timerEl.style.color = roscTimeLeft <= 5 ? '#ff6b6b' : 'var(--gold)';
-    }
-    if (roscTimeLeft <= 0) { clearInterval(roscTimerInterval); roscTimerInterval = null; roscWrong(); }
-    roscTimeLeft--;
-  };
-  update();
-  roscTimerInterval = setInterval(update, 1000);
-}
-
-function roscCorrect() {
-  const l = roscLetters[roscCurrentIdx];
-  roscState[l] = 'correct';
-  if (roscTimerInterval) { clearInterval(roscTimerInterval); roscTimerInterval = null; }
-  // +15 pts para la casa en juego (quien sea el representante)
-  // Por ahora: puntos rápidos al org — en fiesta el org decides quién ganó
-  showToast(`✓ ${l} correcta`);
-  roscCurrentIdx++;
-  roscCheckAllDone() || setTimeout(roscShowCurrent, 800);
-}
-
-function roscWrong() {
-  const l = roscLetters[roscCurrentIdx];
-  roscState[l] = 'wrong';
-  if (roscTimerInterval) { clearInterval(roscTimerInterval); roscTimerInterval = null; }
-  showToast(`✗ ${l} incorrecta — era: ${roscDefs.find(d=>d.l===l)?.ans||'?'}`);
-  roscCurrentIdx++;
-  roscCheckAllDone() || setTimeout(roscShowCurrent, 800);
-}
-
-function roscPass() {
-  const l = roscLetters[roscCurrentIdx];
-  if (roscState[l] === 'pending') roscState[l] = 'passed';
-  if (roscTimerInterval) { clearInterval(roscTimerInterval); roscTimerInterval = null; }
-  roscCurrentIdx++;
-  roscCheckAllDone() || setTimeout(roscShowCurrent, 200);
-}
-
-function roscRevealAnswer() {
-  const l = roscLetters[roscCurrentIdx];
-  const def = roscDefs.find(d => d.l === l);
-  const ansEl = document.getElementById('rosc-org-answer');
-  if (ansEl && def) {
-    ansEl.textContent = '→ ' + def.ans;
-    ansEl.classList.remove('hidden');
-    if (db) {
-      const {doc, setDoc} = fsH;
-      setDoc(doc(db,'rooms',currentRoom), { rosco: { revealedAnswer: def.ans } }, {merge:true});
-    }
-  }
-}
-
-function roscCheckAllDone() {
-  // Check if all done
-  const pending = roscLetters.filter(l => roscState[l] === 'pending' || roscState[l] === 'passed');
-  if (pending.length === 0) {
-    roscEndGame();
-    return true;
-  }
-  // Wrap around to next pending
-  let next = roscCurrentIdx % roscLetters.length;
-  let attempts = 0;
-  while ((roscState[roscLetters[next]] === 'correct' || roscState[roscLetters[next]] === 'wrong') && attempts < roscLetters.length) {
-    next = (next + 1) % roscLetters.length;
-    attempts++;
-  }
-  roscCurrentIdx = next;
-  return false;
-}
-
-function roscGetCounts() {
-  return {
-    correct: Object.values(roscState).filter(s=>s==='correct').length,
-    wrong: Object.values(roscState).filter(s=>s==='wrong').length,
-    passed: Object.values(roscState).filter(s=>s==='passed').length
-  };
-}
-
-function roscUpdateCounts() {
-  const c = roscGetCounts();
-  const el = document.getElementById('rosc-org-counts');
-  if (el) el.textContent = `✓ ${c.correct}  ✗ ${c.wrong}  ⏭ ${c.passed}`;
-}
-
-function roscStartGame() {
-  // Leer preguntas desde los inputs por letra
-  roscDefs = [];
-  roscLetters = [];
-  for (const l of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') {
-    const qEl = document.getElementById('rosc-q-' + l);
-    const aEl = document.getElementById('rosc-a-' + l);
-    if (qEl && aEl && qEl.value.trim() && aEl.value.trim()) {
-      roscDefs.push({ l, q: qEl.value.trim(), ans: aEl.value.trim() });
-      roscLetters.push(l);
-    }
-  }
-  if (roscDefs.length < 2) { showToast('⚠️ Cargá al menos 2 preguntas'); return; }
-  roscState = {};
-  roscLetters.forEach(l => { roscState[l] = 'pending'; });
-  roscCurrentIdx = 0;
-  document.getElementById('rosc-setup').classList.add('hidden');
-  document.getElementById('rosc-game-panel').classList.remove('hidden');
-  roscShowCurrent();
-  const statusEl = document.getElementById('rosc-load-status');
-  if (statusEl) { statusEl.textContent = `✓ ${roscDefs.length} letras cargadas`; statusEl.style.color = '#a0d4a0'; }
-}
-
-function roscEndGame() {
-  if (roscTimerInterval) { clearInterval(roscTimerInterval); roscTimerInterval = null; }
-  const counts = roscGetCounts();
-  if (db) {
-    const {doc, setDoc} = fsH;
-    setDoc(doc(db,'rooms',currentRoom), { rosco: { phase: 'ended', states: roscState, counts } }, {merge:true});
-  }
-  showToast(`🌀 Rosco terminado — ✓${counts.correct} ✗${counts.wrong} ⏭${counts.passed}`);
+  showToast('🌀 ¡Rosco terminado!');
   confetti();
   document.getElementById('rosc-game-panel').classList.add('hidden');
   document.getElementById('rosc-setup').classList.remove('hidden');
 }
 
-// TV: rosco screen
+// ══ PLAYER LISTENER ══
+function roscListenPlayer() {
+  if (!db) return;
+  const {doc, onSnapshot, updateDoc} = fsH;
+  let _playerTimer = null;
+  let _lastLetter = null;
+
+  const unsub = onSnapshot(doc(db,'rooms',currentRoom), snap => {
+    const rosc = snap.data()?.rosco || {};
+    const waitingEl = document.getElementById('rosc-player-waiting');
+    const gameEl = document.getElementById('rosc-player-game');
+    const endEl = document.getElementById('rosc-player-end');
+    if (!waitingEl) return;
+    [waitingEl, gameEl, endEl].forEach(el => el && el.classList.add('hidden'));
+
+    if (rosc.phase === 'ended') {
+      if (endEl) {
+        endEl.classList.remove('hidden');
+        const myPts = (rosc.playerScores||{})[currentUser] || 0;
+        const ptsEl = document.getElementById('rosc-player-final-pts');
+        if (ptsEl) ptsEl.textContent = (myPts >= 0 ? '+' : '') + myPts + ' pts';
+      }
+      return;
+    }
+
+    if (rosc.phase !== 'playing') {
+      waitingEl.classList.remove('hidden');
+      return;
+    }
+
+    gameEl.classList.remove('hidden');
+
+    // Letter display
+    const letterEl = document.getElementById('rosc-player-letter');
+    if (letterEl) letterEl.textContent = rosc.letter || '';
+
+    // Progress
+    const progEl = document.getElementById('rosc-player-progress');
+    if (progEl && rosc.states) {
+      const done = Object.values(rosc.states).filter(s=>s==='done').length;
+      const total = Object.keys(rosc.states).length;
+      progEl.textContent = `${done} / ${total}`;
+    }
+
+    // Reset input on new letter
+    const inputEl = document.getElementById('rosc-player-input');
+    const sentEl = document.getElementById('rosc-player-sent');
+    if (rosc.letter !== _lastLetter) {
+      _lastLetter = rosc.letter;
+      if (inputEl) { inputEl.value = ''; inputEl.disabled = false; inputEl.dataset.letter = rosc.letter; }
+      if (sentEl) sentEl.classList.add('hidden');
+      setTimeout(() => { if(inputEl && !inputEl.disabled) inputEl.focus(); }, 100);
+    }
+
+    // If already answered
+    if ((rosc.playerAnswers||{})[currentUser] !== undefined) {
+      if (inputEl) inputEl.disabled = true;
+      if (sentEl) sentEl.classList.remove('hidden');
+    }
+
+    // Local timer
+    if (_playerTimer) clearInterval(_playerTimer);
+    const timerEl = document.getElementById('rosc-player-timer');
+    const updateTimer = () => {
+      if (!rosc.timerTs || !rosc.timerSecs) return;
+      const remaining = Math.max(0, rosc.timerSecs - Math.floor((Date.now() - rosc.timerTs) / 1000));
+      if (timerEl) {
+        timerEl.textContent = remaining;
+        timerEl.style.color = remaining <= 5 ? '#ff6b6b' : 'var(--gold)';
+      }
+      if (remaining <= 0 && _playerTimer) { clearInterval(_playerTimer); _playerTimer = null; }
+    };
+    updateTimer();
+    _playerTimer = setInterval(updateTimer, 500);
+  });
+  screenUnsubs.push(unsub);
+}
+
+async function roscPlayerSubmit() {
+  const inputEl = document.getElementById('rosc-player-input');
+  if (!inputEl || !db || inputEl.disabled) return;
+  const answer = inputEl.value.trim();
+  if (!answer) return;
+  inputEl.disabled = true;
+  document.getElementById('rosc-player-sent').classList.remove('hidden');
+  const {doc, updateDoc} = fsH;
+  await updateDoc(doc(db,'rooms',currentRoom), {
+    [`rosco.playerAnswers.${currentUser}`]: answer
+  });
+}
+
+// TV rosco
 function bsRenderRosco(rosc) {
-  const bsRoscEl = document.getElementById('bs-rosco');
-  if (!bsRoscEl) return;
   bsShowScreen('rosco');
-  // Build ring
   const ringEl = document.getElementById('bs-rosc-ring');
-  if (ringEl) {
-    const states = rosc.states || {};
+  if (ringEl && rosc.states) {
+    const states = rosc.states;
     const letters = Object.keys(states);
     const n = letters.length;
     const size = ringEl.offsetWidth || 400;
@@ -6365,24 +6458,27 @@ function bsRenderRosco(rosc) {
       const div = document.createElement('div');
       const s = states[l]||'pending';
       const isCur = l === rosc.letter;
-      div.style.cssText = `position:absolute;width:clamp(32px,5%,48px);height:clamp(32px,5%,48px);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:clamp(.65rem,1.3vw,.9rem);font-weight:700;background:${isCur?'var(--grif)':s==='correct'?'#2d7a4a':s==='wrong'?'#7a1a1a':'rgba(255,255,255,.1)'};border:2px solid ${isCur?'var(--gold)':'transparent'};color:${s==='correct'?'#a0d4a0':s==='wrong'?'#d4a0a0':'#e8dfc0'};transform:translate(-50%,-50%);left:${x}px;top:${y}px;`;
+      div.style.cssText = `position:absolute;width:clamp(32px,5%,48px);height:clamp(32px,5%,48px);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:clamp(.65rem,1.3vw,.9rem);font-weight:700;background:${isCur?'var(--grif)':s==='done'?'#2d4a2a':'rgba(255,255,255,.1)'};border:2px solid ${isCur?'var(--gold)':'transparent'};color:#e8dfc0;transform:translate(-50%,-50%);left:${x}px;top:${y}px;`;
       div.textContent = l;
       ringEl.appendChild(div);
     });
   }
+  // Timer
+  const bsTimerEl = document.getElementById('bs-rosc-timer');
+  if (bsTimerEl && rosc.timerTs && rosc.timerSecs) {
+    const remaining = Math.max(0, rosc.timerSecs - Math.floor((Date.now()-rosc.timerTs)/1000));
+    bsTimerEl.textContent = remaining;
+    bsTimerEl.style.color = remaining <= 5 ? '#ff6b6b' : 'var(--gold)';
+  }
   const letterEl = document.getElementById('bs-rosc-letter');
   const clueEl = document.getElementById('bs-rosc-clue');
-  const ansEl = document.getElementById('bs-rosc-answer');
   const countsEl = document.getElementById('bs-rosc-counts');
   if (letterEl) letterEl.textContent = rosc.letter || '';
   if (clueEl) clueEl.textContent = rosc.q || '';
-  if (ansEl) {
-    if (rosc.revealedAnswer) { ansEl.textContent = '→ ' + rosc.revealedAnswer; ansEl.style.display = 'block'; }
-    else ansEl.style.display = 'none';
-  }
-  if (countsEl) {
-    const c = rosc.counts || {};
-    countsEl.textContent = `✓ ${c.correct||0}  ✗ ${c.wrong||0}  ⏭ ${c.passed||0}`;
+  if (countsEl && rosc.states) {
+    const done = Object.values(rosc.states).filter(s=>s==='done').length;
+    const total = Object.keys(rosc.states).length;
+    countsEl.textContent = `${done} / ${total} letras`;
   }
 }
 
