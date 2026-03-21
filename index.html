@@ -4959,7 +4959,7 @@ function impListenPlayer() {
         // Verificar si el jugador fue eliminado
         const isEliminated = (imp.eliminated || []).includes(currentUser);
         if (isEliminated) {
-          btnsEl.innerHTML = '<div style="text-align:center;padding:1rem;opacity:.6;font-family:'Cinzel',serif;font-size:.85rem">Fuiste eliminado — no podés votar</div>';
+          btnsEl.innerHTML = '<div style="text-align:center;padding:1rem;opacity:.6;font-family:Cinzel,serif;font-size:.85rem">Fuiste eliminado — no podés votar</div>';
           sentEl.classList.add('hidden');
           return;
         }
