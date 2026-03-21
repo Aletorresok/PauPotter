@@ -1485,6 +1485,12 @@ header {
             <button class="btn btn-ghost" onclick="impSetCount(2,this)" style="flex:1;padding:.5rem;margin-top:0">2</button>
             <button class="btn btn-ghost" onclick="impSetCount(3,this)" style="flex:1;padding:.5rem;margin-top:0">3</button>
           </div>
+          <div class="ilabel" style="margin-top:.5rem">¿Incluir a Snape?</div>
+          <div style="display:flex;gap:.5rem;margin-bottom:.75rem">
+            <button class="btn btn-ghost" onclick="impSetSnape(false,this)" id="imp-snape-no" style="flex:1;padding:.5rem;margin-top:0;background:linear-gradient(135deg,var(--grif),#c9a84c);color:white">Sin Snape</button>
+            <button class="btn btn-ghost" onclick="impSetSnape(true,this)" id="imp-snape-yes" style="flex:1;padding:.5rem;margin-top:0">Con Snape 🐍</button>
+          </div>
+          <div id="imp-snape-hint" class="hidden" style="font-size:.72rem;opacity:.6;margin-bottom:.5rem;font-style:italic">Snape conoce a los Mortífagos pero si es eliminado, los Mortífagos ganan automáticamente.</div>
           <button class="btn btn-gold" onclick="impStartGame()" id="imp-start-btn">🎲 Sortear roles</button>
         </div>
       </div>
@@ -1587,135 +1593,161 @@ header {
             <div style="font-size:.65rem;opacity:.5;font-family:'Cinzel',serif;text-align:center">Pista</div>
             <div style="font-size:.65rem;opacity:.5;font-family:'Cinzel',serif;text-align:center">Respuesta</div>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-A" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">A</div>
             <input class="ifield" id="rosc-q-A" placeholder="Pista para A..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-A" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('A',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-B" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">B</div>
             <input class="ifield" id="rosc-q-B" placeholder="Pista para B..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-B" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('B',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-C" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">C</div>
             <input class="ifield" id="rosc-q-C" placeholder="Pista para C..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-C" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('C',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-D" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">D</div>
             <input class="ifield" id="rosc-q-D" placeholder="Pista para D..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-D" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('D',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-E" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">E</div>
             <input class="ifield" id="rosc-q-E" placeholder="Pista para E..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-E" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('E',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-F" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">F</div>
             <input class="ifield" id="rosc-q-F" placeholder="Pista para F..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-F" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('F',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-G" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">G</div>
             <input class="ifield" id="rosc-q-G" placeholder="Pista para G..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-G" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('G',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-H" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">H</div>
             <input class="ifield" id="rosc-q-H" placeholder="Pista para H..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-H" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('H',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-I" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">I</div>
             <input class="ifield" id="rosc-q-I" placeholder="Pista para I..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-I" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('I',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-J" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">J</div>
             <input class="ifield" id="rosc-q-J" placeholder="Pista para J..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-J" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('J',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-K" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">K</div>
             <input class="ifield" id="rosc-q-K" placeholder="Pista para K..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-K" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('K',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-L" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">L</div>
             <input class="ifield" id="rosc-q-L" placeholder="Pista para L..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-L" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('L',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-M" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">M</div>
             <input class="ifield" id="rosc-q-M" placeholder="Pista para M..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-M" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('M',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-N" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">N</div>
             <input class="ifield" id="rosc-q-N" placeholder="Pista para N..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-N" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('N',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-O" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">O</div>
             <input class="ifield" id="rosc-q-O" placeholder="Pista para O..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-O" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('O',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-P" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">P</div>
             <input class="ifield" id="rosc-q-P" placeholder="Pista para P..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-P" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('P',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-Q" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">Q</div>
             <input class="ifield" id="rosc-q-Q" placeholder="Pista para Q..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-Q" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('Q',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-R" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">R</div>
             <input class="ifield" id="rosc-q-R" placeholder="Pista para R..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-R" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('R',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-S" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">S</div>
             <input class="ifield" id="rosc-q-S" placeholder="Pista para S..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-S" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('S',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-T" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">T</div>
             <input class="ifield" id="rosc-q-T" placeholder="Pista para T..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-T" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('T',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-U" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">U</div>
             <input class="ifield" id="rosc-q-U" placeholder="Pista para U..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-U" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('U',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-V" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">V</div>
             <input class="ifield" id="rosc-q-V" placeholder="Pista para V..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-V" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('V',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-W" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">W</div>
             <input class="ifield" id="rosc-q-W" placeholder="Pista para W..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-W" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('W',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-X" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">X</div>
             <input class="ifield" id="rosc-q-X" placeholder="Pista para X..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-X" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('X',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-Y" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">Y</div>
             <input class="ifield" id="rosc-q-Y" placeholder="Pista para Y..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-Y" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('Y',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
-          <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:.4rem;align-items:center;margin-bottom:.35rem">
+          <div id="rosc-row-Z" style="display:grid;grid-template-columns:2rem 1fr 1fr 1.5rem;gap:.4rem;align-items:center;margin-bottom:.35rem">
             <div style="font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center">Z</div>
             <input class="ifield" id="rosc-q-Z" placeholder="Pista para Z..." style="font-size:.72rem;padding:.35rem .6rem">
             <input class="ifield" id="rosc-a-Z" placeholder="Respuesta" style="font-size:.72rem;padding:.35rem .6rem">
+            <button onclick="roscToggleLetter('Z',this)" title="Excluir esta letra" style="background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);border-radius:6px;color:#ffa0a0;font-size:.7rem;cursor:pointer;padding:.2rem .3rem;line-height:1">✕</button>
           </div>
           <div id="rosc-load-status" style="font-size:.78rem;margin-top:.35rem;opacity:.7;text-align:center"></div>
         </div>
@@ -4652,6 +4684,7 @@ function bsListen() {
 // 🕵️ EL MORTÍFAGO INFILTRADO
 // ══════════════════════════════════════════════════════
 let impMortCount = 1;
+let impWithSnape = false;
 
 function initImpostorScreen() {
   document.getElementById('imp-org').classList.toggle('hidden', !isOrganizer);
@@ -4665,6 +4698,17 @@ function initImpostorScreen() {
   } else {
     impListenPlayer();
   }
+}
+
+function impSetSnape(val, btn) {
+  impWithSnape = val;
+  document.querySelectorAll('#imp-snape-no, #imp-snape-yes').forEach(b => {
+    b.style.background = 'rgba(255,255,255,.07)';
+    b.style.color = 'var(--gold2)';
+  });
+  btn.style.background = 'linear-gradient(135deg,var(--grif),#c9a84c)';
+  btn.style.color = 'white';
+  document.getElementById('imp-snape-hint').classList.toggle('hidden', !val);
 }
 
 function impSetCount(n, btn) {
@@ -4695,9 +4739,19 @@ async function impStartGame() {
   // Sortear roles — Fisher-Yates
   const shuffled = [...allPlayers].sort(() => Math.random() - .5);
   const mortifagos = shuffled.slice(0, impMortCount);
+  let snape = null;
   const roles = {};
+  const aurores = shuffled.slice(impMortCount);
+
+  if (impWithSnape && aurores.length > 0) {
+    // Snape es un Auror elegido al azar — conoce a los Mortífagos pero no es uno
+    snape = aurores[Math.floor(Math.random() * aurores.length)];
+  }
+
   allPlayers.forEach(p => {
-    roles[p] = mortifagos.includes(p) ? 'mortifago' : 'auror';
+    if (mortifagos.includes(p)) roles[p] = 'mortifago';
+    else if (p === snape) roles[p] = 'snape';
+    else roles[p] = 'auror';
   });
 
   await setDoc(doc(db,'rooms',currentRoom), {
@@ -4711,6 +4765,7 @@ async function impStartGame() {
       votes: {},
       voteOpen: false,
       mortifagos,
+      snape,
       lastEliminated: null,
       lastWasMort: null,
       gameOver: false,
@@ -4752,7 +4807,11 @@ async function impEliminate() {
 
   // Condición de fin
   let gameOver = false, winnerSide = null;
-  if (remainingMorts.length === 0) {
+  const snapeEliminated = imp.snape && newEliminated.includes(imp.snape);
+  if (snapeEliminated) {
+    // Si eliminaron a Snape → ganan los Mortífagos automáticamente
+    gameOver = true; winnerSide = 'mortifagos';
+  } else if (remainingMorts.length === 0) {
     gameOver = true; winnerSide = 'aurores';
   } else if (remainingMorts.length >= remainingInnocents.length) {
     gameOver = true; winnerSide = 'mortifagos';
@@ -4861,8 +4920,9 @@ function impListenOrg() {
     pdEl.innerHTML = '';
     active.forEach(p => {
       const chip = document.createElement('span');
-      chip.style.cssText = `padding:.3rem .7rem;border-radius:20px;font-family:'Cinzel',serif;font-size:.75rem;background:${morts.includes(p)?'rgba(116,0,1,.4)':'rgba(255,255,255,.08)'};border:1px solid ${morts.includes(p)?'#c9a84c':'rgba(255,255,255,.15)'};color:${morts.includes(p)?'#ffccc0':'#e8dfc0'}`;
-      chip.textContent = (morts.includes(p) ? '🐍 ' : '⚡ ') + p;
+      const isSnapeP = imp.snape === p;
+      chip.style.cssText = `padding:.3rem .7rem;border-radius:20px;font-family:'Cinzel',serif;font-size:.75rem;background:${morts.includes(p)?'rgba(116,0,1,.4)':isSnapeP?'rgba(50,50,120,.4)':'rgba(255,255,255,.08)'};border:1px solid ${morts.includes(p)?'#c9a84c':isSnapeP?'#8888ff':'rgba(255,255,255,.15)'};color:${morts.includes(p)?'#ffccc0':isSnapeP?'#aaaaff':'#e8dfc0'}`;
+      chip.textContent = (morts.includes(p) ? '🐍 ' : isSnapeP ? '🧙 ' : '⚡ ') + p;
       pdEl.appendChild(chip);
     });
 
@@ -4956,14 +5016,21 @@ function impListenPlayer() {
 
     // Mostrar rol siempre que esté asignado
     if (myRole) {
+      const isSnape = myRole === 'snape';
       rolePanel.classList.remove('hidden');
       const card = document.getElementById('imp-role-card');
-      card.style.borderColor = isMort ? '#c9a84c' : 'rgba(201,168,76,.3)';
-      document.getElementById('imp-role-icon').textContent = isMort ? '🐍' : '⚡';
-      document.getElementById('imp-role-title').textContent = isMort ? 'Mortífago' : 'Auror';
-      document.getElementById('imp-role-title').style.color = isMort ? '#c9a84c' : 'var(--gold)';
-      document.getElementById('imp-role-word').textContent = isMort ? imp.category : imp.word;
-      document.getElementById('imp-role-hint').textContent = isMort ? 'Esta es tu categoría — ¡no te descubras!' : 'Esta es tu palabra — discutí naturalmente';
+      card.style.borderColor = isMort ? '#c9a84c' : isSnape ? '#8888ff' : 'rgba(201,168,76,.3)';
+      document.getElementById('imp-role-icon').textContent = isMort ? '🐍' : isSnape ? '🧙' : '⚡';
+      document.getElementById('imp-role-title').textContent = isMort ? 'Mortífago' : isSnape ? 'Snape' : 'Auror';
+      document.getElementById('imp-role-title').style.color = isMort ? '#c9a84c' : isSnape ? '#aaaaff' : 'var(--gold)';
+      // Snape conoce la palabra real Y sabe quiénes son los Mortífagos
+      document.getElementById('imp-role-word').textContent = (isMort || isSnape) ? imp.word : imp.word;
+      if (isSnape) {
+        const mortNames = Object.entries(imp.roles||{}).filter(([,r])=>r==='mortifago').map(([p])=>p);
+        document.getElementById('imp-role-hint').textContent = `Sos Snape — conocés la palabra y sabés quiénes son los Mortífagos: ${mortNames.join(', ')}. Si te eliminan, GANAN los Mortífagos.`;
+      } else {
+        document.getElementById('imp-role-hint').textContent = isMort ? 'Esta es tu categoría — ¡no te descubras!' : 'Esta es tu palabra — discutí naturalmente';
+      }
     }
 
     // Fase votación
@@ -6161,6 +6228,25 @@ function initRoscoScreen() {
   if (!isOrganizer) roscListenPlayer();
 }
 
+function roscToggleLetter(l, btn) {
+  const row = document.getElementById('rosc-row-' + l);
+  const inputs = row.querySelectorAll('input');
+  const excluded = row.dataset.excluded === '1';
+  if (excluded) {
+    row.dataset.excluded = '0';
+    inputs.forEach(inp => { inp.disabled = false; inp.style.opacity = '1'; });
+    btn.style.background = 'rgba(255,100,100,.15)';
+    btn.style.color = '#ffa0a0';
+    btn.textContent = '✕';
+  } else {
+    row.dataset.excluded = '1';
+    inputs.forEach(inp => { inp.disabled = true; inp.style.opacity = '.3'; });
+    btn.style.background = 'rgba(100,255,100,.15)';
+    btn.style.color = '#a0ffa0';
+    btn.textContent = '↩';
+  }
+}
+
 function roscSetTimer(secs, btn) {
   roscTimer = secs;
   document.querySelectorAll('#rosc-timer-btns button').forEach(b => {
@@ -6175,6 +6261,8 @@ function roscStartGame() {
   roscDefs = [];
   roscLetters = [];
   for (const l of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') {
+    const row = document.getElementById('rosc-row-' + l);
+    if (row && row.dataset.excluded === '1') continue; // excluida manualmente
     const qEl = document.getElementById('rosc-q-' + l);
     const aEl = document.getElementById('rosc-a-' + l);
     if (qEl && aEl && qEl.value.trim() && aEl.value.trim()) {
