@@ -4877,9 +4877,31 @@ function bsListen() {
 
     // ── Juegos — cada uno evalúa su propio estado ──
 
-    // Sombrero
+    // Sombrero — solo bloquea la pantalla si está activamente sorteando
     const sortingPhase = (data.sorting||{}).phase;
-    if (sortingPhase === 'thinking' || sortingPhase === 'revealed') {
+    const hasActiveGame = (
+      (data.houseQuiz||{}).phase === 'voting' ||
+      (data.houseQuiz||{}).phase === 'revealed' ||
+      (data.houseQuiz||{}).phase === 'countdown' ||
+      (data.mimica||{}).phase === 'playing' ||
+      (data.mimica||{}).phase === 'timeout' ||
+      (data.mimica||{}).phase === 'result' ||
+      (data.ruleta||{}).phase === 'picked' ||
+      (data.ruleta||{}).phase === 'result' ||
+      (data.snitch||{}).phase === 'clues' ||
+      (data.snitch||{}).phase === 'betting' ||
+      (data.snitch||{}).phase === 'revealed' ||
+      (data.rosco||{}).phase === 'playing' ||
+      (data.impostor||{}).phase === 'playing' ||
+      (data.impostor||{}).phase === 'voting' ||
+      (data.impostor||{}).phase === 'round-result' ||
+      (data.impostor||{}).phase === 'ended'
+    );
+    if (sortingPhase === 'thinking') {
+      bsRenderSorting(data.sorting||{}, data.houses||{});
+      return;
+    }
+    if (sortingPhase === 'revealed' && !hasActiveGame) {
       bsRenderSorting(data.sorting||{}, data.houses||{});
       return;
     }
@@ -5116,25 +5138,24 @@ function bsListen() {
       if (bsHQ && bsHQ.classList.contains('active')) bsGoWaiting();
     }
 
-    // Sombrero en waiting — si no hay juego activo, mostrar waiting
-    if (sortingPhase === 'waiting') {
-      const anyActive = ['bs-mimica','bs-house-quiz','bs-ruleta','bs-snitch'].some(id => {
+    // Snitch TV
+    const sn2 = data.snitch || {};
+    if (sn2.phase === 'clues' || sn2.phase === 'betting' || sn2.phase === 'revealed') {
+      snitchRenderTV(sn2); return;
+    }
+    // Rosco TV
+    const rosc2 = data.rosco || {};
+    if (rosc2.phase === 'playing' || rosc2.phase === 'ended') {
+      bsRenderRosco(rosc2); return;
+    }
+
+    // Fallback a pantalla de espera si no hay nada activo
+    if (!hasActiveGame && sortingPhase !== 'thinking') {
+      const anyScreenActive = ['bs-mimica','bs-house-quiz','bs-ruleta','bs-snitch','bs-rosco','bs-impostor'].some(id => {
         const el = document.getElementById(id);
         return el && el.classList.contains('active');
       });
-
-      // Snitch TV
-      const sn2 = data.snitch || {};
-      if (sn2.phase === 'clues' || sn2.phase === 'betting' || sn2.phase === 'revealed') {
-        snitchRenderTV(sn2); return;
-      }
-      // Rosco TV
-      const rosc2 = data.rosco || {};
-      if (rosc2.phase === 'playing' || rosc2.phase === 'ended') {
-        bsRenderRosco(rosc2); return;
-      }
-
-      if (!anyActive) bsGoWaiting();
+      if (!anyScreenActive) bsGoWaiting();
     }
   });
 }
