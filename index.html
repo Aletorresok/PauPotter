@@ -3119,7 +3119,7 @@ async function snitchAddClue() {
 function snitchRenderClues(clues, containerId) {
   const el = document.getElementById(containerId);
   if (!el) return;
-  if (!clues || !clues.length) { el.innerHTML = '<div style="opacity:.5;font-size:.8rem;font-family:'Cinzel',serif">Aún no hay pistas</div>'; return; }
+  if (!clues || !clues.length) { el.innerHTML = '<div style="opacity:.5;font-size:.8rem;font-family:Cinzel,serif">Aún no hay pistas</div>'; return; }
   el.innerHTML = clues.map(cl => {
     const h = HOUSES[cl.house] || {};
     return `<div style="display:flex;align-items:baseline;gap:.4rem;margin-bottom:.3rem;font-size:.82rem">
@@ -3696,7 +3696,7 @@ function impListenOrg() {
       edEl.innerHTML = '';
       eliminated.forEach(p => {
         const chip = document.createElement('span');
-        chip.style.cssText = 'padding:.3rem .7rem;border-radius:20px;font-family:'Cinzel',serif;font-size:.75rem;background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);color:#ffa0a0;text-decoration:line-through';
+        chip.style.cssText = 'padding:.3rem .7rem;border-radius:20px;font-family:Cinzel,serif;font-size:.75rem;background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);color:#ffa0a0;text-decoration:line-through';
         chip.textContent = p;
         edEl.appendChild(chip);
       });
