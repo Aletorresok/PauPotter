@@ -1942,7 +1942,10 @@ header {
       <!-- Setup: cargar palabras -->
       <div id="mim-setup">
         <div class="card card-gold">
-          <div class="ilabel">Palabras predefinidas (Harry Potter)</div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="ilabel">Palabras predefinidas (Harry Potter)</div>
+            <button onclick="mimToggleDefaults(this)" id="mim-defaults-toggle" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);border-radius:10px;color:var(--gold);font-family:'Cinzel',serif;font-size:.68rem;cursor:pointer;padding:.2rem .6rem">✓ Activas</button>
+          </div>
           <div id="mim-default-chips" class="chips" style="margin-bottom:.75rem"></div>
           <div class="ilabel">Agregar palabra personalizada</div>
           <div style="display:flex;gap:.5rem">
@@ -1983,6 +1986,7 @@ header {
         <!-- Palabra (solo org la ve) -->
         <div class="card card-gold" style="text-align:center;padding:1.25rem;margin-bottom:.75rem">
           <div style="font-size:.72rem;font-family:'Cinzel',serif;letter-spacing:.12em;opacity:.6;margin-bottom:.4rem">PALABRA A ACTUAR</div>
+          <div id="mim-word-options" style="display:none;flex-direction:column;gap:.4rem;margin-bottom:.5rem;max-height:300px;overflow-y:auto"></div>
           <div id="mim-word-display" style="font-family:'Cinzel Decorative',cursive;font-size:1.8rem;color:var(--gold);letter-spacing:.05em"></div>
         </div>
 
@@ -5596,9 +5600,12 @@ function hqOrgNext() {
   if (qCard) qCard.style.display = 'none';
   const voteCard = document.querySelectorAll('#hq-game-org .card.card-gold')[1];
   if (voteCard) voteCard.style.display = 'none';
-  document.getElementById('hq-reveal-btn').style.display = 'none';
-  document.getElementById('hq-next-btn').style.display = 'none';
-  document.getElementById('hq-reveal-result').textContent = '';
+  const revBtn = document.getElementById('hq-reveal-btn');
+  const nxtBtn = document.getElementById('hq-next-btn');
+  const revRes = document.getElementById('hq-reveal-result');
+  if (revBtn) revBtn.style.display = 'none';
+  if (nxtBtn) nxtBtn.style.display = 'none';
+  if (revRes) revRes.textContent = '';
 }
 
 function hqListenVotes() {
@@ -5897,6 +5904,7 @@ let mimCustomWords = [];
 let mimTimerSecs = 60;
 let mimTimerRemaining = 0;
 let mimTimerInterval = null;
+let mimUseDefaults = true;;
 let mimTimerPaused = false;
 let mimTimerTotal = 60;
 let mimCurrentWord = '';
@@ -5913,6 +5921,16 @@ function initMimicaScreen() {
   } else {
     mimListenPlayer();
   }
+}
+
+function mimToggleDefaults(btn) {
+  mimUseDefaults = !mimUseDefaults;
+  btn.textContent = mimUseDefaults ? '✓ Activas' : '✗ Desactivadas';
+  btn.style.background = mimUseDefaults ? 'rgba(201,168,76,.15)' : 'rgba(255,100,100,.15)';
+  btn.style.borderColor = mimUseDefaults ? 'rgba(201,168,76,.3)' : 'rgba(255,100,100,.3)';
+  btn.style.color = mimUseDefaults ? 'var(--gold)' : '#ffa0a0';
+  const chips = document.getElementById('mim-default-chips');
+  if (chips) chips.style.opacity = mimUseDefaults ? '1' : '.3';
 }
 
 function mimRenderDefaultChips() {
@@ -6003,26 +6021,63 @@ function mimNextRound() {
   mimTimerPaused = false;
 
   mimCurrentHouse = mimPickHouse();
-  mimCurrentWord = mimPickWord();
   mimTimerTotal = mimTimerSecs;
   mimTimerRemaining = mimTimerSecs;
 
   const h = HOUSES[mimCurrentHouse];
 
-  // Actualizar UI org
+  // Actualizar UI org — mostrar 5 opciones de palabra para elegir
   document.getElementById('mim-house-card').style.borderColor = h.color + '88';
   document.getElementById('mim-house-crest').textContent = h.crest;
   document.getElementById('mim-house-crest').style.filter = `drop-shadow(0 0 16px ${h.accent}88)`;
   document.getElementById('mim-house-name').textContent = h.name;
   document.getElementById('mim-house-name').style.color = h.accent;
-  document.getElementById('mim-word-display').textContent = mimCurrentWord;
   document.getElementById('mim-timer-display').textContent = mimTimerSecs;
   document.getElementById('mim-timer-display').classList.remove('timer-urgent');
   document.getElementById('mim-timer-bar').style.width = '100%';
   document.getElementById('mim-pause-btn').textContent = '⏸ Pausar';
+  document.getElementById('mim-result-btns').style.display = 'none'; // hide until word chosen
+
+  // Show 5 word options for actor to choose
+  mimShowWordOptions();
+}
+
+function mimShowWordOptions() {
+  const allWords = [...(mimUseDefaults ? MIM_DEFAULT_WORDS : []), ...mimCustomWords];
+  if (!allWords.length) { mimSelectWord(mimPickWord()); return; }
+  const available = allWords.filter(w => !mimUsedWords.includes(w));
+  const pool = available.length >= 5 ? available : allWords;
+  // Pick 5 random
+  const shuffled = [...pool].sort(() => Math.random() - .5);
+  const options = shuffled.slice(0, Math.min(5, shuffled.length));
+
+  const wordDisp = document.getElementById('mim-word-display');
+  const wordOptEl = document.getElementById('mim-word-options');
+  if (wordOptEl) {
+    wordOptEl.innerHTML = '';
+    wordOptEl.style.display = 'flex';
+    options.forEach(w => {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-ghost';
+      btn.style.cssText = "width:100%;margin-top:0;font-family:'Cinzel',serif;font-size:.9rem;padding:.6rem";
+      btn.textContent = w;
+      btn.onclick = () => mimSelectWord(w);
+      wordOptEl.appendChild(btn);
+    });
+  }
+  if (wordDisp) wordDisp.textContent = 'Elegí una palabra ↓';
+}
+
+function mimSelectWord(word) {
+  mimCurrentWord = word;
+  mimUsedWords.push(word);
+  const wordDisp = document.getElementById('mim-word-display');
+  const wordOptEl = document.getElementById('mim-word-options');
+  if (wordDisp) wordDisp.textContent = word;
+  if (wordOptEl) wordOptEl.style.display = 'none';
   document.getElementById('mim-result-btns').style.display = 'flex';
 
-  // Publicar en Firebase para jugadores
+  // Publicar en Firebase para jugadores y TV
   if (db) {
     const {doc, setDoc} = fsH;
     const pts = parseInt(document.getElementById('mim-pts-input').value) || 20;
@@ -6030,6 +6085,7 @@ function mimNextRound() {
       mimica: {
         phase: 'playing',
         house: mimCurrentHouse,
+        word: mimCurrentWord,
         timerSecs: mimTimerSecs,
         startTs: Date.now(),
         pts,
