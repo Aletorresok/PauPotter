@@ -1519,9 +1519,15 @@ header {
         </div>
         <!-- Botones -->
         <button class="btn btn-gold" onclick="impOpenVoting()" id="imp-open-vote-btn">🗳️ Abrir votación</button>
-        <button class="btn hidden" onclick="impUsePower()" id="imp-power-btn" style="background:linear-gradient(135deg,#1a0a2e,#4a2a6a);color:#c8b4e8;border:none;border-radius:16px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;font-size:.82rem">🐍 Poder de Mortífagos</button>
+        <button class="btn hidden" onclick="impActivatePower()" id="imp-power-btn" style="background:linear-gradient(135deg,#1a0a2e,#4a2a6a);color:#c8b4e8;border:none;border-radius:16px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;font-size:.82rem">🐍 Activar poder Mortífago</button>
         <button class="btn hidden" onclick="impEliminate()" id="imp-eliminate-btn" style="background:linear-gradient(135deg,#740001,#c9a84c);color:white;border:none;border-radius:16px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer">💀 Eliminar al más votado</button>
         <button class="btn btn-ghost hidden" onclick="impReset()" id="imp-reset-btn" style="margin-top:.5rem;font-size:.8rem">🔄 Nueva partida</button>
+        <!-- Power resolution panel -->
+        <div id="imp-power-panel" class="hidden" style="margin-top:.5rem">
+          <div style="font-family:'Cinzel',serif;font-size:.72rem;color:#c8b4e8;letter-spacing:.1em;margin-bottom:.4rem">🐍 AVADA KEDAVRA — OBJETIVO VOTADO</div>
+          <div id="imp-power-votes-display" style="margin-bottom:.5rem"></div>
+          <div id="imp-power-resolve-btns"></div>
+        </div>
       </div>
     </div>
 
@@ -2362,7 +2368,12 @@ async function createRoom() {
         ravenclaw:  { points: 0, members: [] }
       },
       sorting: { phase: 'waiting', currentPlayer: null, revealedHouse: null },
-      sortingAudio: {},
+      sortingAudio: {
+        gryffindor: 'https://raw.githubusercontent.com/Aletorresok/PauPotter/main/Audio/Gryffindor.mp3',
+        hufflepuff:  'https://raw.githubusercontent.com/Aletorresok/PauPotter/main/Audio/Hufflepuff.mp3',
+        ravenclaw:   'https://raw.githubusercontent.com/Aletorresok/PauPotter/main/Audio/Ravenclaw.mp3',
+        slytherin:   'https://raw.githubusercontent.com/Aletorresok/PauPotter/main/Audio/Slytherin.mp3'
+      },
       activeEvent: null,
       lastPointsEvent: null,
       activeGame: null,
@@ -2896,7 +2907,7 @@ function listenSortingOrg() {
   screenUnsubs.push(unsub2);
 }
 
-async function saveSortingAudio() {
+async async function saveSortingAudio() {
   if (!db || !currentRoom || !isOrganizer) return;
   const {doc, setDoc} = fsH;
   const urls = {};
@@ -3596,6 +3607,48 @@ async function impEliminate() {
   }
 }
 
+async function impActivatePower() {
+  // Org activates — mortífagos vote from their phones
+  if (!db) return;
+  const {doc, getDoc, updateDoc} = fsH;
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const imp = snap.data()?.impostor || {};
+  if (imp.powerUsed) { showToast('⚠️ El poder ya fue usado'); return; }
+  await updateDoc(doc(db,'rooms',currentRoom), {
+    'impostor.powerPhase': 'voting',
+    'impostor.powerVotes': {}
+  });
+  showToast('🐍 ¡Los Mortífagos eligen su objetivo!');
+}
+
+async function impResolvePower(target) {
+  // Called when org presses "Resolver" after mortífagos voted
+  if (!db) return;
+  const {doc, getDoc, setDoc, updateDoc} = fsH;
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const imp = snap.data()?.impostor || {};
+  if (imp.powerUsed) return;
+  const wasSnape = imp.snape === target;
+  if (wasSnape) {
+    await setDoc(doc(db,'rooms',currentRoom), {
+      impostor: { phase: 'ended', gameOver: true, winnerSide: 'mortifagos', powerUsed: true, powerPhase: 'resolved', lastEliminated: target, lastWasSnape: true }
+    }, {merge:true});
+    const houses = snap.data()?.houses || {};
+    for (const mort of (imp.mortifagos||[])) {
+      for (const [hk, hv] of Object.entries(houses)) {
+        if ((hv.members||[]).includes(mort)) { await applyPoints(hk, 50, 'Mortífago: Avada Kedavra'); break; }
+      }
+    }
+    showToast('🐍 ¡Avada Kedavra! Los Mortífagos encontraron a Snape');
+  } else {
+    await updateDoc(doc(db,'rooms',currentRoom), {
+      'impostor.powerUsed': true,
+      'impostor.powerPhase': 'resolved'
+    });
+    showToast(`❌ ${target} no era Snape — el poder se perdió`);
+  }
+}
+
 async function impUsePower() {
   // Mortífagos usan su poder secreto — solo el org puede ejecutarlo
   if (!db) return;
@@ -3722,21 +3775,57 @@ function impListenOrg() {
     const elimBtn = document.getElementById('imp-eliminate-btn');
     const resetBtn = document.getElementById('imp-reset-btn');
     const powerBtn = document.getElementById('imp-power-btn');
+    const powerPanel = document.getElementById('imp-power-panel');
     if (imp.phase === 'ended') {
       openBtn.classList.add('hidden'); elimBtn.classList.add('hidden');
       resetBtn.classList.remove('hidden');
       if (powerBtn) powerBtn.classList.add('hidden');
+      if (powerPanel) powerPanel.classList.add('hidden');
     } else if (imp.phase === 'voting') {
       openBtn.classList.add('hidden'); elimBtn.classList.remove('hidden');
       resetBtn.classList.add('hidden');
       if (powerBtn) powerBtn.classList.add('hidden');
+      if (powerPanel) powerPanel.classList.add('hidden');
     } else {
       openBtn.classList.remove('hidden'); elimBtn.classList.add('hidden');
       resetBtn.classList.add('hidden');
-      if (powerBtn) powerBtn.classList.toggle('hidden', !imp.snape || imp.powerUsed);
+      const showPower = imp.snape && !imp.powerUsed && imp.powerPhase !== 'resolved';
+      if (powerBtn) powerBtn.classList.toggle('hidden', !showPower);
+      // Power phase handling
+      if (imp.powerPhase === 'voting' && powerPanel) {
+        powerPanel.classList.remove('hidden');
+        const powerVotes = imp.powerVotes || {};
+        const voteDisplay = document.getElementById('imp-power-votes-display');
+        const resolveBtns = document.getElementById('imp-power-resolve-btns');
+        if (voteDisplay) {
+          const tally = {};
+          Object.values(powerVotes).forEach(v => { tally[v] = (tally[v]||0)+1; });
+          voteDisplay.innerHTML = Object.entries(tally).sort((a,b)=>b[1]-a[1])
+            .map(([name,cnt]) => `<div style="font-family:'Cinzel',serif;font-size:.82rem;padding:.25rem 0">${name} — ${cnt} voto${cnt>1?'s':''}</div>`).join('') || '<div style="opacity:.5;font-size:.8rem">Esperando votos...</div>';
+          if (resolveBtns && Object.keys(tally).length) {
+            const topTarget = Object.entries(tally).sort((a,b)=>b[1]-a[1])[0][0];
+            resolveBtns.innerHTML = `<button class="btn" onclick="impResolvePower('${topTarget}')" style="background:linear-gradient(135deg,#1a0a2e,#4a2a6a);color:#c8b4e8;border:none;border-radius:14px;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;width:100%">☠️ Avada Kedavra → ${topTarget}</button>`;
+          }
+        }
+      } else if (powerPanel) {
+        powerPanel.classList.add('hidden');
+      }
     }
   });
   screenUnsubs.push(unsub);
+}
+
+async function impPowerVote(target) {
+  if (!db) return;
+  const {doc, updateDoc} = fsH;
+  await updateDoc(doc(db,'rooms',currentRoom), {
+    [`impostor.powerVotes.${currentUser}`]: target
+  });
+  const pvBtns = document.getElementById('imp-power-vote-btns');
+  const pvSent = document.getElementById('imp-power-vote-sent');
+  if (pvBtns) pvBtns.innerHTML = '';
+  if (pvSent) pvSent.classList.remove('hidden');
+  pvSent.textContent = `☠️ Avada Kedavra → ${target}`;
 }
 
 async function impPlayerVote(target) {
@@ -3766,6 +3855,11 @@ function impListenPlayer() {
 
     if (!imp.phase || imp.phase === 'idle') { waiting.style.display = 'block'; return; }
 
+    // Avada Kedavra notification
+    if (imp.powerPhase === 'voting' && myRole2 !== 'mortifago') {
+      showToast('🐍 ¡Los Mortífagos lanzan un Avada Kedavra!');
+    }
+
     const myRole = (imp.roles||{})[currentUser];
     const isMort = myRole === 'mortifago';
     const isSnape = myRole === 'snape';
@@ -3790,6 +3884,37 @@ function impListenPlayer() {
       } else {
         document.getElementById('imp-role-hint').textContent = 'Esta es tu palabra — discutí naturalmente · No la digas directamente';
       }
+    }
+
+    // Power voting — only mortífagos see this
+    const myRole2 = (imp.roles||{})[currentUser];
+    const powerVotePanel = document.getElementById('imp-power-vote-panel');
+    if (imp.powerPhase === 'voting' && myRole2 === 'mortifago') {
+      if (powerVotePanel) {
+        powerVotePanel.classList.remove('hidden');
+        const myPowerVote = (imp.powerVotes||{})[currentUser];
+        const pvBtns = document.getElementById('imp-power-vote-btns');
+        const pvSent = document.getElementById('imp-power-vote-sent');
+        if (myPowerVote) {
+          if (pvBtns) pvBtns.innerHTML = '';
+          if (pvSent) pvSent.classList.remove('hidden');
+        } else if (pvBtns) {
+          pvSent && pvSent.classList.add('hidden');
+          pvBtns.innerHTML = '';
+          const active = imp.activePlayers || [];
+          active.filter(p => p !== currentUser && !(imp.mortifagos||[]).includes(p))
+            .forEach(p => {
+              const b = document.createElement('button');
+              b.className = 'btn btn-ghost';
+              b.style.cssText = "width:100%;margin-top:0;font-family:'Cinzel',serif";
+              b.textContent = '☠️ ' + p;
+              b.onclick = () => impPowerVote(p);
+              pvBtns.appendChild(b);
+            });
+        }
+      }
+    } else if (powerVotePanel) {
+      powerVotePanel.classList.add('hidden');
     }
 
     if (imp.phase === 'voting') {
@@ -5322,7 +5447,7 @@ function hqShowQuestion(idx) {
   }
 }
 
-async function hqOrgReveal() {
+async async function hqOrgReveal() {
   if (!isOrganizer) return;
   const q = hqQuestions[hqIdx];
   if (!q||!db) return;
@@ -5356,7 +5481,7 @@ async function hqOrgReveal() {
     resultEl.innerHTML = `<span style="font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold2);opacity:.7">😶 Sin votos — nadie respondió</span>`;
     showToast('Sin votos para esta pregunta');
   } else if (isCorrect) {
-    const houseKey = HOUSE_KEYS[hqIdx%4];
+    const houseKey = HOUSE_KEYS[hqTurnIdx % 4];
     const h = HOUSES[houseKey];
     resultEl.innerHTML = `<span style="font-family:'Cinzel Decorative',cursive;font-size:1.1rem;color:${h.accent}">✓ ¡Correcto! ${h.crest} ${h.name} suma ${q.pts} pts</span>`;
     showToast(`${h.crest} ¡${h.name} acertó! +${q.pts} puntos`);
@@ -5639,7 +5764,7 @@ async function hqConfirmReveal() {
   if (!isOrganizer) return;
   const q = hqQuestions[hqIdx];
   if (!q) return;
-  const houseKey = HOUSE_KEYS[hqIdx % 4];
+  const houseKey = HOUSE_KEYS[hqTurnIdx % 4];
   const h = HOUSES[houseKey];
   const ok = await hgModal({
     icon: h.crest,
