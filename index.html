@@ -3235,7 +3235,13 @@ function snitchRenderClues(clues, containerId) {
 async function snitchOpenBetting() {
   if (!db) return;
   const {doc, updateDoc} = fsH;
-  await updateDoc(doc(db,'rooms',currentRoom), { 'snitch.betOpen': true, 'snitch.phase': 'betting' });
+  // Limpiar votos y apuestas del round anterior — permite votar de nuevo en rondas subsiguientes
+  await updateDoc(doc(db,'rooms',currentRoom), {
+    'snitch.betOpen': true,
+    'snitch.phase': 'betting',
+    'snitch.playerVotes': {},
+    'snitch.bets': {}
+  });
   document.getElementById('snitch-open-bet-btn').classList.add('hidden');
   // Timer 60s
   let t = 60;
@@ -3462,6 +3468,9 @@ function snitchSetupPtsInput(housePts) {
   input.max = cap;
   input.value = '';
   _snitchMyPts = 0;
+  _snitchMyVaso = null;
+  // Limpiar selección de vaso anterior
+  document.querySelectorAll('#snitch-player-vasos .snitch-box-btn').forEach(b => b.classList.remove('selected-box'));
   if (maxLabel) maxLabel.textContent = cap > 0 ? `(máx ${cap})` : '(sin puntos)';
   if (maxVal) maxVal.textContent = cap;
   if (warn) warn.style.display = 'none';
