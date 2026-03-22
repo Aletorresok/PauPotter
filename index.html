@@ -3517,6 +3517,19 @@ function snitchRenderTV(s) {
     if (bsTimerEl) bsTimerEl.innerHTML = revealHtml || '🏆';
     if (bsLabelEl) bsLabelEl.textContent = `🏆 SNITCH EN VASO ${correctVaso}`;
     if (bsRoundEl) bsRoundEl.textContent = '';
+    // Efectos — solo una vez por round reveal (anti-loop)
+    const snitchRevealKey = `snitch-revealed-r${s.round||1}`;
+    if (window._lastSnitchRevealKey !== snitchRevealKey) {
+      window._lastSnitchRevealKey = snitchRevealKey;
+      const winners = s.winners || [];
+      if (winners.length > 0) {
+        const winnerAccent = HOUSES[winners[0]]?.accent || null;
+        confetti(winnerAccent);
+      }
+      if ((s.losers||[]).length > 0 && winners.length === 0) {
+        showRedFlash();
+      }
+    }
   }
 }
 
@@ -4451,6 +4464,12 @@ function bsRenderRosco(rosc) {
     const total = Object.keys(rosc.states).length;
     countsEl.textContent = `${done} / ${total} letras`;
   }
+  // Confetti al terminar — solo una vez
+  if (rosc.phase === 'ended' && window._lastRoscEndedPhase !== 'ended') {
+    window._lastRoscEndedPhase = 'ended';
+    confetti();
+  }
+  if (rosc.phase === 'playing') window._lastRoscEndedPhase = null; // resetear para próxima vez
 }
 
 
@@ -4944,6 +4963,12 @@ function bsListen() {
   let lastEvent = null, lastCeremonyTs = 0, lastClosingTs = 0;
   // Inicializar lastPointsTs con Date.now() para ignorar eventos anteriores al conectarse
   let lastPointsTs = Date.now();
+  // Anti-loop: rastrear qué efectos ya se dispararon para no repetirlos en cada snapshot
+  let lastHqRevealedKey = null;  // `${qIdx}-${phase}` del último reveal procesado
+  let lastMimResultKey = null;   // `${round}-${phase}` de la última mímica procesada
+  let lastImpEndedKey = null;    // `${winnerSide}-${eliminados}` del último impostor
+  let lastSnitchRevealedTs = 0;  // ts del último snitch reveal
+  let lastRoscEndedTs = 0;       // ts del último rosco terminado
 
   // Mostrar QR code
   const appUrl = window.location.origin + window.location.pathname;
@@ -5096,7 +5121,13 @@ function bsListen() {
             const won = mim.result === 'won';
             phaseEl.textContent = won ? '🎉 ¡ADIVINARON!' : '💀 NO ADIVINARON';
             phaseEl.style.color = won ? '#a0d4a0' : '#ffa0a0';
-            if (won) { confetti(h.accent); }
+            // Efectos — solo una vez por resultado (anti-loop)
+            const mimKey = `${mim.startTs}-result`;
+            if (mimKey !== lastMimResultKey) {
+              lastMimResultKey = mimKey;
+              if (won) { confetti(h.accent); }
+              else { showRedFlash(); }
+            }
           }
         }
       }
@@ -5244,6 +5275,16 @@ function bsListen() {
       if (resultEl) {
         if (hq.phase === 'revealed') {
           resultEl.style.display = 'block';
+          // Efectos visuales — solo una vez por reveal (anti-loop)
+          const revealKey = `${hq.qIdx}-revealed`;
+          if (revealKey !== lastHqRevealedKey) {
+            lastHqRevealedKey = revealKey;
+            if (hq.isCorrect) {
+              confetti(h.accent);
+            } else if (hq.chosenIdx !== -1 && hq.chosenIdx !== undefined) {
+              showRedFlash();
+            }
+          }
           if (hq.isCorrect) {
             resultEl.textContent = '✨ ¡Correcto!';
             resultEl.style.color = h.accent || '#a0d4a0';
@@ -5294,6 +5335,13 @@ function bsListen() {
           const morts = (imp2.mortifagos||[]).join(', ');
           subEl.textContent = `Mortífago${imp2.mortifagos?.length>1?'s':''}: ${morts}`;
         }
+        // Efectos — solo una vez (anti-loop)
+        const impKey = `ended-${imp2.winnerSide}-${(imp2.eliminated||[]).length}`;
+        if (impKey !== lastImpEndedKey) {
+          lastImpEndedKey = impKey;
+          if (!mortWon) { confetti(); }
+          else { showRedFlash(); confetti('#c9a84c'); }
+        }
       } else if (imp2.phase === 'round-result') {
         if (iconEl) iconEl.textContent = imp2.lastWasMort ? '🐍' : imp2.lastWasSnape ? '🧙' : '⚡';
         if (mainEl) {
@@ -5301,6 +5349,12 @@ function bsListen() {
           mainEl.style.color = 'var(--gold2)';
         }
         if (subEl) subEl.textContent = imp2.lastWasMort ? '¡Era un Mortífago!' : imp2.lastWasSnape ? '¡Era Snape!' : 'Era un Auror';
+        // Red flash cuando eliminan un Auror inocente (los mortífagos siguen adelante)
+        const roundKey = `round-${imp2.lastEliminated}`;
+        if (roundKey !== lastImpEndedKey) {
+          lastImpEndedKey = roundKey;
+          if (!imp2.lastWasMort && !imp2.lastWasSnape) { showRedFlash(); }
+        }
       } else {
         if (iconEl) iconEl.textContent = '🕵️';
         if (mainEl) {
