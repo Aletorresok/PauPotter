@@ -1395,7 +1395,14 @@ header {
           <button class="btn btn-ghost" onclick="showManualSortPanel()" id="sort-manual-btn" style="flex:1;display:none;margin-top:0;font-size:.82rem">
             ✋ Manual
           </button>
+          <button class="btn" onclick="deleteSelectedPlayer()" id="sort-delete-btn" style="flex:1;display:none;margin-top:0;font-size:.82rem;background:rgba(255,80,80,.15);border:1px solid rgba(255,80,80,.3);color:#ffa0a0;border-radius:14px;cursor:pointer;font-family:'Cinzel',serif">
+            🗑 Eliminar
+          </button>
         </div>
+        <!-- Botón finalizar sorteo -->
+        <button class="btn btn-ghost" onclick="finalizeSorting()" style="margin-top:.75rem;font-size:.82rem;width:100%;max-width:280px">
+          ✓ Finalizar sorteo
+        </button>
         <!-- Panel de asignación manual -->
         <div id="sort-manual-panel" class="hidden" style="margin-top:.75rem">
           <div style="font-family:'Cinzel',serif;font-size:.75rem;color:var(--gold2);margin-bottom:.5rem;text-align:center">Elegí la casa manualmente</div>
@@ -2707,6 +2714,8 @@ function selectPlayerForSorting(name, chipEl) {
   document.getElementById('sort-btn').style.display = 'block';
   const manualBtn = document.getElementById('sort-manual-btn');
   if (manualBtn) manualBtn.style.display = 'block';
+  const deleteBtn = document.getElementById('sort-delete-btn');
+  if (deleteBtn) deleteBtn.style.display = 'block';
   document.getElementById('sort-result-card').classList.add('hidden');
   document.getElementById('sort-hat').style.animation = '';
   document.getElementById('sort-status-msg').textContent = `"${name}" listo/a para ser seleccionado/a`;
@@ -2791,7 +2800,57 @@ function renderHousesDisplay(houses) {
   });
 }
 
-async function unassignPlayer(playerName, houseKey) {
+async function deleteSelectedPlayer() {
+  if (!sortSelectedPlayer || !isOrganizer || !db) return;
+  const name = sortSelectedPlayer;
+  const ok = await hgModal({
+    icon: '🗑',
+    title: 'Eliminar jugador',
+    msg: `¿Eliminar a ${name} de la sala? No podrá volver a entrar con ese nombre.`,
+    confirmText: '🗑 Eliminar',
+    danger: true
+  });
+  if (!ok) return;
+  const {collection, getDocs, deleteDoc, doc, getDoc, setDoc} = fsH;
+  // Remove from players subcollection
+  const playersSnap = await getDocs(collection(db,'rooms',currentRoom,'players'));
+  for (const d of playersSnap.docs) {
+    if (d.data().name === name) { await deleteDoc(d.ref); break; }
+  }
+  // Remove from any house they might be in
+  const snap = await getDoc(doc(db,'rooms',currentRoom));
+  const houses = snap.data()?.houses || {};
+  const update = {};
+  for (const hk of Object.keys(houses)) {
+    const members = (houses[hk].members||[]).filter(m => m !== name);
+    if (members.length !== (houses[hk].members||[]).length) {
+      update[`houses.${hk}.members`] = members;
+    }
+  }
+  if (Object.keys(update).length) {
+    const {updateDoc} = fsH;
+    await updateDoc(doc(db,'rooms',currentRoom), update);
+  }
+  sortSelectedPlayer = null;
+  document.getElementById('sort-btn').style.display = 'none';
+  document.getElementById('sort-manual-btn').style.display = 'none';
+  document.getElementById('sort-delete-btn').style.display = 'none';
+  showToast(`🗑 ${name} eliminado/a`);
+  await loadUnassignedPlayers();
+}
+
+function finalizeSorting() {
+  // Mark sorting as done and go back to menu
+  if (db && isOrganizer && currentRoom) {
+    const {doc, setDoc} = fsH;
+    setDoc(doc(db,'rooms',currentRoom), {
+      sorting: { phase: 'waiting', currentPlayer: null, revealedHouse: null }
+    }, {merge:true});
+  }
+  goHome();
+}
+
+function unassignPlayer(playerName, houseKey) {
   if (!isOrganizer || !db) return;
   const ok = await hgModal({
     icon: HOUSES[houseKey].crest,
