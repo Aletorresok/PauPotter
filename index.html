@@ -5239,6 +5239,7 @@ function bsListen() {
           }
         }
       }
+      return; // ← evita que ruleta/houseQuiz idle llamen bsGoWaiting() mientras mímica está activa
     } else if (mim.phase === 'ended') {
       if (window._bsMimInterval) { clearInterval(window._bsMimInterval); window._bsMimInterval = null; }
       const bsMimScreen = document.getElementById('bs-mimica');
@@ -5264,6 +5265,7 @@ function bsListen() {
           bsRulResult.style.color = rul.result === 'won' ? '#a0d4a0' : '#ffa0a0';
         } else { bsRulResult.style.display = 'none'; }
       }
+      return; // ← ruleta activo: no dejar que bloques posteriores llamen bsGoWaiting()
     } else if (rul.phase === 'idle') {
       bsGoWaiting();
     }
@@ -5407,6 +5409,7 @@ function bsListen() {
           resultEl.style.display = 'none';
         }
       }
+      return; // ← houseQuiz activo: evita que bloques posteriores llamen bsGoWaiting()
     } else if (hq.phase === 'ended' || hq.phase === 'idle' || !hq.phase) {
       const bsHQ = document.getElementById('bs-house-quiz');
       if (bsHQ && bsHQ.classList.contains('active')) bsGoWaiting();
