@@ -483,6 +483,11 @@ header {
   z-index: 9999;
   pointer-events: none;
 }
+/* Dentro del bigscreen-app usa position absolute */
+#bigscreen-app .cp {
+  position: absolute;
+  z-index: 500;
+}
 @keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
 
 /* ══ PUNTOS MANUALES — panel fijo del presentador ══ */
@@ -3096,28 +3101,33 @@ function playSound(type) {
 // ══ CONFETTI con colores de casa ══
 function confetti(color) {
   const cols = color ? [color, '#fff', color+'99'] : ['#c9a84c','#f0d080','#fff','#740001','#1a472a','#ecb939','#0e1a40'];
+  // En modo TV, inyectar dentro del bigscreen-app para quedar sobre el z-index:20000
+  const container = IS_BIGSCREEN ? (document.getElementById('bigscreen-app') || document.body) : document.body;
   for (let i=0;i<28;i++) {
     const el=document.createElement('div');
     el.className='cp';
     el.style.cssText=`left:${Math.random()*100}vw;background:${cols[Math.floor(Math.random()*cols.length)]};animation-duration:${1.5+Math.random()*1.5}s;animation-delay:${Math.random()*.4}s;transform:rotate(${Math.random()*360}deg)`;
-    document.body.appendChild(el);
+    container.appendChild(el);
     setTimeout(()=>el.remove(),3500);
   }
 }
 
 // ══ FLASH ROJO — incorrecto ══
 function showRedFlash() {
-  let flash = document.getElementById('hq-red-flash');
+  // En modo TV usar el bigscreen-app como contenedor para quedar sobre z-index:20000
+  const container = IS_BIGSCREEN ? (document.getElementById('bigscreen-app') || document.body) : document.body;
+  const flashId = IS_BIGSCREEN ? 'bs-red-flash' : 'hq-red-flash';
+  let flash = document.getElementById(flashId);
   if (!flash) {
     flash = document.createElement('div');
-    flash.id = 'hq-red-flash';
+    flash.id = flashId;
     flash.style.cssText = `
-      position:fixed;inset:0;z-index:7000;
+      position:absolute;inset:0;z-index:500;
       background:rgba(116,0,1,.55);
       pointer-events:none;
       opacity:0;transition:opacity .15s;
     `;
-    document.body.appendChild(flash);
+    container.appendChild(flash);
   }
   flash.style.opacity = '1';
   setTimeout(()=>{ flash.style.opacity='0'; }, 550);
