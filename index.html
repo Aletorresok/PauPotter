@@ -2850,7 +2850,7 @@ function finalizeSorting() {
   goHome();
 }
 
-function unassignPlayer(playerName, houseKey) {
+async function unassignPlayer(playerName, houseKey) {
   if (!isOrganizer || !db) return;
   const ok = await hgModal({
     icon: HOUSES[houseKey].crest,
