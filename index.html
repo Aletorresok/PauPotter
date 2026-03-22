@@ -2721,7 +2721,7 @@ function hideManualSortPanel() {
   document.getElementById('sort-manual-panel')?.classList.add('hidden');
 }
 
-async async function doManualSort(houseKey) {
+async function doManualSort(houseKey) {
   if (!isOrganizer || !sortSelectedPlayer) return;
   hideManualSortPanel();
   // Misma animación que doSort — solo la casa es manual
@@ -2821,7 +2821,7 @@ function pickBalancedHouse(houses) {
   return eligible[Math.floor(Math.random() * eligible.length)].hk;
 }
 
-async async function doSort() {
+async function doSort() {
   if (!isOrganizer || !sortSelectedPlayer) return;
   const {doc, getDoc, setDoc} = fsH;
   const btn = document.getElementById('sort-btn');
