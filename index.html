@@ -1936,12 +1936,11 @@ header {
             <button class="snitch-box-btn" onclick="snitchPlayerVote(3,this)">🥃<br><span style="font-family:'Cinzel',serif;font-size:.65rem">Vaso 3</span></button>
             <button class="snitch-box-btn" onclick="snitchPlayerVote(4,this)">🥃<br><span style="font-family:'Cinzel',serif;font-size:.65rem">Vaso 4</span></button>
           </div>
-          <div style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold2);margin-bottom:.4rem">¿Cuántos puntos apostás?</div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin-bottom:.75rem" id="snitch-player-pts">
-            <button class="btn btn-ghost" onclick="snitchPlayerPts(10,this)" style="margin-top:0;padding:.5rem;font-family:'Cinzel',serif">10</button>
-            <button class="btn btn-ghost" onclick="snitchPlayerPts(20,this)" style="margin-top:0;padding:.5rem;font-family:'Cinzel',serif">20</button>
-            <button class="btn btn-ghost" onclick="snitchPlayerPts(50,this)" style="margin-top:0;padding:.5rem;font-family:'Cinzel',serif">50</button>
-            <button class="btn btn-ghost" onclick="snitchPlayerPts(100,this)" style="margin-top:0;padding:.5rem;font-family:'Cinzel',serif">100</button>
+          <div style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold2);margin-bottom:.4rem">¿Cuántos puntos apostás? <span id="snitch-player-pts-max" style="opacity:.5"></span></div>
+          <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.75rem">
+            <input type="number" id="snitch-pts-input" min="1" placeholder="Ej: 30" oninput="snitchPtsInputChange(this)"
+              style="flex:1;background:rgba(255,255,255,.08);border:1.5px solid rgba(201,168,76,.4);border-radius:10px;padding:.6rem .9rem;color:var(--gold);font-family:'Cinzel',serif;font-size:1rem;font-weight:700;outline:none;width:100%">
+            <span id="snitch-pts-input-warn" style="font-size:.72rem;color:#ffa0a0;font-family:'Cinzel',serif;display:none">Máx: <span id="snitch-pts-max-val"></span></span>
           </div>
           <button class="btn btn-gold" onclick="snitchPlayerSubmit()" id="snitch-player-submit">✓ Confirmar apuesta</button>
           <div id="snitch-player-sent" class="hidden" style="text-align:center;font-family:'Cinzel',serif;color:var(--gold);padding:.75rem">✓ Apuesta enviada</div>
@@ -3267,8 +3266,14 @@ async function snitchReveal() {
   HOUSE_KEYS.forEach(hk => {
     const b = bets[hk];
     if (!b) return;
-    if (b.vaso === snitchSecretVaso) { winners.push({ hk, pts: b.pts }); }
-    else { losers.push({ hk, pts: b.pts }); pool += b.pts; }
+    if (b.vaso === snitchSecretVaso) { winners.push({ hk, pts: b.pts, vaso: b.vaso }); }
+    else {
+      // Capear la pérdida al saldo actual para no ir a negativos
+      const currentPts = data.houses?.[hk]?.points || 0;
+      const actualLoss = Math.min(b.pts, Math.max(0, currentPts));
+      losers.push({ hk, pts: b.pts, actualLoss, vaso: b.vaso });
+      pool += actualLoss; // el pool refleja lo que realmente se pierde
+    }
   });
   const totalWinBets = winners.reduce((s,w)=>s+w.pts, 0);
   const pointsGained = {};
@@ -3286,9 +3291,11 @@ async function snitchReveal() {
     'snitch.betOpen': false
   });
 
-  // Apply points — losers lose, winners gain
+  // Apply points — losers lose (capeado a su saldo actual), winners gain
   for (const l of losers) {
-    await applyPoints(l.hk, -l.pts, `Snitch R${snitchRoundNum}: apuesta perdida (Vaso ${l.vaso||'?'})`);
+    if (l.actualLoss > 0) {
+      await applyPoints(l.hk, -l.actualLoss, `Snitch R${snitchRoundNum}: apuesta perdida (Vaso ${l.vaso||'?'})`);
+    }
   }
   for (const w of winners) {
     const gain = pointsGained[w.hk] || 0;
@@ -3413,15 +3420,22 @@ function snitchListenPlayer() {
       cluesEl.classList.remove('hidden');
     } else if (s.phase === 'betting') {
       betEl.classList.remove('hidden');
-      // If already submitted
+      // Detectar si ESTE jugador ya votó — no si la casa ya tiene apuesta
+      const myVote = (s.playerVotes||{})[currentUser];
       const myBet = myHouse ? (s.bets||{})[myHouse] : null;
-      if (myBet) {
+      if (myVote) {
         document.getElementById('snitch-player-submit').classList.add('hidden');
         document.getElementById('snitch-player-sent').classList.remove('hidden');
-        document.getElementById('snitch-player-sent').textContent = `✓ Apuesta enviada: Vaso ${myBet.vaso} · ${myBet.pts} pts`;
+        document.getElementById('snitch-player-sent').textContent = `✓ Vaso ${myVote.vaso} · ${myVote.pts} pts enviado`;
+        if (myBet) {
+          document.getElementById('snitch-player-sent').textContent += ` · Casa: Vaso ${myBet.vaso} · ${myBet.pts} pts`;
+        }
       } else {
         document.getElementById('snitch-player-submit').classList.remove('hidden');
         document.getElementById('snitch-player-sent').classList.add('hidden');
+        // Configurar input de puntos limitado a los puntos actuales de la casa
+        const housePts = myHouse ? (data.houses?.[myHouse]?.points || 0) : 0;
+        snitchSetupPtsInput(housePts);
       }
     } else if (s.phase === 'revealed') {
       resEl.classList.remove('hidden');
@@ -3436,6 +3450,37 @@ function snitchListenPlayer() {
     }
   });
   screenUnsubs.push(unsub);
+}
+
+function snitchSetupPtsInput(housePts) {
+  const input = document.getElementById('snitch-pts-input');
+  const maxLabel = document.getElementById('snitch-player-pts-max');
+  const warn = document.getElementById('snitch-pts-input-warn');
+  const maxVal = document.getElementById('snitch-pts-max-val');
+  if (!input) return;
+  const cap = Math.max(0, housePts);
+  input.max = cap;
+  input.value = '';
+  _snitchMyPts = 0;
+  if (maxLabel) maxLabel.textContent = cap > 0 ? `(máx ${cap})` : '(sin puntos)';
+  if (maxVal) maxVal.textContent = cap;
+  if (warn) warn.style.display = 'none';
+  if (cap <= 0) input.disabled = true;
+  else input.disabled = false;
+}
+
+function snitchPtsInputChange(input) {
+  const cap = parseInt(input.max) || 0;
+  let val = parseInt(input.value) || 0;
+  const warn = document.getElementById('snitch-pts-input-warn');
+  if (val > cap) {
+    val = cap;
+    input.value = cap;
+    if (warn) warn.style.display = 'inline';
+  } else {
+    if (warn) warn.style.display = 'none';
+  }
+  _snitchMyPts = val > 0 ? val : 0;
 }
 
 function snitchPlayerVote(vaso, btn) {
@@ -5239,7 +5284,6 @@ function bsListen() {
           }
         }
       }
-      return; // ← evita que ruleta/houseQuiz idle llamen bsGoWaiting() mientras mímica está activa
     } else if (mim.phase === 'ended') {
       if (window._bsMimInterval) { clearInterval(window._bsMimInterval); window._bsMimInterval = null; }
       const bsMimScreen = document.getElementById('bs-mimica');
@@ -5265,7 +5309,6 @@ function bsListen() {
           bsRulResult.style.color = rul.result === 'won' ? '#a0d4a0' : '#ffa0a0';
         } else { bsRulResult.style.display = 'none'; }
       }
-      return; // ← ruleta activo: no dejar que bloques posteriores llamen bsGoWaiting()
     } else if (rul.phase === 'idle') {
       bsGoWaiting();
     }
@@ -5409,7 +5452,6 @@ function bsListen() {
           resultEl.style.display = 'none';
         }
       }
-      return; // ← houseQuiz activo: evita que bloques posteriores llamen bsGoWaiting()
     } else if (hq.phase === 'ended' || hq.phase === 'idle' || !hq.phase) {
       const bsHQ = document.getElementById('bs-house-quiz');
       if (bsHQ && bsHQ.classList.contains('active')) bsGoWaiting();
