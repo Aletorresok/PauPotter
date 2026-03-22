@@ -2907,7 +2907,7 @@ function listenSortingOrg() {
   screenUnsubs.push(unsub2);
 }
 
-async async function saveSortingAudio() {
+async function saveSortingAudio() {
   if (!db || !currentRoom || !isOrganizer) return;
   const {doc, setDoc} = fsH;
   const urls = {};
@@ -5447,7 +5447,7 @@ function hqShowQuestion(idx) {
   }
 }
 
-async async function hqOrgReveal() {
+async function hqOrgReveal() {
   if (!isOrganizer) return;
   const q = hqQuestions[hqIdx];
   if (!q||!db) return;
