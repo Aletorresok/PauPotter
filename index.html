@@ -3692,6 +3692,8 @@ async function impStartGame() {
       mortifagos,
       snape,
       powerUsed: false,
+      powerPhase: null,
+      powerVotes: {},
       lastEliminated: null,
       lastWasMort: null,
       lastWasSnape: false,
@@ -3906,6 +3908,7 @@ async function impReset() {
   if (!db) return;
   const {doc, setDoc} = fsH;
   await setDoc(doc(db,'rooms',currentRoom), { impostor: { phase: 'idle' } }, {merge:true});
+  window._shownAKToast = false;
   document.getElementById('imp-game').classList.add('hidden');
   document.getElementById('imp-setup').classList.remove('hidden');
   document.getElementById('imp-word-input').value = '';
@@ -5284,6 +5287,7 @@ function bsListen() {
           }
         }
       }
+      return; // mímica activa: evita bsGoWaiting() de bloques posteriores
     } else if (mim.phase === 'ended') {
       if (window._bsMimInterval) { clearInterval(window._bsMimInterval); window._bsMimInterval = null; }
       const bsMimScreen = document.getElementById('bs-mimica');
@@ -5309,6 +5313,7 @@ function bsListen() {
           bsRulResult.style.color = rul.result === 'won' ? '#a0d4a0' : '#ffa0a0';
         } else { bsRulResult.style.display = 'none'; }
       }
+      return; // ruleta activa: evita bsGoWaiting() de bloques posteriores
     } else if (rul.phase === 'idle') {
       bsGoWaiting();
     }
@@ -5452,6 +5457,7 @@ function bsListen() {
           resultEl.style.display = 'none';
         }
       }
+      return; // houseQuiz activo: evita bsGoWaiting() de bloques posteriores
     } else if (hq.phase === 'ended' || hq.phase === 'idle' || !hq.phase) {
       const bsHQ = document.getElementById('bs-house-quiz');
       if (bsHQ && bsHQ.classList.contains('active')) bsGoWaiting();
